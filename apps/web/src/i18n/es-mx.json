@@ -1,0 +1,79 @@
+{
+  "common": {
+    "appName": "Crimp Studio",
+    "version": "v0.0.1"
+  },
+  "landing": {
+    "hero": {
+      "title": "Crimp Studio",
+      "subtitle": "Generación de rutas con IA para cualquier muro de escalada."
+    },
+    "cta": {
+      "openEditor": "Abrir Editor",
+      "learnMore": "Saber Más"
+    },
+    "features": {
+      "generate": {
+        "title": "Genera Rutas",
+        "description": "Nuestro algoritmo genético crea problemas de boulder diversos y escalables para tu muro."
+      },
+      "customize": {
+        "title": "Personaliza la Dificultad",
+        "description": "Define tu grado objetivo de V0 a V10 y deja que la IA haga el resto."
+      },
+      "design": {
+        "title": "Diseña Tu Muro",
+        "description": "Coloca presas manualmente o deja que el algoritmo sugiera diseños completos."
+      }
+    }
+  },
+  "editor": {
+    "title": "Editor de Muro",
+    "actions": {
+      "generate": "Generar Ruta",
+      "clear": "Limpiar Todo",
+      "save": "Guardar Muro",
+      "load": "Cargar Muro",
+      "export": "Exportar JSON"
+    },
+    "settings": {
+      "wallWidth": "Ancho del Muro",
+      "wallHeight": "Altura del Muro",
+      "inclination": "Inclinación",
+      "targetGrade": "Grado Objetivo"
+    },
+    "holdTypes": {
+      "jug": "Jug",
+      "crimp": "Regleta",
+      "sloper": "Sloper",
+      "pinch": "Pinza",
+      "volume": "Volumen"
+    },
+    "modes": {
+      "generate": "Modo Generación",
+      "manual": "Modo Manual"
+    }
+  },
+  "about": {
+    "title": "Acerca de Crimp Studio",
+    "intro": "Un proyecto de pasión hecho por escaladores, para escaladores.",
+    "sections": {
+      "howItWorks": "Cómo Funciona",
+      "techStack": "Stack Técnico",
+      "roadmap": "Roadmap"
+    }
+  },
+  "grades": {
+    "v0": "V0",
+    "v1": "V1",
+    "v2": "V2",
+    "v3": "V3",
+    "v4": "V4",
+    "v5": "V5",
+    "v6": "V6",
+    "v7": "V7",
+    "v8": "V8",
+    "v9": "V9",
+    "v10": "V10"
+  }
+}

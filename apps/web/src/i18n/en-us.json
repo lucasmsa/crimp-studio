@@ -1,0 +1,79 @@
+{
+  "common": {
+    "appName": "Crimp Studio",
+    "version": "v0.0.1"
+  },
+  "landing": {
+    "hero": {
+      "title": "Crimp Studio",
+      "subtitle": "AI-powered route generation for any climbing wall."
+    },
+    "cta": {
+      "openEditor": "Open Editor",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "generate": {
+        "title": "Generate Routes",
+        "description": "Our genetic algorithm creates diverse, climbable boulder problems tailored to your wall."
+      },
+      "customize": {
+        "title": "Customize Difficulty",
+        "description": "Set your target grade from V0 to V10 and let the AI do the rest."
+      },
+      "design": {
+        "title": "Design Your Wall",
+        "description": "Place holds manually or let the algorithm suggest complete layouts."
+      }
+    }
+  },
+  "editor": {
+    "title": "Wall Editor",
+    "actions": {
+      "generate": "Generate Route",
+      "clear": "Clear All",
+      "save": "Save Wall",
+      "load": "Load Wall",
+      "export": "Export JSON"
+    },
+    "settings": {
+      "wallWidth": "Wall Width",
+      "wallHeight": "Wall Height",
+      "inclination": "Inclination",
+      "targetGrade": "Target Grade"
+    },
+    "holdTypes": {
+      "jug": "Jug",
+      "crimp": "Crimp",
+      "sloper": "Sloper",
+      "pinch": "Pinch",
+      "volume": "Volume"
+    },
+    "modes": {
+      "generate": "Generate Mode",
+      "manual": "Manual Mode"
+    }
+  },
+  "about": {
+    "title": "About Crimp Studio",
+    "intro": "A passion project built by climbers, for climbers.",
+    "sections": {
+      "howItWorks": "How It Works",
+      "techStack": "Tech Stack",
+      "roadmap": "Roadmap"
+    }
+  },
+  "grades": {
+    "v0": "V0",
+    "v1": "V1",
+    "v2": "V2",
+    "v3": "V3",
+    "v4": "V4",
+    "v5": "V5",
+    "v6": "V6",
+    "v7": "V7",
+    "v8": "V8",
+    "v9": "V9",
+    "v10": "V10"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "crimp-studio",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Climbing wall designer and route generator",
+  "scripts": {
+    "dev": "pnpm --filter @crimp-studio/web dev",
+    "build": "pnpm --filter @crimp-studio/web build",
+    "preview": "pnpm --filter @crimp-studio/web preview",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "climbing",
+    "bouldering",
+    "route-generation",
+    "three.js",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

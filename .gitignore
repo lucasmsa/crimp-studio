@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# ML/Training
+training/data/
+*.pt
+*.pth
+*.onnx
+*.weights
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Misc
+*.tgz
+.cache/
+.turbo/
+
+# Private docs
+docs/research/competitors.md
