@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Crimp Studio",
-    "version": "v0.0.1"
+    "version": "v0.0.1",
+    "backHome": "Volver al Inicio"
   },
   "landing": {
     "hero": {
@@ -34,7 +35,9 @@
       "clear": "Limpiar Todo",
       "save": "Guardar Muro",
       "load": "Cargar Muro",
-      "export": "Exportar JSON"
+      "export": "Exportar JSON",
+      "rotate": "Rotar",
+      "delete": "Eliminar"
     },
     "settings": {
       "wallWidth": "Ancho del Muro",
@@ -43,10 +46,12 @@
       "targetGrade": "Grado Objetivo"
     },
     "holdTypes": {
-      "jug": "Jug",
+      "label": "Tipo de Presa",
+      "jug": "Cazo",
       "crimp": "Regleta",
-      "sloper": "Sloper",
+      "sloper": "Romo",
       "pinch": "Pinza",
+      "pocket": "Agujero",
       "volume": "Volumen"
     },
     "modes": {
@@ -55,12 +60,36 @@
     }
   },
   "about": {
-    "title": "Acerca de Crimp Studio",
-    "intro": "Un proyecto de pasión hecho por escaladores, para escaladores.",
-    "sections": {
-      "howItWorks": "Cómo Funciona",
-      "techStack": "Stack Técnico",
-      "roadmap": "Roadmap"
+    "title": "Acerca de",
+    "subtitle": "Un proyecto personal hecho por un escalador, para escaladores.",
+    "story": {
+      "title": "La Historia",
+      "content": "Crimp Studio comenzó como un proyecto de aprendizaje para explorar Three.js, generación procedural e IA. Quería crear una herramienta que ayudara a los escaladores a generar nuevas rutas sin trabajo manual tedioso. La mayoría de las soluciones existentes requieren hardware costoso o son muy limitadas. Así que construí esto."
+    },
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "step1": {
+        "title": "1. Configura Tu Muro",
+        "description": "Define dimensiones y ángulo de inclinación para que coincida con tu muro real."
+      },
+      "step2": {
+        "title": "2. Genera o Coloca Presas",
+        "description": "Deja que el algoritmo cree un boulder completo, o coloca presas manualmente."
+      },
+      "step3": {
+        "title": "3. Recibe Sugerencias de Rutas",
+        "description": "Un algoritmo genético genera rutas escalables con grados estimados."
+      }
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "v0": "V0: Editor de muro + generación de rutas (actual)",
+      "v1": "V1: Detección de presas por IA via fotos",
+      "v2": "V2: Funciones sociales + guardado en la nube"
+    },
+    "credits": {
+      "title": "Créditos",
+      "model": "Modelo 3D del zapatito por"
     }
   },
   "grades": {

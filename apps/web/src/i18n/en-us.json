@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Crimp Studio",
-    "version": "v0.0.1"
+    "version": "v0.0.1",
+    "backHome": "Back to Home"
   },
   "landing": {
     "hero": {
@@ -34,7 +35,9 @@
       "clear": "Clear All",
       "save": "Save Wall",
       "load": "Load Wall",
-      "export": "Export JSON"
+      "export": "Export JSON",
+      "rotate": "Rotate",
+      "delete": "Delete"
     },
     "settings": {
       "wallWidth": "Wall Width",
@@ -43,10 +46,12 @@
       "targetGrade": "Target Grade"
     },
     "holdTypes": {
+      "label": "Hold Type",
       "jug": "Jug",
       "crimp": "Crimp",
       "sloper": "Sloper",
       "pinch": "Pinch",
+      "pocket": "Pocket",
       "volume": "Volume"
     },
     "modes": {
@@ -55,12 +60,36 @@
     }
   },
   "about": {
-    "title": "About Crimp Studio",
-    "intro": "A passion project built by climbers, for climbers.",
-    "sections": {
-      "howItWorks": "How It Works",
-      "techStack": "Tech Stack",
-      "roadmap": "Roadmap"
+    "title": "About",
+    "subtitle": "A personal project built by a climber, for climbers.",
+    "story": {
+      "title": "The Story",
+      "content": "Crimp Studio started as a learning project to explore Three.js, procedural generation, and AI. I wanted to build a tool that helps climbers generate new routes without tedious manual work. Most existing solutions require expensive hardware or are too limited. So I built this."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "1. Configure Your Wall",
+        "description": "Set dimensions and inclination angle to match your real wall."
+      },
+      "step2": {
+        "title": "2. Generate or Place Holds",
+        "description": "Let the algorithm create a complete boulder, or place holds manually."
+      },
+      "step3": {
+        "title": "3. Get Route Suggestions",
+        "description": "A genetic algorithm generates climbable routes with estimated grades."
+      }
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "v0": "V0: Wall editor + route generation (current)",
+      "v1": "V1: AI hold detection from photos",
+      "v2": "V2: Social features + cloud saves"
+    },
+    "credits": {
+      "title": "Credits",
+      "model": "3D climbing shoe model by"
     }
   },
   "grades": {

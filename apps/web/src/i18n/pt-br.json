@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Crimp Studio",
-    "version": "v0.0.1"
+    "version": "v0.0.1",
+    "backHome": "Voltar ao Início"
   },
   "landing": {
     "hero": {
@@ -34,7 +35,9 @@
       "clear": "Limpar Tudo",
       "save": "Salvar Parede",
       "load": "Carregar Parede",
-      "export": "Exportar JSON"
+      "export": "Exportar JSON",
+      "rotate": "Girar",
+      "delete": "Excluir"
     },
     "settings": {
       "wallWidth": "Largura da Parede",
@@ -43,10 +46,12 @@
       "targetGrade": "Grau Alvo"
     },
     "holdTypes": {
+      "label": "Tipo de Agarra",
       "jug": "Jug",
       "crimp": "Reglete",
       "sloper": "Sloper",
       "pinch": "Pinça",
+      "pocket": "Buraco",
       "volume": "Volume"
     },
     "modes": {
@@ -55,12 +60,36 @@
     }
   },
   "about": {
-    "title": "Sobre o Crimp Studio",
-    "intro": "Um projeto de paixão feito por escaladores, para escaladores.",
-    "sections": {
-      "howItWorks": "Como Funciona",
-      "techStack": "Stack Técnica",
-      "roadmap": "Roadmap"
+    "title": "Sobre",
+    "subtitle": "Um projeto pessoal feito por um escalador, para escaladores.",
+    "story": {
+      "title": "A História",
+      "content": "Crimp Studio começou como um projeto de aprendizado para explorar Three.js, geração procedural e IA. Eu queria criar uma ferramenta que ajudasse escaladores a gerar novas vias sem trabalho manual tedioso. A maioria das soluções existentes requer hardware caro ou são muito limitadas. Então eu construí isso."
+    },
+    "howItWorks": {
+      "title": "Como Funciona",
+      "step1": {
+        "title": "1. Configure Sua Parede",
+        "description": "Defina dimensões e ângulo de inclinação para corresponder à sua parede real."
+      },
+      "step2": {
+        "title": "2. Gere ou Posicione Agarras",
+        "description": "Deixe o algoritmo criar um boulder completo, ou posicione agarras manualmente."
+      },
+      "step3": {
+        "title": "3. Receba Sugestões de Vias",
+        "description": "Um algoritmo genético gera vias escaláveis com graus estimados."
+      }
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "v0": "V0: Editor de parede + geração de vias (atual)",
+      "v1": "V1: Detecção de agarras por IA via fotos",
+      "v2": "V2: Recursos sociais + saves na nuvem"
+    },
+    "credits": {
+      "title": "Créditos",
+      "model": "Modelo 3D do sapatinho por"
     }
   },
   "grades": {

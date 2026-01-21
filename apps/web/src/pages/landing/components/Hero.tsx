@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { Scene } from '@/components/three'
 import { Button } from '@/components/ui/button'
 
@@ -15,11 +16,11 @@ export function Hero() {
           {t('landing.hero.subtitle')}
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
-          <Button size="lg">
-            {t('landing.cta.openEditor')}
+          <Button size="lg" asChild>
+            <Link to="/editor">{t('landing.cta.openEditor')}</Link>
           </Button>
-          <Button variant="outline" size="lg">
-            {t('landing.cta.learnMore')}
+          <Button variant="outline" size="lg" asChild>
+            <Link to="/about">{t('landing.cta.learnMore')}</Link>
           </Button>
         </div>
         <p className="mt-12 text-sm font-mono text-muted-foreground">

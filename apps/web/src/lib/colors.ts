@@ -32,6 +32,16 @@ export const colors = {
     text: '#171717',
     textMuted: '#6B7280',
   },
+
+  // Hold types - for wall editor
+  holds: {
+    jug: '#22C55E',
+    crimp: '#EF4444',
+    sloper: '#3B82F6',
+    pinch: '#F59E0B',
+    pocket: '#8B5CF6',
+    volume: '#6B7280',
+  },
 } as const
 
 // Type for color values
