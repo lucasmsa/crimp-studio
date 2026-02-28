@@ -54,6 +54,12 @@
       "pocket": "Buraco",
       "volume": "Volume"
     },
+    "panels": {
+      "title": "Painéis da Parede",
+      "panel": "Painel",
+      "add": "Adicionar Painel",
+      "remove": "Remover Painel"
+    },
     "modes": {
       "generate": "Modo Geração",
       "manual": "Modo Manual"

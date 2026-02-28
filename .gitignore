@@ -45,4 +45,4 @@ __pycache__/
 .turbo/
 
 # Private docs
-docs/research/competitors.md
+docs/research/

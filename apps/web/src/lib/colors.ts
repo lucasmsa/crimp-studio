@@ -42,6 +42,11 @@ export const colors = {
     pocket: '#8B5CF6',
     volume: '#6B7280',
   },
+
+  // Wall editor canvas
+  wall: {
+    surface: '#E8D5B7', // Plywood/sand color for climbing wall
+  },
 } as const
 
 // Type for color values

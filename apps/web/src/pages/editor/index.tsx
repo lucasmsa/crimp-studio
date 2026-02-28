@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { WallCanvas } from './components/WallCanvas'
+import { WallCanvas3D } from './components/WallCanvas3D'
 import { WallConfig } from './components/WallConfig'
 import { useWallStore } from '@/stores/wallStore'
 
 export function EditorPage() {
   const { t } = useTranslation()
   const { wall } = useWallStore()
+
+  const totalHolds = wall.panels.reduce((sum, p) => sum + p.holds.length, 0)
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -37,7 +39,7 @@ export function EditorPage() {
       <div className="flex-1 flex">
         {/* Canvas area */}
         <main className="flex-1 p-4">
-          <WallCanvas />
+          <WallCanvas3D />
         </main>
 
         {/* Sidebar */}
@@ -46,9 +48,8 @@ export function EditorPage() {
 
           {/* Wall info */}
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>{wall.width}cm × {wall.height}cm</p>
-            <p>{wall.angle}° {t('editor.settings.inclination').toLowerCase()}</p>
-            <p>{wall.holds.length} holds</p>
+            <p>{wall.panels.length} {t('editor.panels.panel', { count: wall.panels.length })}</p>
+            <p>{totalHolds} holds</p>
           </div>
         </aside>
       </div>

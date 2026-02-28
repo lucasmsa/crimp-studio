@@ -11,24 +11,34 @@ export interface Hold {
   size: number
 }
 
+export interface WallPanel {
+  id: string
+  width: number   // cm
+  height: number  // cm
+  angle: number   // 0=vertical, negative=slab, positive=overhang
+  holds: Hold[]
+}
+
 export interface Wall {
   id: string
   name: string
-  width: number
-  height: number
-  angle: number
-  holds: Hold[]
+  panels: WallPanel[]
 }
 
 interface WallState {
   wall: Wall
+  activePanelId: string
   selectedHoldId: string | null
   selectedHoldType: HoldType
 
-  // Actions
-  setWallDimensions: (width: number, height: number) => void
-  setWallAngle: (angle: number) => void
-  addHold: (x: number, y: number) => void
+  // Panel actions
+  addPanel: () => void
+  removePanel: (panelId: string) => void
+  updatePanel: (panelId: string, updates: Partial<Omit<WallPanel, 'id' | 'holds'>>) => void
+  setActivePanel: (panelId: string) => void
+
+  // Hold actions
+  addHold: (x: number, y: number, panelId?: string) => void
   updateHold: (id: string, updates: Partial<Hold>) => void
   removeHold: (id: string) => void
   selectHold: (id: string | null) => void
@@ -38,54 +48,112 @@ interface WallState {
 
 const createId = () => Math.random().toString(36).substring(2, 9)
 
-const defaultWall: Wall = {
-  id: createId(),
-  name: 'My Wall',
-  width: 300,  // 3 meters
-  height: 400, // 4 meters
-  angle: 15,   // slight overhang
+const defaultPanelId = createId()
+
+const defaultPanel: WallPanel = {
+  id: defaultPanelId,
+  width: 300,
+  height: 400,
+  angle: 15,
   holds: [],
 }
 
-export const useWallStore = create<WallState>((set) => ({
+const defaultWall: Wall = {
+  id: createId(),
+  name: 'My Wall',
+  panels: [defaultPanel],
+}
+
+export const useWallStore = create<WallState>((set, get) => ({
   wall: defaultWall,
+  activePanelId: defaultPanelId,
   selectedHoldId: null,
   selectedHoldType: 'jug',
 
-  setWallDimensions: (width, height) =>
-    set((state) => ({
-      wall: { ...state.wall, width, height },
-    })),
+  addPanel: () => {
+    const newPanel: WallPanel = {
+      id: createId(),
+      width: 300,
+      height: 200,
+      angle: 0,
+      holds: [],
+    }
 
-  setWallAngle: (angle) =>
-    set((state) => ({
-      wall: { ...state.wall, angle },
-    })),
-
-  addHold: (x, y) =>
     set((state) => ({
       wall: {
         ...state.wall,
-        holds: [
-          ...state.wall.holds,
-          {
-            id: createId(),
-            type: state.selectedHoldType,
-            x,
-            y,
-            size: 10,
-          },
-        ],
+        panels: [...state.wall.panels, newPanel],
+      },
+      activePanelId: newPanel.id,
+    }))
+  },
+
+  removePanel: (panelId) =>
+    set((state) => {
+      if (state.wall.panels.length <= 1) return state
+
+      const remaining = state.wall.panels.filter((p) => p.id !== panelId)
+      const newActiveId = state.activePanelId === panelId
+        ? remaining[remaining.length - 1].id
+        : state.activePanelId
+
+      return {
+        wall: { ...state.wall, panels: remaining },
+        activePanelId: newActiveId,
+        selectedHoldId: null,
+      }
+    }),
+
+  updatePanel: (panelId, updates) =>
+    set((state) => ({
+      wall: {
+        ...state.wall,
+        panels: state.wall.panels.map((p) =>
+          p.id === panelId ? { ...p, ...updates } : p
+        ),
       },
     })),
+
+  setActivePanel: (panelId) =>
+    set({ activePanelId: panelId, selectedHoldId: null }),
+
+  addHold: (x, y, panelId?) => {
+    const targetPanelId = panelId ?? get().activePanelId
+
+    set((state) => ({
+      wall: {
+        ...state.wall,
+        panels: state.wall.panels.map((p) =>
+          p.id === targetPanelId
+            ? {
+                ...p,
+                holds: [
+                  ...p.holds,
+                  {
+                    id: createId(),
+                    type: state.selectedHoldType,
+                    x,
+                    y,
+                    size: 10,
+                  },
+                ],
+              }
+            : p
+        ),
+      },
+    }))
+  },
 
   updateHold: (id, updates) =>
     set((state) => ({
       wall: {
         ...state.wall,
-        holds: state.wall.holds.map((h) =>
-          h.id === id ? { ...h, ...updates } : h
-        ),
+        panels: state.wall.panels.map((p) => ({
+          ...p,
+          holds: p.holds.map((h) =>
+            h.id === id ? { ...h, ...updates } : h
+          ),
+        })),
       },
     })),
 
@@ -93,7 +161,10 @@ export const useWallStore = create<WallState>((set) => ({
     set((state) => ({
       wall: {
         ...state.wall,
-        holds: state.wall.holds.filter((h) => h.id !== id),
+        panels: state.wall.panels.map((p) => ({
+          ...p,
+          holds: p.holds.filter((h) => h.id !== id),
+        })),
       },
       selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
     })),
@@ -104,7 +175,10 @@ export const useWallStore = create<WallState>((set) => ({
 
   clearHolds: () =>
     set((state) => ({
-      wall: { ...state.wall, holds: [] },
+      wall: {
+        ...state.wall,
+        panels: state.wall.panels.map((p) => ({ ...p, holds: [] })),
+      },
       selectedHoldId: null,
     })),
 }))

@@ -4,18 +4,26 @@
 
 /* Wall */
 
-export interface Wall {
+export interface WallPanel {
   id: string
-  name: string
 
   // Dimensions in centimeters
   width: number
   height: number
 
-  // 0° = vertical slab, 45° = steep overhang, 90° = roof
+  // 0° = vertical, negative = slab (leaning back), positive = overhang, 90° = roof
   angle: number
 
   holds: Hold[]
+}
+
+export interface Wall {
+  id: string
+  name: string
+
+  // Panels ordered bottom-to-top, joined at edges (like real gym walls)
+  panels: WallPanel[]
+
   createdAt: Date
   updatedAt: Date
 }

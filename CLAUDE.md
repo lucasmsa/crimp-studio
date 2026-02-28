@@ -89,12 +89,15 @@ crimp-studio/
 
 ## Core Workflow
 
-**Every task follows this flow:**
+**Spec-driven development. Every feature follows this flow:**
 
-1. **Research** - Does the project already have a component/functionality that does what we want? Check existing patterns. For new tech, check latest docs.
-2. **Plan** - Propose approach, verify alignment, order by impact
-3. **Implement** - Build with tests and error handling, following conventions
-4. **Validate** - ALWAYS run `pnpm ci:flow` after implementation
+1. **Specify** - Write or review the feature spec using OpenSpec. Define behaviors, edge cases, and testable success criteria.
+2. **Research** - Does the project already have a component/functionality that does what we want? Check existing patterns. For new tech, check latest docs.
+3. **Plan** - Propose approach, verify alignment, order by impact. Break into small testable increments.
+4. **Implement** - Build with tests and error handling, following conventions. Test each increment before moving on.
+5. **Validate** - ALWAYS run `pnpm ci:flow` after implementation. Use Playwright MCP to verify interactions in a real browser when applicable.
+
+**STRICT RULE: No large implementation without a spec or at minimum defined success criteria.**
 
 ---
 
@@ -161,6 +164,12 @@ const config = getEditorConfig({ isAdvanced })
 <Component {...config} />
 ```
 
+### Components should be presentational
+- Components focus on rendering — they shouldn't contain complex orchestration logic
+- Extract business logic, coordination, and side effects into custom hooks
+- Components can call hooks, but the hooks do the heavy lifting
+- Avoid prop drilling — use hooks to access shared state directly where it makes sense
+
 ### Keep functions small and focused
 - If you need comments to explain sections, split into functions
 - Don't add unnecessary comments, but add them when you see fit
@@ -188,7 +197,7 @@ const config = getEditorConfig({ isAdvanced })
 
 ## Testing Requirements
 
-**This project is ADR and test-based.**
+**STRICT RULE: Code without tests is not done. Every feature, hook, store action, and utility must be tested before moving on.**
 
 ### Test Structure
 - Follow **Arrange → Act → Assert** structure
@@ -196,9 +205,17 @@ const config = getEditorConfig({ isAdvanced })
 - That division should be clear in code with visual spacing
 
 ### What to Test
-- **Unit tests**: Pure functions, algorithms (especially `route-gen`)
+- **Unit tests**: Stores, hooks, pure functions, algorithms (especially `route-gen`)
 - **Component tests**: UI components with variants and interactions
 - **Integration tests**: Larger flows, API calls
+- **E2E tests**: Full user flows via Playwright MCP (hold placement, dragging, deletion, panel config)
+
+### When to Test
+- **Stores**: After writing or modifying any Zustand store action
+- **Hooks**: After writing or modifying any custom hook with logic
+- **Utilities**: After writing any pure function (geometry, layout, math)
+- **Interactions**: After implementing any user-facing behavior (use Playwright MCP)
+- **Never**: Ship a batch of 10+ files without tests. Test incrementally.
 
 ### Mocking Strategy
 **Push mocks as far to the border as possible:**
@@ -210,6 +227,12 @@ const config = getEditorConfig({ isAdvanced })
 - Supabase client
 - Browser APIs (localStorage, canvas, etc.)
 - 3D context (WebGL)
+
+### E2E with Playwright MCP
+- Use `microsoft/playwright-mcp` for browser-based testing
+- Run dev server, then test interactions through real browser
+- Verify visual states, click targets, drag behavior
+- Catch regressions before the user sees them
 
 ### Accessibility
 - Test with accessibility in mind

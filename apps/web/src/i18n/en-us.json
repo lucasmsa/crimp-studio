@@ -54,6 +54,12 @@
       "pocket": "Pocket",
       "volume": "Volume"
     },
+    "panels": {
+      "title": "Wall Panels",
+      "panel": "Panel",
+      "add": "Add Panel",
+      "remove": "Remove Panel"
+    },
     "modes": {
       "generate": "Generate Mode",
       "manual": "Manual Mode"

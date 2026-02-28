@@ -54,6 +54,12 @@
       "pocket": "Agujero",
       "volume": "Volumen"
     },
+    "panels": {
+      "title": "Paneles del Muro",
+      "panel": "Panel",
+      "add": "Agregar Panel",
+      "remove": "Quitar Panel"
+    },
     "modes": {
       "generate": "Modo Generación",
       "manual": "Modo Manual"

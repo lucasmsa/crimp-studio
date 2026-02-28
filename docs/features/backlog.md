@@ -4,6 +4,40 @@ Ideas and features to not forget. Prioritized loosely.
 
 ---
 
+## V0 — Wall Editor Stabilization (Current Priority)
+
+### Must fix (before genetic algorithm)
+- [ ] Fix wall as single flat panel (drop multi-panel, one angle)
+- [ ] Fix hold geometries — proper sizes, better shapes (pocket/crimp too small, volume ugly)
+- [ ] Fix hold placement — click places hold at correct position
+- [ ] Fix hold dragging — follows pointer, clamped to wall bounds
+- [ ] Fix hold selection — visible glow, working toolbar (not transparent)
+- [ ] Fix camera controls — don't fight with hold interactions
+- [ ] Drop width/height number inputs (error-prone, causes orphaned holds)
+
+### Testing
+- [ ] Install Playwright MCP for E2E testing
+- [ ] Unit tests for wallStore (panel CRUD, hold CRUD)
+- [ ] Unit tests for holdGeometry (each type generates valid geometry)
+- [ ] Unit tests for wallLayout utility
+- [ ] E2E: place hold → verify in store
+- [ ] E2E: select hold → verify visual feedback
+- [ ] E2E: delete hold → verify removed
+
+### Polish (after bugs fixed)
+- [ ] Wall and hold color painting (custom colors)
+- [ ] Drag-to-resize wall borders
+- [ ] Drag-to-resize holds
+- [ ] Hold visibility improvements (T-nut bolt holes on wall surface for realism)
+
+### Deferred (complex, do last)
+- [ ] Wall subdivisions with angle bending (one wall, sections at different angles)
+  - "Cut the wall" to create angle joints
+  - Each section can be tilted independently
+  - Holds stay attached to their section
+
+---
+
 ## V1 - AI Hold Detection + Algorithm Refinement
 
 - [ ] Train YOLOv8 on Kaggle dataset
@@ -28,7 +62,6 @@ Ideas and features to not forget. Prioritized loosely.
 ## V3 - Advanced Features
 
 - [ ] Body type consideration (height, ape index, wingspan)
-- [ ] 3D wall visualization (not just 2D canvas)
 - [ ] T-nut layout planning for blank walls
 - [ ] Export to shopping list (hold brands/links)
 - [ ] Training plan generator based on weaknesses
