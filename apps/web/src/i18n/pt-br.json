@@ -39,12 +39,6 @@
       "rotate": "Girar",
       "delete": "Excluir"
     },
-    "settings": {
-      "wallWidth": "Largura da Parede",
-      "wallHeight": "Altura da Parede",
-      "inclination": "Inclinação",
-      "targetGrade": "Grau Alvo"
-    },
     "holdTypes": {
       "label": "Tipo de Agarra",
       "jug": "Jug",
@@ -54,11 +48,9 @@
       "pocket": "Buraco",
       "volume": "Volume"
     },
-    "panels": {
-      "title": "Painéis da Parede",
-      "panel": "Painel",
-      "add": "Adicionar Painel",
-      "remove": "Remover Painel"
+    "colors": {
+      "wallColor": "Cor da Parede",
+      "holdColor": "Cor da Agarra"
     },
     "modes": {
       "generate": "Modo Geração",

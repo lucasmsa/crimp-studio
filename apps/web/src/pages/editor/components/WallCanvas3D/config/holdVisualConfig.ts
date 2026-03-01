@@ -1,26 +1,20 @@
-import { colors } from '@/lib/colors'
-
 interface HoldVisualState {
   scale: number
-  emissive: string
   emissiveIntensity: number
 }
 
 const selectedState: HoldVisualState = {
-  scale: 1.1,
-  emissive: colors.primary,
-  emissiveIntensity: 0.4,
+  scale: 1.06,
+  emissiveIntensity: 0.25,
 }
 
 const hoveredState: HoldVisualState = {
-  scale: 1.05,
-  emissive: '#000000',
-  emissiveIntensity: 0,
+  scale: 1.03,
+  emissiveIntensity: 0.1,
 }
 
 const defaultState: HoldVisualState = {
   scale: 1,
-  emissive: '#000000',
   emissiveIntensity: 0,
 }
 

@@ -39,12 +39,6 @@
       "rotate": "Rotate",
       "delete": "Delete"
     },
-    "settings": {
-      "wallWidth": "Wall Width",
-      "wallHeight": "Wall Height",
-      "inclination": "Inclination",
-      "targetGrade": "Target Grade"
-    },
     "holdTypes": {
       "label": "Hold Type",
       "jug": "Jug",
@@ -54,11 +48,9 @@
       "pocket": "Pocket",
       "volume": "Volume"
     },
-    "panels": {
-      "title": "Wall Panels",
-      "panel": "Panel",
-      "add": "Add Panel",
-      "remove": "Remove Panel"
+    "colors": {
+      "wallColor": "Wall Color",
+      "holdColor": "Hold Color"
     },
     "modes": {
       "generate": "Generate Mode",

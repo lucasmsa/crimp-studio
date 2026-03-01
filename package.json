@@ -8,7 +8,9 @@
     "build": "pnpm --filter @crimp-studio/web build",
     "preview": "pnpm --filter @crimp-studio/web preview",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @crimp-studio/web test",
+    "ci:flow": "pnpm typecheck && pnpm lint && pnpm test"
   },
   "keywords": [
     "climbing",
@@ -22,5 +24,8 @@
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
   }
 }

@@ -14,11 +14,10 @@ Climbing wall designer and bouldering route generator.
 ## Tech Stack
 
 ### Frontend (apps/web)
-- Vite + React 18 + TypeScript
-- React Three Fiber + drei (3D)
+- Vite + React 19 + TypeScript
+- React Three Fiber + drei + postprocessing (3D)
 - Tailwind CSS
 - Zustand (state)
-- Konva.js (2D canvas editor)
 
 ### Backend (apps/api) - Future
 - FastAPI (Python)
@@ -99,6 +98,8 @@ crimp-studio/
 
 **STRICT RULE: No large implementation without a spec or at minimum defined success criteria.**
 
+**STRICT RULE: When working through OpenSpec tasks, ALWAYS update `tasks.md` (mark items `[x]`) as you complete each task. Keep spec artifacts in sync with actual progress. Never let `tasks.md` fall behind.**
+
 ---
 
 ## Translation (i18n)
@@ -164,11 +165,13 @@ const config = getEditorConfig({ isAdvanced })
 <Component {...config} />
 ```
 
-### Components should be presentational
-- Components focus on rendering — they shouldn't contain complex orchestration logic
-- Extract business logic, coordination, and side effects into custom hooks
-- Components can call hooks, but the hooks do the heavy lifting
+### Components are presentational ONLY — always modularize
+- **Hooks** (`hooks/`): All state interactions, side effects, event handlers, keyboard listeners
+- **Utils** (`utils/`): Pure functions, calculations, transformations
+- **Config** (`config/`): Configuration objects, constants that drive conditional rendering
+- **Components**: Call hooks, spread configs, render JSX. Nothing more.
 - Avoid prop drilling — use hooks to access shared state directly where it makes sense
+- If a component file is growing beyond rendering, stop and extract to hooks/utils
 
 ### Keep functions small and focused
 - If you need comments to explain sections, split into functions

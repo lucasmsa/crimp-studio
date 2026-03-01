@@ -4,8 +4,9 @@
 
 /* Wall */
 
-export interface WallPanel {
+export interface Wall {
   id: string
+  name: string
 
   // Dimensions in centimeters
   width: number
@@ -14,15 +15,9 @@ export interface WallPanel {
   // 0° = vertical, negative = slab (leaning back), positive = overhang, 90° = roof
   angle: number
 
+  wallColor: string
+
   holds: Hold[]
-}
-
-export interface Wall {
-  id: string
-  name: string
-
-  // Panels ordered bottom-to-top, joined at edges (like real gym walls)
-  panels: WallPanel[]
 
   createdAt: Date
   updatedAt: Date
@@ -44,6 +39,9 @@ export interface Hold {
 
   rotation?: number
   size: number
+
+  // Optional per-hold color override (hex string)
+  color?: string
 
   // 1 = neutral, <1 = easier, >1 = harder
   difficultyModifier?: number

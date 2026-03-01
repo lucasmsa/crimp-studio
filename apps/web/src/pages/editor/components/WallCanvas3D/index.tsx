@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { WallScene } from './components/WallScene'
@@ -11,8 +12,9 @@ export function WallCanvas3D() {
           fov: CAMERA.FOV,
           near: CAMERA.NEAR,
           far: CAMERA.FAR,
-          position: [0, 2, CAMERA.INITIAL_DISTANCE],
+          position: [0, 0, CAMERA.INITIAL_DISTANCE],
         }}
+        shadows={{ type: THREE.PCFSoftShadowMap }}
         gl={{ antialias: true }}
       >
         <Suspense fallback={null}>

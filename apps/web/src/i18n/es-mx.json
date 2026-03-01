@@ -39,12 +39,6 @@
       "rotate": "Rotar",
       "delete": "Eliminar"
     },
-    "settings": {
-      "wallWidth": "Ancho del Muro",
-      "wallHeight": "Altura del Muro",
-      "inclination": "Inclinación",
-      "targetGrade": "Grado Objetivo"
-    },
     "holdTypes": {
       "label": "Tipo de Presa",
       "jug": "Cazo",
@@ -54,11 +48,9 @@
       "pocket": "Agujero",
       "volume": "Volumen"
     },
-    "panels": {
-      "title": "Paneles del Muro",
-      "panel": "Panel",
-      "add": "Agregar Panel",
-      "remove": "Quitar Panel"
+    "colors": {
+      "wallColor": "Color del Muro",
+      "holdColor": "Color de Presa"
     },
     "modes": {
       "generate": "Modo Generación",

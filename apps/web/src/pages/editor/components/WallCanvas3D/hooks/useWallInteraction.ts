@@ -1,7 +1,8 @@
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
-import { useWallStore, type WallPanel } from '@/stores/wallStore'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useWallStore } from '@/stores/wallStore'
 import { CM_TO_M } from '../constants/editor3d'
 
 /**
@@ -9,48 +10,99 @@ import { CM_TO_M } from '../constants/editor3d'
  * - Click wall to place holds
  * - Click hold to select
  * - Drag hold to reposition
- * - Keyboard shortcuts for deletion
+ *
+ * Drag uses useFrame for buttery-smooth tracking every render frame,
+ * plus a window-level pointerup so the drag ends even if the mouse
+ * leaves the canvas entirely.
  */
-export function useWallInteraction(panel: WallPanel, panelWidthM: number, panelHeightM: number) {
+export function useWallInteraction(wallWidthM: number, wallHeightM: number) {
   const wallMeshRef = useRef<THREE.Mesh>(null)
-  const [draggingHoldId, setDraggingHoldId] = useState<string | null>(null)
+  const dragPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0))
+  const draggingHoldIdRef = useRef<string | null>(null)
+  const pointerNDC = useRef(new THREE.Vector2(9999, 9999))
+  const isDraggingRef = useRef(false)
+
+  const { camera, gl } = useThree()
 
   const {
+    wall,
     selectedHoldId,
-    activePanelId,
     addHold,
     selectHold,
     updateHold,
-    setActivePanel,
   } = useWallStore()
-
-  const isActive = activePanelId === panel.id
 
   const worldToWallCoords = useCallback((worldPoint: THREE.Vector3) => {
     if (!wallMeshRef.current) return null
 
     const localPoint = wallMeshRef.current.worldToLocal(worldPoint.clone())
-    const wallX = (localPoint.x + panelWidthM / 2) / CM_TO_M
-    const wallY = (localPoint.y + panelHeightM / 2) / CM_TO_M
+    const wallX = (localPoint.x + wallWidthM / 2) / CM_TO_M
+    const wallY = (localPoint.y + wallHeightM / 2) / CM_TO_M
 
     return { x: wallX, y: wallY }
-  }, [panelWidthM, panelHeightM])
-
-  const isWithinBounds = useCallback((wallX: number, wallY: number) => {
-    return wallX >= 0 && wallX <= panel.width && wallY >= 0 && wallY <= panel.height
-  }, [panel.width, panel.height])
+  }, [wallWidthM, wallHeightM])
 
   const clampToBounds = useCallback((wallX: number, wallY: number) => ({
-    x: Math.max(0, Math.min(panel.width, wallX)),
-    y: Math.max(0, Math.min(panel.height, wallY)),
-  }), [panel.width, panel.height])
+    x: Math.max(0, Math.min(wall.width, wallX)),
+    y: Math.max(0, Math.min(wall.height, wallY)),
+  }), [wall.width, wall.height])
 
-  const handleWallClick = useCallback((e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation()
-
-    if (!isActive) {
-      setActivePanel(panel.id)
+  const setupDragPlane = useCallback(() => {
+    if (wallMeshRef.current) {
+      const wallPos = new THREE.Vector3()
+      wallMeshRef.current.getWorldPosition(wallPos)
+      const normal = new THREE.Vector3(0, 0, 1)
+      normal.applyQuaternion(wallMeshRef.current.quaternion)
+      dragPlaneRef.current.setFromNormalAndCoplanarPoint(normal, wallPos)
     }
+  }, [])
+
+  /* Track pointer position in NDC via native DOM events on the canvas */
+  useEffect(() => {
+    const canvas = gl.domElement
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      pointerNDC.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      pointerNDC.current.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+    }
+
+    const onPointerUp = () => {
+      draggingHoldIdRef.current = null
+      isDraggingRef.current = false
+      document.body.style.cursor = 'default'
+    }
+
+    canvas.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    return () => {
+      canvas.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+    }
+  }, [gl.domElement])
+
+  /* Every frame: if dragging, raycast from pointer to drag plane and update hold */
+  const raycaster = useRef(new THREE.Raycaster())
+  const intersectPoint = useRef(new THREE.Vector3())
+
+  useFrame(() => {
+    const holdId = draggingHoldIdRef.current
+    if (!holdId) return
+
+    raycaster.current.setFromCamera(pointerNDC.current, camera)
+
+    if (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)) {
+      const coords = worldToWallCoords(intersectPoint.current)
+      if (coords) {
+        const clamped = clampToBounds(coords.x, coords.y)
+        updateHold(holdId, { x: clamped.x, y: clamped.y })
+      }
+    }
+  })
+
+  /* Wall click — place or deselect */
+  const handleWallPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation()
 
     if (selectedHoldId) {
       selectHold(null)
@@ -58,54 +110,26 @@ export function useWallInteraction(panel: WallPanel, panelWidthM: number, panelH
     }
 
     const coords = worldToWallCoords(e.point)
-    if (coords && isWithinBounds(coords.x, coords.y)) {
-      addHold(coords.x, coords.y, panel.id)
+    if (coords) {
+      const clamped = clampToBounds(coords.x, coords.y)
+      addHold(clamped.x, clamped.y)
     }
-  }, [isActive, selectedHoldId, panel.id, addHold, selectHold, setActivePanel, worldToWallCoords, isWithinBounds])
+  }, [selectedHoldId, addHold, selectHold, worldToWallCoords, clampToBounds])
 
+  /* Hold pointer down — select + start drag */
   const handleHoldPointerDown = useCallback((holdId: string) => (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
     selectHold(holdId)
-    setDraggingHoldId(holdId)
-  }, [selectHold])
-
-  const handleHoldPointerMove = useCallback((holdId: string) => (e: ThreeEvent<PointerEvent>) => {
-    if (draggingHoldId !== holdId || !wallMeshRef.current) return
-    e.stopPropagation()
-
-    // Raycast against wall mesh to get projected position on wall surface
-    const raycaster = new THREE.Raycaster()
-    const pointer = new THREE.Vector2()
-    const canvas = (e.nativeEvent.target as HTMLElement)?.closest('canvas')
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    pointer.x = ((e.nativeEvent.clientX - rect.left) / rect.width) * 2 - 1
-    pointer.y = -((e.nativeEvent.clientY - rect.top) / rect.height) * 2 + 1
-
-    raycaster.setFromCamera(pointer, e.camera)
-    const intersects = raycaster.intersectObject(wallMeshRef.current)
-
-    if (intersects.length > 0) {
-      const coords = worldToWallCoords(intersects[0].point)
-      if (coords) {
-        const clamped = clampToBounds(coords.x, coords.y)
-        updateHold(holdId, { x: clamped.x, y: clamped.y })
-      }
-    }
-  }, [draggingHoldId, worldToWallCoords, clampToBounds, updateHold])
-
-  const handleHoldPointerUp = useCallback(() => {
-    setDraggingHoldId(null)
-  }, [])
+    draggingHoldIdRef.current = holdId
+    isDraggingRef.current = true
+    setupDragPlane()
+    document.body.style.cursor = 'grabbing'
+  }, [selectHold, setupDragPlane])
 
   return {
     wallMeshRef,
-    isActive,
-    isDragging: draggingHoldId !== null,
-    handleWallClick,
+    isDragging: isDraggingRef,
+    handleWallPointerDown,
     handleHoldPointerDown,
-    handleHoldPointerMove,
-    handleHoldPointerUp,
   }
 }

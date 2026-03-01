@@ -4,37 +4,44 @@ Ideas and features to not forget. Prioritized loosely.
 
 ---
 
-## V0 — Wall Editor Stabilization (Current Priority)
+## V0 — Wall Editor Stabilization (DONE)
 
-### Must fix (before genetic algorithm)
-- [ ] Fix wall as single flat panel (drop multi-panel, one angle)
-- [ ] Fix hold geometries — proper sizes, better shapes (pocket/crimp too small, volume ugly)
-- [ ] Fix hold placement — click places hold at correct position
-- [ ] Fix hold dragging — follows pointer, clamped to wall bounds
-- [ ] Fix hold selection — visible glow, working toolbar (not transparent)
-- [ ] Fix camera controls — don't fight with hold interactions
-- [ ] Drop width/height number inputs (error-prone, causes orphaned holds)
+Completed 2026-03-01. See `openspec/changes/archive/2026-03-01-stabilize-wall-editor/`.
 
-### Testing
-- [ ] Install Playwright MCP for E2E testing
-- [ ] Unit tests for wallStore (panel CRUD, hold CRUD)
-- [ ] Unit tests for holdGeometry (each type generates valid geometry)
-- [ ] Unit tests for wallLayout utility
-- [ ] E2E: place hold → verify in store
-- [ ] E2E: select hold → verify visual feedback
-- [ ] E2E: delete hold → verify removed
+- [x] Single flat wall, hold geometries (jug, crimp, sloper, pinch, pocket, volume)
+- [x] Hold placement, dragging (useFrame-based), selection (emissive glow)
+- [x] Keyboard shortcuts (rotate, delete, nudge, deselect)
+- [x] Wall/hold color pickers, grip texture, shadow anti-aliasing
+- [x] 33 unit tests, E2E via Playwright
+- [x] Spring animations (pop-in, hover, selection)
 
-### Polish (after bugs fixed)
-- [ ] Wall and hold color painting (custom colors)
-- [ ] Drag-to-resize wall borders
-- [ ] Drag-to-resize holds
-- [ ] Hold visibility improvements (T-nut bolt holes on wall surface for realism)
+---
 
-### Deferred (complex, do last)
-- [ ] Wall subdivisions with angle bending (one wall, sections at different angles)
-  - "Cut the wall" to create angle joints
-  - Each section can be tilted independently
+## V0.5 — Editor UX Refinement (Next)
+
+### Hold resizing
+- [ ] Drag hold border to resize (Photoshop-style handles on edges)
+  - Show resize handles when hold is selected
+  - Drag handle to scale hold size
+  - Visual feedback during resize (ghost outline or live preview)
+
+### Wall resizing
+- [ ] Drag wall border to resize (similar to hold resize, but on the wall edges)
+  - Needs careful handling: holds near edges might go out of bounds
+  - Clamp or warn when shrinking would orphan holds
+  - Visual guides/grid lines during resize
+
+### Wall surface realism
+- [ ] Small texture diffusions on wall to simulate T-nut screw holes
+  - Subtle bump/normal mapped dots in a grid pattern
+  - Should feel like real plywood wall panels
+
+### Wall subdivisions
+- [ ] Create wall subdivisions with angle bending
+  - "Cut the wall" to create angle joints between sections
+  - Each section can be tilted independently (slab, vertical, overhang, roof)
   - Holds stay attached to their section
+  - Extremely sensitive — needs careful UX design and spec before implementation
 
 ---
 
