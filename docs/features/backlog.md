@@ -36,6 +36,19 @@ Completed 2026-03-01. See `openspec/changes/archive/2026-03-01-stabilize-wall-ed
   - Subtle bump/normal mapped dots in a grid pattern
   - Should feel like real plywood wall panels
 
+### Hold collision detection
+- [ ] Prevent holds from overlapping each other
+  - Manual placement: snap away or block placement on occupied space
+  - Manual dragging: prevent dropping a hold on top of another
+  - Genetic algorithm: fitness function must penalize overlapping holds
+  - Use bounding sphere/radius per hold type for fast collision checks
+
+### Triangular volumes
+- [ ] Add triangular module hold type (or rework existing volume)
+  - Triangular prism shape — very typical in climbing gyms
+  - Bolted flat to the wall, creates a local angle change
+  - Could replace or complement the current icosahedron volume
+
 ### Wall subdivisions
 - [ ] Create wall subdivisions with angle bending
   - "Cut the wall" to create angle joints between sections
