@@ -43,10 +43,26 @@ describe('wallStore', () => {
 
     it('generates unique ids', () => {
       useWallStore.getState().addHold(10, 10)
-      useWallStore.getState().addHold(20, 20)
+      useWallStore.getState().addHold(100, 100)
 
       const holds = useWallStore.getState().wall.holds
       expect(holds[0].id).not.toBe(holds[1].id)
+    })
+
+    it('blocks placement when colliding with an existing hold (same position)', () => {
+      useWallStore.getState().addHold(100, 100)
+
+      useWallStore.getState().addHold(100, 100)
+
+      expect(useWallStore.getState().wall.holds).toHaveLength(1)
+    })
+
+    it('allows placement when far enough from existing holds', () => {
+      useWallStore.getState().addHold(100, 100)
+
+      useWallStore.getState().addHold(300, 300)
+
+      expect(useWallStore.getState().wall.holds).toHaveLength(2)
     })
   })
 

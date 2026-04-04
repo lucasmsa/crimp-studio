@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { HoldType } from '@/stores/wallStore'
+import type { HoldType, CollisionBox } from '@/stores/wallStore'
 
 function rand(min: number, max: number): number {
   return min + Math.random() * (max - min)
@@ -209,6 +209,27 @@ export const FLAT_SHADED_TYPES: ReadonlySet<HoldType> = new Set(['volume'])
 
 export function createHoldGeometry(type: HoldType, scale: number): THREE.BufferGeometry {
   return geometryFactories[type](scale)
+}
+
+/**
+ * Generates a hold geometry at the given scale and measures its XY bounding box.
+ * Returns collision half-extents in cm. Used by the store at placement time
+ * so collision checks work immediately (before the 3D component renders).
+ */
+export function measureCollisionBox(type: HoldType, scale: number, rotationDeg = 0): CollisionBox {
+  const geo = createHoldGeometry(type, scale)
+  if (rotationDeg !== 0) {
+    geo.rotateZ(THREE.MathUtils.degToRad(rotationDeg))
+  }
+  geo.computeBoundingBox()
+  const box = geo.boundingBox!
+
+  const CM_TO_M = 0.01
+  const halfW = Math.max(Math.abs(box.min.x), Math.abs(box.max.x)) / CM_TO_M
+  const halfH = Math.max(Math.abs(box.min.y), Math.abs(box.max.y)) / CM_TO_M
+
+  geo.dispose()
+  return { halfW, halfH }
 }
 
 /**

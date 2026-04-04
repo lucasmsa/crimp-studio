@@ -1,7 +1,17 @@
 import { create } from 'zustand'
 import { colors } from '@/lib/colors'
+import { hasCollision } from '@/pages/editor/components/WallCanvas3D/utils/holdCollision'
+import { measureCollisionBox } from '@/pages/editor/components/WallCanvas3D/utils/holdGeometry'
+import { holdGeometryConfigs } from '@/pages/editor/components/WallCanvas3D/config/holdGeometryConfig'
+
+const CM_TO_M = 0.01
 
 export type HoldType = 'jug' | 'crimp' | 'sloper' | 'pinch' | 'pocket' | 'volume'
+
+export interface CollisionBox {
+  halfW: number  // half-width in cm (X extent)
+  halfH: number  // half-height in cm (Y extent)
+}
 
 export interface Hold {
   id: string
@@ -11,6 +21,8 @@ export interface Hold {
   rotation?: number
   size: number
   color?: string   // optional per-hold color override
+  /** XY bounding box measured from actual geometry, set by Hold3D after mount */
+  collisionBox?: CollisionBox
 }
 
 export interface Wall {
@@ -55,21 +67,32 @@ export const useWallStore = create<WallState>((set) => ({
   selectedHoldType: 'jug',
 
   addHold: (x, y) =>
-    set((state) => ({
-      wall: {
-        ...state.wall,
-        holds: [
-          ...state.wall.holds,
-          {
-            id: createId(),
-            type: state.selectedHoldType,
-            x,
-            y,
-            size: 10,
-          },
-        ],
-      },
-    })),
+    set((state) => {
+      const type = state.selectedHoldType
+      const size = 10
+      const scale = size * CM_TO_M * holdGeometryConfigs[type].sizeMultiplier
+      const collisionBox = measureCollisionBox(type, scale)
+      const candidate = { x, y, collisionBox }
+
+      if (hasCollision(candidate, state.wall.holds)) return state
+
+      return {
+        wall: {
+          ...state.wall,
+          holds: [
+            ...state.wall.holds,
+            {
+              id: createId(),
+              type,
+              x,
+              y,
+              size,
+              collisionBox,
+            },
+          ],
+        },
+      }
+    }),
 
   updateHold: (id, updates) =>
     set((state) => ({
