@@ -88,17 +88,17 @@ crimp-studio/
 
 ## Core Workflow
 
-**Spec-driven development. Every feature follows this flow:**
+**Docs-driven development (see ADR-004). Every feature follows this flow:**
 
-1. **Specify** - Write or review the feature spec using OpenSpec. Define behaviors, edge cases, and testable success criteria.
+1. **Frame** - Pick the item from `docs/features/backlog.md`. For large surfaces, write or review a PRD in `docs/prd/` with success criteria first. Record significant decisions as ADRs in `docs/architecture/adr/`.
 2. **Research** - Does the project already have a component/functionality that does what we want? Check existing patterns. For new tech, check latest docs.
 3. **Plan** - Propose approach, verify alignment, order by impact. Break into small testable increments.
 4. **Implement** - Build with tests and error handling, following conventions. Test each increment before moving on.
 5. **Validate** - ALWAYS run `pnpm ci:flow` after implementation. Use Playwright MCP to verify interactions in a real browser when applicable.
 
-**STRICT RULE: No large implementation without a spec or at minimum defined success criteria.**
+**STRICT RULE: No large implementation without a PRD/ADR or at minimum defined success criteria.**
 
-**STRICT RULE: When working through OpenSpec tasks, ALWAYS update `tasks.md` (mark items `[x]`) as you complete each task. Keep spec artifacts in sync with actual progress. Never let `tasks.md` fall behind.**
+**STRICT RULE: When behavior changes, update the matching doc in `docs/features/` and check off or reword the backlog item in the same change. Never let the docs fall behind the code.**
 
 ---
 
