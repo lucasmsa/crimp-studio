@@ -6,6 +6,10 @@ Climbing wall designer and bouldering route generator.
 
 **Vision**: "Techy yet artisanal" - a tool built by climbers, for climbers, with the technical sophistication of modern dev tools but the warmth of climbing culture.
 
+**Two product pillars** (see `docs/features/backlog.md` and `docs/prd/`):
+1. **Studio** - design walls and problems by hand or procedurally: wall editor, problem generation, difficulty assessment
+2. **Scan** - photo of a real wall in, detected problems and an animated-climber beta out (YOLOv8 + beta solver)
+
 **Goals**:
 1. Learn Three.js/R3F, YOLOv8/ML, and procedural generation
 2. Build a portfolio piece showcasing full-stack + 3D + AI

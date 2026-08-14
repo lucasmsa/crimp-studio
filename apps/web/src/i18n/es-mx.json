@@ -11,7 +11,8 @@
     },
     "cta": {
       "openEditor": "Abrir Editor",
-      "learnMore": "Saber Más"
+      "learnMore": "Saber Más",
+      "scanSoon": "Scan (pronto)"
     },
     "features": {
       "generate": {
@@ -107,5 +108,28 @@
     "v8": "V8",
     "v9": "V9",
     "v10": "V10"
+  },
+  "scan": {
+    "badge": "Muy pronto",
+    "title": "Scan",
+    "tagline": "Apunta tu cámara a un muro real. Recibe sus problemas, con la beta.",
+    "steps": {
+      "shoot": {
+        "title": "Fotografía el muro",
+        "description": "Toma una foto de cualquier muro, del woodie de casa al spray wall del gimnasio."
+      },
+      "detect": {
+        "title": "Las presas aparecen",
+        "description": "Un modelo de visión encuentra cada presa y agrupa los problemas por color."
+      },
+      "beta": {
+        "title": "Mira la beta",
+        "description": "Un personaje escalador se pone magnesio y te muestra una secuencia posible, movimiento a movimiento."
+      }
+    },
+    "status": "En el laboratorio",
+    "grade": "V?",
+    "marquee": "Fotografía. Detecta. Encadena.",
+    "backToStudio": "Volver al estudio"
   }
 }

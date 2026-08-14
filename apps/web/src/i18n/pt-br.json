@@ -11,7 +11,8 @@
     },
     "cta": {
       "openEditor": "Abrir Editor",
-      "learnMore": "Saiba Mais"
+      "learnMore": "Saiba Mais",
+      "scanSoon": "Scan (em breve)"
     },
     "features": {
       "generate": {
@@ -107,5 +108,28 @@
     "v8": "V8",
     "v9": "V9",
     "v10": "V10"
+  },
+  "scan": {
+    "badge": "Em breve",
+    "title": "Scan",
+    "tagline": "Aponte a câmera para uma parede real. Receba os problemas dela, com a beta.",
+    "steps": {
+      "shoot": {
+        "title": "Fotografe a parede",
+        "description": "Tire uma foto de qualquer parede, do woodie de casa ao spray wall da academia."
+      },
+      "detect": {
+        "title": "As agarras aparecem",
+        "description": "Um modelo de visão encontra cada agarra e agrupa os problemas por cor."
+      },
+      "beta": {
+        "title": "Veja a beta",
+        "description": "Um personagem escalador passa magnésio e mostra uma sequência possível, movimento a movimento."
+      }
+    },
+    "status": "No laboratório",
+    "grade": "V?",
+    "marquee": "Fotografe. Detecte. Mande.",
+    "backToStudio": "Voltar ao estúdio"
   }
 }

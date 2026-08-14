@@ -11,7 +11,8 @@
     },
     "cta": {
       "openEditor": "Open Editor",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "scanSoon": "Scan (soon)"
     },
     "features": {
       "generate": {
@@ -107,5 +108,28 @@
     "v8": "V8",
     "v9": "V9",
     "v10": "V10"
+  },
+  "scan": {
+    "badge": "Coming soon",
+    "title": "Scan",
+    "tagline": "Point your camera at a real wall. Get its problems back, with the beta.",
+    "steps": {
+      "shoot": {
+        "title": "Shoot the wall",
+        "description": "Snap a photo of any climbing wall, from home woodie to gym spray wall."
+      },
+      "detect": {
+        "title": "Holds get found",
+        "description": "A vision model spots every hold and groups them into problems by color."
+      },
+      "beta": {
+        "title": "Watch the beta",
+        "description": "A climber character chalks up and shows you a possible sequence, move by move."
+      }
+    },
+    "status": "In the lab",
+    "grade": "V?",
+    "marquee": "Shoot. Detect. Send.",
+    "backToStudio": "Back to the studio"
   }
 }
