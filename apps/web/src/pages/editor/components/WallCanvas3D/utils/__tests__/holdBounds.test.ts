@@ -1,25 +1,29 @@
 import { describe, it, expect } from 'vitest'
-import { clampHoldToWall } from '../holdBounds'
+import { clampHoldToFace } from '../holdBounds'
 
-describe('clampHoldToWall', () => {
+describe('clampHoldToFace', () => {
   const box = { halfW: 30, halfH: 20 }
 
-  it('pulls a hold at the edge fully onto the wall', () => {
-    expect(clampHoldToWall(400, 200, box, 400, 500)).toEqual({ x: 370, y: 200 })
-    expect(clampHoldToWall(0, 0, box, 400, 500)).toEqual({ x: 30, y: 20 })
+  it('pulls a hold at the edge fully onto the face', () => {
+    expect(clampHoldToFace(400, 200, box, 400, 500)).toEqual({ u: 370, v: 200 })
+    expect(clampHoldToFace(0, 0, box, 400, 500)).toEqual({ u: 30, v: 20 })
   })
 
   it('leaves an interior position untouched', () => {
-    expect(clampHoldToWall(200, 250, box, 400, 500)).toEqual({ x: 200, y: 250 })
+    expect(clampHoldToFace(200, 250, box, 400, 500)).toEqual({ u: 200, v: 250 })
   })
 
-  it('centers a hold wider than the wall instead of inverting the range', () => {
+  it('centers a hold wider than the face instead of inverting the range', () => {
     const huge = { halfW: 300, halfH: 20 }
 
-    expect(clampHoldToWall(10, 250, huge, 400, 500).x).toBe(200)
+    expect(clampHoldToFace(10, 250, huge, 400, 500).u).toBe(200)
   })
 
   it('falls back to center-point clamping without a box', () => {
-    expect(clampHoldToWall(-5, 600, undefined, 400, 500)).toEqual({ x: 0, y: 500 })
+    expect(clampHoldToFace(-5, 600, undefined, 400, 500)).toEqual({ u: 0, v: 500 })
+  })
+
+  it('clamps onto a shorter face after a cut', () => {
+    expect(clampHoldToFace(200, 470, box, 400, 300)).toEqual({ u: 200, v: 280 })
   })
 })

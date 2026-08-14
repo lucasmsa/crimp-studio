@@ -8,12 +8,12 @@ export interface Wall {
   id: string
   name: string
 
-  // Dimensions in centimeters
+  // Plywood dimensions in centimeters; bending preserves these
   width: number
   height: number
 
-  // 0° = vertical, negative = slab (leaning back), positive = overhang, 90° = roof
-  angle: number
+  // Flat panels hinged into a profile (ADR-006). One root face = a flat wall
+  faces: FaceTree
 
   wallColor: string
 
@@ -21,6 +21,30 @@ export interface Wall {
 
   createdAt: Date
   updatedAt: Date
+}
+
+// The child edge glued to its parent
+export type HingeEdge = 'bottom' | 'left'
+
+export interface WallFace {
+  id: string
+  parentId: string | null
+  hinge: HingeEdge | null
+
+  // Face dimensions in centimeters
+  width: number
+  height: number
+
+  // Degrees about the hinge axis, relative to the parent.
+  // 0 = flush with the parent, negative = slab, positive = overhang, 90 = roof
+  angle: number
+
+  childIds: string[]
+}
+
+export interface FaceTree {
+  rootId: string
+  byId: Record<string, WallFace>
 }
 
 /* Holds */
@@ -33,9 +57,12 @@ export interface Hold {
   id: string
   type: HoldType
 
-  // Position from bottom-left corner (cm)
-  x: number
-  y: number
+  // The face this hold is bolted to
+  faceId: string
+
+  // Position from that face's bottom-left corner (cm)
+  u: number
+  v: number
 
   rotation?: number
   size: number

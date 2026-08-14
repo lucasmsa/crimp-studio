@@ -4,13 +4,12 @@ import { EffectComposer, SMAA, Vignette } from '@react-three/postprocessing'
 import { useWallStore } from '@/stores/wallStore'
 import { Wall3D } from './Wall3D'
 import { EditorLights } from './EditorLights'
-import { HoldActionsOverlay } from './HoldActionsOverlay'
 import { useEditorCamera } from '../hooks/useEditorCamera'
 import { useEditorKeyboard } from '../hooks/useEditorKeyboard'
-import { ORBIT_CONTROLS, CM_TO_M } from '../constants/editor3d'
+import { ORBIT_CONTROLS } from '../constants/editor3d'
 
 export function WallScene() {
-  const { wall, selectedHoldId } = useWallStore()
+  const { wall } = useWallStore()
   const [orbitEnabled, setOrbitEnabled] = useState(true)
 
   const wallCenter = useEditorCamera(wall.width, wall.height)
@@ -20,25 +19,12 @@ export function WallScene() {
     setOrbitEnabled(!isDragging)
   }, [])
 
-  const selectedHold = selectedHoldId
-    ? wall.holds.find((h) => h.id === selectedHoldId) ?? null
-    : null
-
-  const wallWidthM = wall.width * CM_TO_M
-  const wallHeightM = wall.height * CM_TO_M
-
   return (
     <>
       <EditorLights />
 
+      {/* The selected hold's action overlay rides its own face, inside Wall3D */}
       <Wall3D onDragStateChange={handleDragStateChange} />
-
-      {/* Actions overlay positioned in the same offset group as holds */}
-      {selectedHold && (
-        <group position={[-wallWidthM / 2, -wallHeightM / 2, 0]}>
-          <HoldActionsOverlay hold={selectedHold} />
-        </group>
-      )}
 
       <OrbitControls
         enabled={orbitEnabled}

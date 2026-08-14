@@ -1,14 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
+import { createRootFaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+
+const WIDTH = 300
+const HEIGHT = 400
 
 function resetStore() {
   useWallStore.setState({
     wall: {
       id: 'test',
       name: 'My Wall',
-      width: 300,
-      height: 400,
-      angle: 0,
+      width: WIDTH,
+      height: HEIGHT,
+      faces: createRootFaceTree(WIDTH, HEIGHT),
       wallColor: '#E8D5B7',
       holds: [],
     },
@@ -19,6 +23,13 @@ function resetStore() {
   })
 }
 
+const rootFaceId = () => useWallStore.getState().wall.faces.rootId
+
+/** Places a hold on the root face, which is the whole wall until it is cut */
+function place(u: number, v: number) {
+  useWallStore.getState().addHold(rootFaceId(), u, v)
+}
+
 describe('wallStore', () => {
   beforeEach(() => {
     resetStore()
@@ -26,33 +37,34 @@ describe('wallStore', () => {
 
   describe('addHold', () => {
     it('adds a hold at the given position', () => {
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       const holds = useWallStore.getState().wall.holds
       expect(holds).toHaveLength(1)
-      expect(holds[0].x).toBe(100)
-      expect(holds[0].y).toBe(200)
+      expect(holds[0].u).toBe(100)
+      expect(holds[0].v).toBe(200)
+      expect(holds[0].faceId).toBe(rootFaceId())
       expect(holds[0].type).toBe('jug')
       expect(holds[0].size).toBe(10)
     })
 
     it('uses the currently selected hold type', () => {
       useWallStore.getState().setSelectedHoldType('crimp')
-      useWallStore.getState().addHold(50, 50)
+      place(50, 50)
 
       expect(useWallStore.getState().wall.holds[0].type).toBe('crimp')
     })
 
     it('generates unique ids', () => {
-      useWallStore.getState().addHold(10, 10)
-      useWallStore.getState().addHold(100, 100)
+      place(10, 10)
+      place(100, 100)
 
       const holds = useWallStore.getState().wall.holds
       expect(holds[0].id).not.toBe(holds[1].id)
     })
 
     it('assigns a model variant for types with GLB models', () => {
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       const hold = useWallStore.getState().wall.holds[0]
       expect(hold.type).toBe('jug')
@@ -61,7 +73,7 @@ describe('wallStore', () => {
 
     it('assigns a model variant for volume holds', () => {
       useWallStore.getState().setSelectedHoldType('volume')
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       expect(useWallStore.getState().wall.holds[0].variant).toMatch(/^vol_/)
     })
@@ -69,7 +81,7 @@ describe('wallStore', () => {
     it('uses the explicitly selected variant when set', () => {
       useWallStore.getState().setSelectedHoldType('volume')
       useWallStore.getState().setSelectedVariant('vol_rail_long')
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       expect(useWallStore.getState().wall.holds[0].variant).toBe('vol_rail_long')
     })
@@ -77,23 +89,23 @@ describe('wallStore', () => {
     it('falls back to auto pick when the selected variant is invalid for the type', () => {
       useWallStore.getState().setSelectedHoldType('jug')
       useWallStore.getState().setSelectedVariant('vol_rail_long')
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       const variant = useWallStore.getState().wall.holds[0].variant
       expect(variant).toBeDefined()
       expect(variant).not.toBe('vol_rail_long')
     })
 
-    it('pulls placements at the wall edge inward by the hold extents', () => {
-      useWallStore.getState().addHold(300, 400)
+    it('pulls placements at the face edge inward by the hold extents', () => {
+      place(300, 400)
 
       const hold = useWallStore.getState().wall.holds[0]
-      expect(hold.x + hold.collisionBox!.halfW).toBeLessThanOrEqual(300)
-      expect(hold.y + hold.collisionBox!.halfH).toBeLessThanOrEqual(400)
+      expect(hold.u + hold.collisionBox!.halfW).toBeLessThanOrEqual(300)
+      expect(hold.v + hold.collisionBox!.halfH).toBeLessThanOrEqual(400)
     })
 
     it('marks a hold as deleting and deselects it, then removeHold clears both', () => {
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
       const id = useWallStore.getState().wall.holds[0].id
       useWallStore.getState().selectHold(id)
 
@@ -118,7 +130,7 @@ describe('wallStore', () => {
     })
 
     it('sets a collision box from the model dimensions at placement', () => {
-      useWallStore.getState().addHold(100, 200)
+      place(100, 200)
 
       const box = useWallStore.getState().wall.holds[0].collisionBox
       expect(box).toBeDefined()
@@ -127,17 +139,17 @@ describe('wallStore', () => {
     })
 
     it('blocks placement when colliding with an existing hold (same position)', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
 
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
 
       expect(useWallStore.getState().wall.holds).toHaveLength(1)
     })
 
     it('allows placement when far enough from existing holds', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
 
-      useWallStore.getState().addHold(300, 300)
+      place(300, 300)
 
       expect(useWallStore.getState().wall.holds).toHaveLength(2)
     })
@@ -145,7 +157,7 @@ describe('wallStore', () => {
 
   describe('removeHold', () => {
     it('removes the hold with the given id', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
 
       useWallStore.getState().removeHold(holdId)
@@ -154,7 +166,7 @@ describe('wallStore', () => {
     })
 
     it('deselects the hold if it was selected', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
       useWallStore.getState().selectHold(holdId)
 
@@ -164,8 +176,8 @@ describe('wallStore', () => {
     })
 
     it('keeps selection if a different hold is removed', () => {
-      useWallStore.getState().addHold(100, 100)
-      useWallStore.getState().addHold(200, 200)
+      place(100, 100)
+      place(200, 200)
       const [hold1, hold2] = useWallStore.getState().wall.holds
       useWallStore.getState().selectHold(hold1.id)
 
@@ -177,19 +189,19 @@ describe('wallStore', () => {
 
   describe('updateHold', () => {
     it('updates a hold with partial data', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
 
-      useWallStore.getState().updateHold(holdId, { rotation: 90, x: 150 })
+      useWallStore.getState().updateHold(holdId, { rotation: 90, u: 150 })
 
       const hold = useWallStore.getState().wall.holds[0]
       expect(hold.rotation).toBe(90)
-      expect(hold.x).toBe(150)
-      expect(hold.y).toBe(100)
+      expect(hold.u).toBe(150)
+      expect(hold.v).toBe(100)
     })
 
     it('can set a custom color on a hold', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
 
       useWallStore.getState().updateHold(holdId, { color: '#FF0000' })
@@ -200,7 +212,7 @@ describe('wallStore', () => {
 
   describe('selectHold', () => {
     it('selects a hold by id', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
 
       useWallStore.getState().selectHold(holdId)
@@ -209,7 +221,7 @@ describe('wallStore', () => {
     })
 
     it('deselects when null is passed', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
       useWallStore.getState().selectHold(holdId)
 
@@ -221,8 +233,8 @@ describe('wallStore', () => {
 
   describe('clearHolds', () => {
     it('removes all holds', () => {
-      useWallStore.getState().addHold(100, 100)
-      useWallStore.getState().addHold(200, 200)
+      place(100, 100)
+      place(200, 200)
 
       useWallStore.getState().clearHolds()
 
@@ -230,7 +242,7 @@ describe('wallStore', () => {
     })
 
     it('deselects the selected hold', () => {
-      useWallStore.getState().addHold(100, 100)
+      place(100, 100)
       useWallStore.getState().selectHold(useWallStore.getState().wall.holds[0].id)
 
       useWallStore.getState().clearHolds()

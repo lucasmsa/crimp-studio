@@ -3,35 +3,28 @@ import type { Hold, CollisionBox } from '@/stores/wallStore'
 /** Default fallback box when geometry hasn't reported dimensions yet */
 const DEFAULT_BOX: CollisionBox = { halfW: 15, halfH: 15 }
 
-type CollisionHold = Pick<Hold, 'x' | 'y' | 'collisionBox'> & { id?: string }
+type CollisionHold = Pick<Hold, 'faceId' | 'u' | 'v' | 'collisionBox'> & { id?: string }
 
 function getBox(hold: CollisionHold): CollisionBox {
   return hold.collisionBox ?? DEFAULT_BOX
 }
 
 /**
- * Returns true if two holds' axis-aligned bounding boxes overlap.
- * Each hold's box is centered at (hold.x, hold.y) with half-extents from collisionBox.
+ * Returns true if two holds' bounding boxes overlap on their shared face.
+ * Each hold's box is centered at (hold.u, hold.v) with half-extents from
+ * collisionBox. Holds on different faces sit on different planes, so this
+ * cannot compare them; that case needs the world-space test.
  */
 export function checkCollision(holdA: CollisionHold, holdB: CollisionHold): boolean {
+  if (holdA.faceId !== holdB.faceId) return false
+
   const a = getBox(holdA)
   const b = getBox(holdB)
 
   return (
-    Math.abs(holdA.x - holdB.x) < a.halfW + b.halfW &&
-    Math.abs(holdA.y - holdB.y) < a.halfH + b.halfH
+    Math.abs(holdA.u - holdB.u) < a.halfW + b.halfW &&
+    Math.abs(holdA.v - holdB.v) < a.halfH + b.halfH
   )
-}
-
-/**
- * Checks a candidate hold against all other holds for collisions.
- * Returns the list of hold IDs that collide with the candidate.
- * Skips the candidate itself if it appears in the list (by id).
- */
-export function findCollisions(candidate: CollisionHold, holds: Hold[]): string[] {
-  return holds
-    .filter((h) => h.id !== candidate.id && checkCollision(candidate, h))
-    .map((h) => h.id)
 }
 
 /**

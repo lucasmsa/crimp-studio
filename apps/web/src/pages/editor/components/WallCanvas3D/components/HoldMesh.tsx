@@ -12,7 +12,7 @@ import { computeHitCenter, computeHitRadius } from '../utils/holdHitArea'
 import { holdGeometryConfigs } from '../config/holdGeometryConfig'
 import { getHoldVisualState } from '../config/holdVisualConfig'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
-import { CM_TO_M, WALL_DEPTH, HOLD_EMBED_DEPTH } from '../constants/editor3d'
+import { CM_TO_M, HOLD_EMBED_DEPTH } from '../constants/editor3d'
 import { useHoldHover } from '../hooks/useHoldHover'
 import { useReportCollisionBox } from '../hooks/useReportCollisionBox'
 
@@ -84,9 +84,11 @@ export function HoldMesh({
   const hitRadius = useMemo(() => computeHitRadius(geometry), [geometry])
   const hitCenter = useMemo(() => computeHitCenter(geometry), [geometry])
 
-  const posX = hold.x * CM_TO_M
-  const posY = hold.y * CM_TO_M
-  const posZ = WALL_DEPTH / 2 - HOLD_EMBED_DEPTH + config.zOffset
+  const posX = hold.u * CM_TO_M
+  const posY = hold.v * CM_TO_M
+  /* Face frames put the surface at local z=0, so the hold only clears the
+     embed depth; the panel itself extrudes backwards behind it */
+  const posZ = -HOLD_EMBED_DEPTH + config.zOffset
 
   const rotationZ = THREE.MathUtils.degToRad(hold.rotation ?? 0)
 

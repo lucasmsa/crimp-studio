@@ -6,7 +6,8 @@ import {
   NUDGE_DISTANCE_SHIFT,
 } from '../constants/editor3d'
 import { getNextRotation } from '../utils/holdActions'
-import { clampHoldToWall } from '../utils/holdBounds'
+import { clampHoldToFace } from '../utils/holdBounds'
+import { getFace } from '../utils/faceTree'
 
 /**
  * Handles all keyboard shortcuts for the wall editor:
@@ -56,17 +57,18 @@ export function useEditorKeyboard() {
       else return
 
       e.preventDefault()
-      const clamped = clampHoldToWall(
-        hold.x + dx,
-        hold.y + dy,
+      const face = getFace(wall.faces, hold.faceId)
+      const clamped = clampHoldToFace(
+        hold.u + dx,
+        hold.v + dy,
         hold.collisionBox,
-        wall.width,
-        wall.height,
+        face.width,
+        face.height,
       )
-      updateHold(selectedHoldId, { x: clamped.x, y: clamped.y })
+      updateHold(selectedHoldId, { u: clamped.u, v: clamped.v })
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedHoldId, markHoldDeleting, updateHold, selectHold, wall.holds, wall.width, wall.height])
+  }, [selectedHoldId, markHoldDeleting, updateHold, selectHold, wall.holds, wall.faces])
 }

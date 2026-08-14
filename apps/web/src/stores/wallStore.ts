@@ -7,23 +7,26 @@ import {
   measureModelCollisionBox,
   pickModelVariant,
 } from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
-import { clampHoldToWall } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
+import { clampHoldToFace } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
 import { holdGeometryConfigs } from '@/pages/editor/components/WallCanvas3D/config/holdGeometryConfig'
-
-const CM_TO_M = 0.01
+import { CM_TO_M } from '@/pages/editor/components/WallCanvas3D/constants/editor3d'
+import type { FaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+import { createRootFaceTree, getFace } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
 
 export type HoldType = 'jug' | 'crimp' | 'sloper' | 'pinch' | 'pocket' | 'volume'
 
 export interface CollisionBox {
-  halfW: number  // half-width in cm (X extent)
-  halfH: number  // half-height in cm (Y extent)
+  halfW: number  // half-width in cm (u extent)
+  halfH: number  // half-height in cm (v extent)
 }
 
 export interface Hold {
   id: string
   type: HoldType
-  x: number       // cm from left edge
-  y: number       // cm from bottom edge
+  /** The face this hold is bolted to; its footprint never leaves that face */
+  faceId: string
+  u: number       // cm from the face's left edge
+  v: number       // cm from the face's bottom edge
   rotation?: number
   size: number
   color?: string   // optional per-hold color override
@@ -36,9 +39,12 @@ export interface Hold {
 export interface Wall {
   id: string
   name: string
-  width: number    // cm (fixed at 300)
-  height: number   // cm (fixed at 400)
-  angle: number    // 0 = vertical (fixed at 0)
+  /** Plywood width in cm. Bending preserves this, so it is not the world width */
+  width: number
+  /** Plywood height in cm, likewise unchanged by bending */
+  height: number
+  /** Flat faces hinged into a profile; one root face means a flat wall */
+  faces: FaceTree
   wallColor: string
   holds: Hold[]
 }
@@ -52,7 +58,8 @@ interface WallState {
   /** Holds playing their pop-off exit animation; removed on animation rest */
   deletingHoldIds: string[]
 
-  addHold: (x: number, y: number) => void
+  /** Places a hold at (u, v) on the given face */
+  addHold: (faceId: string, u: number, v: number) => void
   updateHold: (id: string, updates: Partial<Hold>) => void
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
   markHoldDeleting: (id: string) => void
@@ -66,12 +73,15 @@ interface WallState {
 
 const createId = () => Math.random().toString(36).substring(2, 9)
 
+const WALL_WIDTH = 400
+const WALL_HEIGHT = 500
+
 const defaultWall: Wall = {
   id: createId(),
   name: 'My Wall',
-  width: 400,
-  height: 500,
-  angle: 0,
+  width: WALL_WIDTH,
+  height: WALL_HEIGHT,
+  faces: createRootFaceTree(WALL_WIDTH, WALL_HEIGHT),
   wallColor: colors.wall.surface,
   holds: [],
 }
@@ -83,11 +93,12 @@ export const useWallStore = create<WallState>((set) => ({
   selectedVariant: null,
   deletingHoldIds: [],
 
-  addHold: (x, y) =>
+  addHold: (faceId, u, v) =>
     set((state) => {
       const type = state.selectedHoldType
       const size = 10
       const id = createId()
+      const face = getFace(state.wall.faces, faceId)
 
       /* Explicit pick from the sidebar wins; anything invalid for the type
          falls back to the deterministic auto pick */
@@ -101,9 +112,9 @@ export const useWallStore = create<WallState>((set) => ({
         ? measureModelCollisionBox(model, type, size)
         : measureCollisionBox(type, size * CM_TO_M * holdGeometryConfigs[type].sizeMultiplier)
 
-      /* Keep the full extents on the wall, not just the center point */
-      const clamped = clampHoldToWall(x, y, collisionBox, state.wall.width, state.wall.height)
-      const candidate = { x: clamped.x, y: clamped.y, collisionBox }
+      /* Keep the full extents on the face, not just the center point */
+      const clamped = clampHoldToFace(u, v, collisionBox, face.width, face.height)
+      const candidate = { faceId, u: clamped.u, v: clamped.v, collisionBox }
 
       if (hasCollision(candidate, state.wall.holds)) return state
 
@@ -115,8 +126,9 @@ export const useWallStore = create<WallState>((set) => ({
             {
               id,
               type,
-              x: clamped.x,
-              y: clamped.y,
+              faceId,
+              u: clamped.u,
+              v: clamped.v,
               size,
               variant,
               collisionBox,

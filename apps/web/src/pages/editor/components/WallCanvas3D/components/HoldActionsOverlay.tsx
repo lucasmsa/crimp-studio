@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Html } from '@react-three/drei'
 import type { Hold } from '@/stores/wallStore'
 import { useHoldActions } from '../hooks/useHoldActions'
-import { CM_TO_M, WALL_DEPTH } from '../constants/editor3d'
+import { CM_TO_M } from '../constants/editor3d'
 
 interface HoldActionsOverlayProps {
   hold: Hold
@@ -15,9 +15,9 @@ export function HoldActionsOverlay({ hold }: HoldActionsOverlayProps) {
   return (
     <Html
       position={[
-        hold.x * CM_TO_M,
-        hold.y * CM_TO_M + 0.25,
-        WALL_DEPTH / 2 + 0.1,
+        hold.u * CM_TO_M,
+        hold.v * CM_TO_M + 0.25,
+        0.1,
       ]}
       center
       style={{ pointerEvents: 'auto' }}
