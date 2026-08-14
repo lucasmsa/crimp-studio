@@ -1,4 +1,7 @@
+import { useMemo } from 'react'
 import { useGLTF, Center } from '@react-three/drei'
+import { colors } from '@/lib/colors'
+import { applyToonMaterials } from '@/lib/three/toon'
 
 /**
  * 3D Climbing Shoe Component
@@ -13,6 +16,13 @@ import { useGLTF, Center } from '@react-three/drei'
 
 export function ClimbingShoe() {
   const { scene } = useGLTF('/models/climbing-shoe.glb')
+
+  /* Cel-shade the scan (ADR-005): toon bands over the original texture,
+     ink outline hull like the editor holds. Idempotent on drei's cached scene. */
+  useMemo(
+    () => applyToonMaterials(scene, { outlineColor: colors.scene.outline, outlineThickness: 0.004 }),
+    [scene],
+  )
 
   return (
     <Center>

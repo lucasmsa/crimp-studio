@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
-import { Environment, Float, OrbitControls } from '@react-three/drei'
-import { EffectComposer, Bloom } from '@react-three/postprocessing'
+import { Float, OrbitControls } from '@react-three/drei'
+import { EffectComposer, Bloom, SMAA } from '@react-three/postprocessing'
 import { Suspense } from 'react'
 import { ClimbingShoe } from './ClimbingShoe'
 import { cn } from '@/lib/utils'
@@ -30,15 +30,16 @@ export function Scene({ className }: SceneProps) {
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
       >
         <Suspense fallback={null}>
-          {/* Base ambient - subtle fill */}
-          <ambientLight intensity={0.3} />
+          {/* Base ambient - lifted since the toon shoe gets no environment light */}
+          <ambientLight intensity={0.6} />
 
-          {/* Key light - warm, primary illumination from top-right */}
+          {/* Key light - warm, primary illumination from top-right.
+             Strong single source so the cel bands read. */}
           <spotLight
             position={[5, 5, 5]}
             angle={0.4}
             penumbra={1}
-            intensity={2}
+            intensity={3}
             color={colors.primary}
           />
 
@@ -59,10 +60,9 @@ export function Scene({ className }: SceneProps) {
             <ClimbingShoe />
           </Float>
 
-          <Environment preset="city" />
-
-          {/* Post-processing effects */}
-          <EffectComposer>
+          {/* Post-processing effects; multisampling restores AA the composer bypasses */}
+          <EffectComposer multisampling={8}>
+            <SMAA />
             <Bloom
               luminanceThreshold={0.5}
               luminanceSmoothing={0.9}

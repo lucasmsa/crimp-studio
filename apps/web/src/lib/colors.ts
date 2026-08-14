@@ -46,6 +46,14 @@ export const colors = {
   // Wall editor canvas
   wall: {
     surface: '#E8D5B7', // Plywood/sand color for climbing wall
+    /* Scene lighting stays decoupled from brand tokens: the wall must look
+       physically real regardless of art direction (ADR-005) */
+    warmLight: '#FFDAB3',
+  },
+
+  // 3D scene (toon spike)
+  scene: {
+    outline: '#14242F', // ink-navy outline hull for cel-shaded meshes
   },
 } as const
 
