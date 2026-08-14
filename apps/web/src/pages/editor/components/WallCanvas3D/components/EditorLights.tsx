@@ -11,10 +11,15 @@ function ToonLights() {
       {/* Low ambient: the key light must dominate or the cel bands wash out */}
       <ambientLight intensity={0.45} />
 
-      {/* Hard key, mostly frontal: a steep overhead angle rakes long detached
-         shadows across the wall; frontal keeps them tight to the hold base */}
+      {/* Hard key from above-right, raked well off the wall normal. A hold's
+         shadow lands (x/z, y/z) per unit of its height, so a frontal key parks
+         each shadow under its own hold: flat holds showed nothing, and sloped
+         volumes (pyramids, whose sides lean inward) nothing at all since their
+         projected apex stays inside the base. y/z must clear ~2 for those to
+         read. normalBias stays small for the same reason: 8mm of normal offset
+         erased the contact shadow on every flat hold. */}
       <directionalLight
-        position={[5, 7, 10]}
+        position={[8, 12, 5]}
         intensity={2.2}
         castShadow
         shadow-mapSize-width={4096}
@@ -26,7 +31,7 @@ function ToonLights() {
         shadow-camera-near={0.1}
         shadow-camera-far={20}
         shadow-bias={-0.0002}
-        shadow-normalBias={0.008}
+        shadow-normalBias={0.002}
       />
     </>
   )
