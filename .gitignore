@@ -39,6 +39,10 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
+# Holds pipeline
+tools/holds/raw/
+tools/holds/.venv/
+
 # Misc
 *.tgz
 .cache/

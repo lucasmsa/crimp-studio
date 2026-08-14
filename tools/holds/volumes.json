@@ -1,0 +1,74 @@
+[
+  {
+    "variant": "vol_tetra_tall",
+    "path": "/models/holds/volume/vol_tetra_tall.glb",
+    "pack": "crimp-studio",
+    "faces": 4,
+    "sizeMeters": [
+      0.32,
+      0.84,
+      0.22
+    ],
+    "fileBytes": 1168
+  },
+  {
+    "variant": "vol_tetra_squat",
+    "path": "/models/holds/volume/vol_tetra_squat.glb",
+    "pack": "crimp-studio",
+    "faces": 4,
+    "sizeMeters": [
+      0.6,
+      0.56,
+      0.28
+    ],
+    "fileBytes": 1172
+  },
+  {
+    "variant": "vol_tetra_ridge",
+    "path": "/models/holds/volume/vol_tetra_ridge.glb",
+    "pack": "crimp-studio",
+    "faces": 4,
+    "sizeMeters": [
+      0.84,
+      0.64,
+      0.18
+    ],
+    "fileBytes": 1172
+  },
+  {
+    "variant": "vol_rail_long",
+    "path": "/models/holds/volume/vol_rail_long.glb",
+    "pack": "crimp-studio",
+    "faces": 12,
+    "sizeMeters": [
+      0.34,
+      1.15,
+      0.17
+    ],
+    "fileBytes": 1500
+  },
+  {
+    "variant": "vol_ramp",
+    "path": "/models/holds/volume/vol_ramp.glb",
+    "pack": "crimp-studio",
+    "faces": 8,
+    "sizeMeters": [
+      0.36,
+      1.0,
+      0.24
+    ],
+    "fileBytes": 1296
+  },
+  {
+    "variant": "vol_box",
+    "path": "/models/holds/volume/vol_box.glb",
+    "pack": "crimp-studio",
+    "faces": 12,
+    "sizeMeters": [
+      0.62,
+      0.62,
+      0.2
+    ],
+    "fileBytes": 1488
+  }
+]

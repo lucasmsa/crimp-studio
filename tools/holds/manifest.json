@@ -1,0 +1,170 @@
+{
+  "source": {
+    "author": "Jérémy LAFAYE (SarDou3D)",
+    "profile": "https://www.printables.com/@JeremyLAFAYE_2080610",
+    "toolset": "https://github.com/JeremSparte/BHToolset",
+    "toolsetLicense": "MIT",
+    "notes": "Hold meshes generated with BHToolset and published on Printables. Each pack page states its license."
+  },
+  "packs": {
+    "881407": {
+      "name": "Jugs sample pack",
+      "url": "https://www.printables.com/model/881407-jugs-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881406": {
+      "name": "Finger pocket hold pack",
+      "url": "https://www.printables.com/model/881406-finger-pocket-hold-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881413": {
+      "name": "5x5 Holds Sample pack",
+      "url": "https://www.printables.com/model/881413-5x5-holds-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881409": {
+      "name": "10x5 Holds Sample pack",
+      "url": "https://www.printables.com/model/881409-10x5-holds-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881408": {
+      "name": "Rock sample pack",
+      "url": "https://www.printables.com/model/881408-rock-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    }
+  },
+  "files": [
+    {
+      "holdType": "jug",
+      "printId": "881407",
+      "fileId": "3715469",
+      "file": "CH1_XS.stl"
+    },
+    {
+      "holdType": "jug",
+      "printId": "881407",
+      "fileId": "3715488",
+      "file": "CH2_XS.stl"
+    },
+    {
+      "holdType": "jug",
+      "printId": "881407",
+      "fileId": "3715474",
+      "file": "CH3_XS.stl"
+    },
+    {
+      "holdType": "jug",
+      "printId": "881407",
+      "fileId": "3715484",
+      "file": "CH4_XS.stl"
+    },
+    {
+      "holdType": "pocket",
+      "printId": "881406",
+      "fileId": "3718966",
+      "file": "FH1_1.stl"
+    },
+    {
+      "holdType": "pocket",
+      "printId": "881406",
+      "fileId": "3718971",
+      "file": "FH2_1.stl"
+    },
+    {
+      "holdType": "pocket",
+      "printId": "881406",
+      "fileId": "3718958",
+      "file": "FH3_1.stl"
+    },
+    {
+      "holdType": "pocket",
+      "printId": "881406",
+      "fileId": "3718961",
+      "file": "FH4_1.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715763",
+      "file": "BH_5x5_01.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715823",
+      "file": "BH_5x5_09.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715811",
+      "file": "BH_5x5_17.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715816",
+      "file": "BH_5x5_25.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715820",
+      "file": "BH_5x5_33.stl"
+    },
+    {
+      "holdType": "crimp",
+      "printId": "881413",
+      "fileId": "3715812",
+      "file": "BH_5x5_41.stl"
+    },
+    {
+      "holdType": "pinch",
+      "printId": "881409",
+      "fileId": "3715606",
+      "file": "BH_10x5_03.stl"
+    },
+    {
+      "holdType": "pinch",
+      "printId": "881409",
+      "fileId": "3715602",
+      "file": "BH_10x5_12.stl"
+    },
+    {
+      "holdType": "pinch",
+      "printId": "881409",
+      "fileId": "3715596",
+      "file": "BH_10x5_21.stl"
+    },
+    {
+      "holdType": "pinch",
+      "printId": "881409",
+      "fileId": "3715643",
+      "file": "BH_10x5_30.stl"
+    },
+    {
+      "holdType": "sloper",
+      "printId": "881408",
+      "fileId": "3715523",
+      "file": "RockHold_T1_04.stl"
+    },
+    {
+      "holdType": "sloper",
+      "printId": "881408",
+      "fileId": "3715542",
+      "file": "RockHold_T2_04.stl"
+    },
+    {
+      "holdType": "sloper",
+      "printId": "881408",
+      "fileId": "3715498",
+      "file": "RockHold_T2_06.stl"
+    },
+    {
+      "holdType": "sloper",
+      "printId": "881408",
+      "fileId": "3715521",
+      "file": "RockHold_T3_06.stl"
+    }
+  ]
+}
