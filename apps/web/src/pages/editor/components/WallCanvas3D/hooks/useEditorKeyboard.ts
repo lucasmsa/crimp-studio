@@ -6,6 +6,7 @@ import {
   NUDGE_DISTANCE_SHIFT,
 } from '../constants/editor3d'
 import { getNextRotation } from '../utils/holdActions'
+import { clampHoldToWall } from '../utils/holdBounds'
 
 /**
  * Handles all keyboard shortcuts for the wall editor:
@@ -15,7 +16,7 @@ import { getNextRotation } from '../utils/holdActions'
  * - WASD/Arrows: nudge selected hold (Shift = larger nudge)
  */
 export function useEditorKeyboard() {
-  const { wall, selectedHoldId, removeHold, updateHold, selectHold } = useWallStore()
+  const { wall, selectedHoldId, markHoldDeleting, updateHold, selectHold } = useWallStore()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -23,7 +24,7 @@ export function useEditorKeyboard() {
 
       if (KEYBOARD_SHORTCUTS.DELETE_HOLD.includes(e.key)) {
         e.preventDefault()
-        removeHold(selectedHoldId)
+        markHoldDeleting(selectedHoldId)
         return
       }
 
@@ -55,12 +56,17 @@ export function useEditorKeyboard() {
       else return
 
       e.preventDefault()
-      const newX = Math.max(0, Math.min(wall.width, hold.x + dx))
-      const newY = Math.max(0, Math.min(wall.height, hold.y + dy))
-      updateHold(selectedHoldId, { x: newX, y: newY })
+      const clamped = clampHoldToWall(
+        hold.x + dx,
+        hold.y + dy,
+        hold.collisionBox,
+        wall.width,
+        wall.height,
+      )
+      updateHold(selectedHoldId, { x: clamped.x, y: clamped.y })
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedHoldId, removeHold, updateHold, selectHold, wall.holds, wall.width, wall.height])
+  }, [selectedHoldId, markHoldDeleting, updateHold, selectHold, wall.holds, wall.width, wall.height])
 }

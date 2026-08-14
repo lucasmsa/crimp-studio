@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { CM_TO_M } from '../constants/editor3d'
 import { hasCollision } from '../utils/holdCollision'
+import { clampHoldToWall } from '../utils/holdBounds'
 
 /**
  * Handles all wall + hold interaction logic:
@@ -46,10 +47,12 @@ export function useWallInteraction(wallWidthM: number, wallHeightM: number) {
     return { x: wallX, y: wallY }
   }, [wallWidthM, wallHeightM])
 
-  const clampToBounds = useCallback((wallX: number, wallY: number) => ({
-    x: Math.max(0, Math.min(wall.width, wallX)),
-    y: Math.max(0, Math.min(wall.height, wallY)),
-  }), [wall.width, wall.height])
+  const clampToBounds = useCallback((wallX: number, wallY: number, holdId?: string) => {
+    const box = holdId
+      ? useWallStore.getState().wall.holds.find((h) => h.id === holdId)?.collisionBox
+      : undefined
+    return clampHoldToWall(wallX, wallY, box, wall.width, wall.height)
+  }, [wall.width, wall.height])
 
   const setupDragPlane = useCallback(() => {
     if (wallMeshRef.current) {
@@ -111,7 +114,7 @@ export function useWallInteraction(wallWidthM: number, wallHeightM: number) {
     if (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)) {
       const coords = worldToWallCoords(intersectPoint.current)
       if (coords) {
-        const clamped = clampToBounds(coords.x, coords.y)
+        const clamped = clampToBounds(coords.x, coords.y, holdId)
         updateHold(holdId, { x: clamped.x, y: clamped.y })
       }
     }

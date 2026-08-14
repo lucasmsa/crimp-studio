@@ -55,6 +55,14 @@
     "modes": {
       "generate": "Generate Mode",
       "manual": "Manual Mode"
+    },
+    "loading": {
+      "title": "Loading wall"
+    },
+    "holdCount": "{{count}} holds",
+    "model": {
+      "label": "Model",
+      "auto": "Auto"
     }
   },
   "about": {

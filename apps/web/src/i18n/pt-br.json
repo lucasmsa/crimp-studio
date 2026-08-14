@@ -55,6 +55,14 @@
     "modes": {
       "generate": "Modo Geração",
       "manual": "Modo Manual"
+    },
+    "loading": {
+      "title": "Carregando parede"
+    },
+    "holdCount": "{{count}} agarras",
+    "model": {
+      "label": "Modelo",
+      "auto": "Auto"
     }
   },
   "about": {

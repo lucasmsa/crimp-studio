@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { WallCanvas3D } from './components/WallCanvas3D'
 import { WallConfig } from './components/WallConfig'
+import { EditorLoading } from './components/EditorLoading'
 import { useWallStore } from '@/stores/wallStore'
 
 export function EditorPage() {
@@ -11,7 +12,7 @@ export function EditorPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="border-b border-border px-4 py-3 flex items-center justify-between">
+      <header className="border-b-2 border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-xl font-bold font-heading text-primary">
             {t('common.appName')}
@@ -33,16 +34,17 @@ export function EditorPage() {
       </header>
 
       <div className="flex-1 flex">
-        <main className="flex-1 p-4">
+        <main className="relative flex-1 p-4">
           <WallCanvas3D />
+          <EditorLoading />
         </main>
 
-        <aside className="w-72 border-l border-border p-4 space-y-6">
+        <aside className="w-72 border-l-2 border-border bg-gradient-to-b from-card to-background p-4 space-y-6">
           <WallConfig />
 
-          <div className="text-sm text-muted-foreground">
-            <p>{wall.holds.length} holds</p>
-          </div>
+          <span className="inline-block border-2 border-border px-2.5 py-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {t('editor.holdCount', { count: wall.holds.length })}
+          </span>
         </aside>
       </div>
     </div>

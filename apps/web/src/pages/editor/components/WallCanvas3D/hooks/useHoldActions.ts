@@ -4,15 +4,15 @@ import { useWallStore } from '@/stores/wallStore'
 import { getNextRotation } from '../utils/holdActions'
 
 export function useHoldActions(hold: Hold) {
-  const { updateHold, removeHold } = useWallStore()
+  const { updateHold, markHoldDeleting } = useWallStore()
 
   const handleRotate = useCallback(() => {
     updateHold(hold.id, { rotation: getNextRotation(hold.rotation) })
   }, [hold.id, hold.rotation, updateHold])
 
   const handleDelete = useCallback(() => {
-    removeHold(hold.id)
-  }, [hold.id, removeHold])
+    markHoldDeleting(hold.id)
+  }, [hold.id, markHoldDeleting])
 
   return { handleRotate, handleDelete }
 }
