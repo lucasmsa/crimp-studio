@@ -1,23 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 /* Fonts */
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2') format('woff2');
-}
+/* Satoshi loads via the fontshare @import above (a @font-face src pointing at
+   a CSS URL fails to decode) */
 
 @font-face {
-  font-family: 'Satoshi';
+  font-family: 'Anton';
   font-style: normal;
-  font-weight: 400 700;
+  font-weight: 400;
   font-display: swap;
-  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap') format('woff2');
+  src: url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87LROyAm3Kz-C8.woff2') format('woff2');
 }
 
 /* Base styles */
@@ -35,44 +31,44 @@ body {
 /* Dark mode (default) */
 :root {
   color-scheme: dark;
-  --radius: 0.625rem;
+  --radius: 0rem;
 
   /* Crimp Studio Colors - Dark */
-  --background: #0A0A0A;
+  --background: #1B3C53;
   --foreground: #FAFAFA;
-  --card: #171717;
+  --card: #234C6A;
   --card-foreground: #FAFAFA;
-  --popover: #171717;
+  --popover: #234C6A;
   --popover-foreground: #FAFAFA;
-  --primary: #FFDAB3;
-  --primary-foreground: #171717;
-  --secondary: #171717;
+  --primary: #D2C1B6;
+  --primary-foreground: #0A0A0A;
+  --secondary: #234C6A;
   --secondary-foreground: #FAFAFA;
-  --muted: #171717;
-  --muted-foreground: #94A3B8;
-  --accent: #FFC107;
-  --accent-foreground: #171717;
+  --muted: #234C6A;
+  --muted-foreground: #A8BCCB;
+  --accent: #456882;
+  --accent-foreground: #FAFAFA;
   --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --destructive-foreground: #0A0A0A;
   --success: #22C55E;
-  --success-foreground: #FFFFFF;
-  --border: #2A2A2A;
-  --input: #2A2A2A;
-  --ring: #FFDAB3;
+  --success-foreground: #0A0A0A;
+  --border: #456882;
+  --input: #456882;
+  --ring: #D2C1B6;
 
   /* Sidebar */
-  --sidebar: #171717;
+  --sidebar: #234C6A;
   --sidebar-foreground: #FAFAFA;
-  --sidebar-primary: #FFDAB3;
-  --sidebar-primary-foreground: #171717;
-  --sidebar-accent: #2A2A2A;
+  --sidebar-primary: #D2C1B6;
+  --sidebar-primary-foreground: #0A0A0A;
+  --sidebar-accent: #456882;
   --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: #2A2A2A;
-  --sidebar-ring: #FFDAB3;
+  --sidebar-border: #456882;
+  --sidebar-ring: #D2C1B6;
 
   /* Chart colors */
-  --chart-1: #FFDAB3;
-  --chart-2: #FFC107;
+  --chart-1: #D2C1B6;
+  --chart-2: #456882;
   --chart-3: #22C55E;
   --chart-4: #3B82F6;
   --chart-5: #A855F7;
@@ -82,37 +78,37 @@ body {
 .light, [data-theme="light"] {
   color-scheme: light;
 
-  --background: #FAFAFA;
+  --background: #F2EDE7;
   --foreground: #171717;
   --card: #FFFFFF;
   --card-foreground: #171717;
   --popover: #FFFFFF;
   --popover-foreground: #171717;
-  --primary: #FFDAB3;
-  --primary-foreground: #171717;
-  --secondary: #F5F5F5;
-  --secondary-foreground: #171717;
-  --muted: #F5F5F5;
-  --muted-foreground: #6B7280;
-  --accent: #FFC107;
-  --accent-foreground: #171717;
+  --primary: #1B3C53;
+  --primary-foreground: #FAFAFA;
+  --secondary: #D2C1B6;
+  --secondary-foreground: #0A0A0A;
+  --muted: #EAE3DA;
+  --muted-foreground: #5C6B78;
+  --accent: #456882;
+  --accent-foreground: #FAFAFA;
   --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --destructive-foreground: #0A0A0A;
   --success: #22C55E;
-  --success-foreground: #FFFFFF;
-  --border: #E5E5E5;
-  --input: #E5E5E5;
-  --ring: #FFDAB3;
+  --success-foreground: #0A0A0A;
+  --border: #D2C1B6;
+  --input: #D2C1B6;
+  --ring: #1B3C53;
 
   /* Sidebar */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #171717;
-  --sidebar-primary: #FFDAB3;
-  --sidebar-primary-foreground: #171717;
-  --sidebar-accent: #F5F5F5;
+  --sidebar-primary: #1B3C53;
+  --sidebar-primary-foreground: #FAFAFA;
+  --sidebar-accent: #EAE3DA;
   --sidebar-accent-foreground: #171717;
-  --sidebar-border: #E5E5E5;
-  --sidebar-ring: #FFDAB3;
+  --sidebar-border: #D2C1B6;
+  --sidebar-ring: #1B3C53;
 }
 
 /* System preference light mode */
@@ -120,36 +116,36 @@ body {
   :root:not(.dark):not([data-theme="dark"]) {
     color-scheme: light;
 
-    --background: #FAFAFA;
+    --background: #F2EDE7;
     --foreground: #171717;
     --card: #FFFFFF;
     --card-foreground: #171717;
     --popover: #FFFFFF;
     --popover-foreground: #171717;
-    --primary: #FFDAB3;
-    --primary-foreground: #171717;
-    --secondary: #F5F5F5;
-    --secondary-foreground: #171717;
-    --muted: #F5F5F5;
-    --muted-foreground: #6B7280;
-    --accent: #FFC107;
-    --accent-foreground: #171717;
+    --primary: #1B3C53;
+    --primary-foreground: #FAFAFA;
+    --secondary: #D2C1B6;
+    --secondary-foreground: #0A0A0A;
+    --muted: #EAE3DA;
+    --muted-foreground: #5C6B78;
+    --accent: #456882;
+    --accent-foreground: #FAFAFA;
     --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
+    --destructive-foreground: #0A0A0A;
     --success: #22C55E;
-    --success-foreground: #FFFFFF;
-    --border: #E5E5E5;
-    --input: #E5E5E5;
-    --ring: #FFDAB3;
+    --success-foreground: #0A0A0A;
+    --border: #D2C1B6;
+    --input: #D2C1B6;
+    --ring: #1B3C53;
 
     --sidebar: #FFFFFF;
     --sidebar-foreground: #171717;
-    --sidebar-primary: #FFDAB3;
-    --sidebar-primary-foreground: #171717;
-    --sidebar-accent: #F5F5F5;
+    --sidebar-primary: #1B3C53;
+    --sidebar-primary-foreground: #FAFAFA;
+    --sidebar-accent: #EAE3DA;
     --sidebar-accent-foreground: #171717;
-    --sidebar-border: #E5E5E5;
-    --sidebar-ring: #FFDAB3;
+    --sidebar-border: #D2C1B6;
+    --sidebar-ring: #1B3C53;
   }
 }
 
@@ -162,9 +158,23 @@ body {
   --radius-2xl: calc(var(--radius) + 8px);
 
   /* Typography */
-  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-heading: 'Clash Display', system-ui, sans-serif;
   --font-body: 'Satoshi', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Poster display face for high-energy pages (Scan teaser) */
+  --font-poster: 'Anton', system-ui, sans-serif;
+
+  /* Animations */
+  --animate-marquee: marquee 22s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   /* Colors */
   --color-background: var(--background);

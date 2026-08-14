@@ -61,33 +61,30 @@
     "title": "Sobre",
     "subtitle": "Um projeto pessoal feito por um escalador, para escaladores.",
     "story": {
-      "title": "A História",
-      "content": "Crimp Studio começou como um projeto de aprendizado para explorar Three.js, geração procedural e IA. Eu queria criar uma ferramenta que ajudasse escaladores a gerar novas vias sem trabalho manual tedioso. A maioria das soluções existentes requer hardware caro ou são muito limitadas. Então eu construí isso."
+      "title": "A história",
+      "content": "O Crimp Studio começou como um projeto de aprendizado em Three.js, geração procedural e visão computacional. Cresceu em dois pilares: um estúdio para desenhar paredes e problemas com agarras reais, e um scanner que vai ler paredes de verdade a partir de fotos. Sem hardware caro, sem placas de LED."
     },
-    "howItWorks": {
-      "title": "Como Funciona",
-      "step1": {
-        "title": "1. Configure Sua Parede",
-        "description": "Defina dimensões e ângulo de inclinação para corresponder à sua parede real."
+    "pillars": {
+      "title": "Dois pilares",
+      "studio": {
+        "title": "Studio",
+        "description": "Desenhe paredes em 3D com modelos de agarras de packs imprimíveis reais, monte problemas na mão e, em breve, gere problemas proceduralmente com uma estimativa de grau que dá para questionar."
       },
-      "step2": {
-        "title": "2. Gere ou Posicione Agarras",
-        "description": "Deixe o algoritmo criar um boulder completo, ou posicione agarras manualmente."
-      },
-      "step3": {
-        "title": "3. Receba Sugestões de Vias",
-        "description": "Um algoritmo genético gera vias escaláveis com graus estimados."
+      "scan": {
+        "title": "Scan",
+        "description": "Aponte a câmera para uma parede real, receba os problemas dela e veja um personagem escalador mostrar uma beta possível. No laboratório."
       }
     },
     "roadmap": {
       "title": "Roadmap",
-      "v0": "V0: Editor de parede + geração de vias (atual)",
-      "v1": "V1: Detecção de agarras por IA via fotos",
-      "v2": "V2: Recursos sociais + saves na nuvem"
+      "done": "Editor de parede: agarras reais, detecção de colisão, visual cel shading",
+      "now": "Geração procedural de problemas + a direção de arte completa",
+      "next": "Scan: detecção de agarras em fotos e playback da beta"
     },
     "credits": {
       "title": "Créditos",
-      "model": "Modelo 3D do sapatinho por"
+      "model": "Scan 3D da sapatilha por",
+      "holds": "Modelos de agarras por"
     }
   },
   "grades": {

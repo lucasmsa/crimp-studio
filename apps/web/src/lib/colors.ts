@@ -7,9 +7,9 @@
  */
 
 export const colors = {
-  // Brand colors
-  primary: '#FFDAB3',
-  secondary: '#FFC107',
+  // Brand colors (ADR-005 amended 2026-08-12: industrial palette, beige primary on dark)
+  primary: '#D2C1B6',
+  secondary: '#456882',
 
   // Semantic colors
   success: '#22C55E',
@@ -17,20 +17,20 @@ export const colors = {
 
   // Dark mode palette
   dark: {
-    background: '#0A0A0A',
-    surface: '#171717',
-    border: '#2A2A2A',
+    background: '#1B3C53',
+    surface: '#234C6A',
+    border: '#456882',
     text: '#FAFAFA',
-    textMuted: '#94A3B8',
+    textMuted: '#A8BCCB',
   },
 
   // Light mode palette
   light: {
-    background: '#FAFAFA',
+    background: '#F2EDE7',
     surface: '#FFFFFF',
-    border: '#E5E5E5',
+    border: '#D2C1B6',
     text: '#171717',
-    textMuted: '#6B7280',
+    textMuted: '#5C6B78',
   },
 
   // Hold types - for wall editor

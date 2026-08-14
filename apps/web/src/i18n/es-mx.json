@@ -58,36 +58,33 @@
     }
   },
   "about": {
-    "title": "Acerca de",
+    "title": "Acerca",
     "subtitle": "Un proyecto personal hecho por un escalador, para escaladores.",
     "story": {
-      "title": "La Historia",
-      "content": "Crimp Studio comenzó como un proyecto de aprendizaje para explorar Three.js, generación procedural e IA. Quería crear una herramienta que ayudara a los escaladores a generar nuevas rutas sin trabajo manual tedioso. La mayoría de las soluciones existentes requieren hardware costoso o son muy limitadas. Así que construí esto."
+      "title": "La historia",
+      "content": "Crimp Studio empezó como un proyecto de aprendizaje en Three.js, generación procedural y visión computacional. Creció en dos pilares: un estudio para diseñar muros y problemas con presas reales, y un escáner que leerá muros reales a partir de fotos. Sin hardware caro, sin tableros LED."
     },
-    "howItWorks": {
-      "title": "Cómo Funciona",
-      "step1": {
-        "title": "1. Configura Tu Muro",
-        "description": "Define dimensiones y ángulo de inclinación para que coincida con tu muro real."
+    "pillars": {
+      "title": "Dos pilares",
+      "studio": {
+        "title": "Studio",
+        "description": "Diseña muros en 3D con modelos de presas de packs imprimibles reales, arma problemas a mano y, pronto, genera problemas proceduralmente con una estimación de grado que puedes cuestionar."
       },
-      "step2": {
-        "title": "2. Genera o Coloca Presas",
-        "description": "Deja que el algoritmo cree un boulder completo, o coloca presas manualmente."
-      },
-      "step3": {
-        "title": "3. Recibe Sugerencias de Rutas",
-        "description": "Un algoritmo genético genera rutas escalables con grados estimados."
+      "scan": {
+        "title": "Scan",
+        "description": "Apunta la cámara a un muro real, recibe sus problemas y mira a un personaje escalador mostrar una beta posible. En el laboratorio."
       }
     },
     "roadmap": {
       "title": "Roadmap",
-      "v0": "V0: Editor de muro + generación de rutas (actual)",
-      "v1": "V1: Detección de presas por IA via fotos",
-      "v2": "V2: Funciones sociales + guardado en la nube"
+      "done": "Editor de muro: presas reales, detección de colisiones, visual cel shading",
+      "now": "Generación procedural de problemas + la dirección de arte completa",
+      "next": "Scan: detección de presas en fotos y playback de la beta"
     },
     "credits": {
       "title": "Créditos",
-      "model": "Modelo 3D del zapatito por"
+      "model": "Escaneo 3D del pie de gato por",
+      "holds": "Modelos de presas por"
     }
   },
   "grades": {

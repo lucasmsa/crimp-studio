@@ -62,32 +62,29 @@
     "subtitle": "A personal project built by a climber, for climbers.",
     "story": {
       "title": "The Story",
-      "content": "Crimp Studio started as a learning project to explore Three.js, procedural generation, and AI. I wanted to build a tool that helps climbers generate new routes without tedious manual work. Most existing solutions require expensive hardware or are too limited. So I built this."
+      "content": "Crimp Studio started as a learning project around Three.js, procedural generation, and computer vision. It grew into two pillars: a studio where you design walls and problems with real hold shapes, and a scanner that will read real walls from photos. No expensive hardware, no LED boards."
     },
-    "howItWorks": {
-      "title": "How It Works",
-      "step1": {
-        "title": "1. Configure Your Wall",
-        "description": "Set dimensions and inclination angle to match your real wall."
+    "pillars": {
+      "title": "Two Pillars",
+      "studio": {
+        "title": "Studio",
+        "description": "Design walls in 3D with hold models from real 3D-printable packs, place problems by hand, and soon generate them procedurally with a difficulty estimate you can interrogate."
       },
-      "step2": {
-        "title": "2. Generate or Place Holds",
-        "description": "Let the algorithm create a complete boulder, or place holds manually."
-      },
-      "step3": {
-        "title": "3. Get Route Suggestions",
-        "description": "A genetic algorithm generates climbable routes with estimated grades."
+      "scan": {
+        "title": "Scan",
+        "description": "Point a camera at a real wall, get its problems back, and watch an animated climber show a possible beta. In the lab."
       }
     },
     "roadmap": {
       "title": "Roadmap",
-      "v0": "V0: Wall editor + route generation (current)",
-      "v1": "V1: AI hold detection from photos",
-      "v2": "V2: Social features + cloud saves"
+      "done": "Wall editor: real hold models, collision detection, cel-shaded look",
+      "now": "Procedural problem generation + the full skate-mag design direction",
+      "next": "Scan: hold detection from photos and beta playback"
     },
     "credits": {
       "title": "Credits",
-      "model": "3D climbing shoe model by"
+      "model": "3D climbing shoe scan by",
+      "holds": "Climbing hold models by"
     }
   },
   "grades": {

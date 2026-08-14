@@ -302,31 +302,38 @@ What becomes easier or more difficult because of this change?
 **Dark Mode (Default)**
 | Role | Hex | Name |
 |------|-----|------|
-| Background | `#0A0A0A` | void |
-| Surface | `#171717` | graphite |
-| Border | `#2A2A2A` | chalk-line |
+| Background | `#1B3C53` | deep-water |
+| Surface | `#234C6A` | steel |
+| Border | `#456882` | slate |
 | Text Primary | `#FAFAFA` | chalk-white |
-| Text Secondary | `#94A3B8` | slate |
+| Text Secondary | `#A8BCCB` | mist-blue |
+| Primary | `#D2C1B6` + ink text | chalk-beige |
 
 **Light Mode**
 | Role | Hex | Name |
 |------|-----|------|
-| Background | `#FAFAFA` | paper |
+| Background | `#F2EDE7` | paper |
 | Surface | `#FFFFFF` | cloud |
-| Border | `#E5E5E5` | mist |
+| Border | `#D2C1B6` | chalk-beige |
 | Text Primary | `#171717` | graphite |
-| Text Secondary | `#6B7280` | stone |
+| Text Secondary | `#5C6B78` | stone-blue |
+| Primary | `#1B3C53` + white text | deep-water |
 
 **Accent Colors (Both Modes)**
 | Role | Hex | Name |
 |------|-----|------|
-| Primary | `#FFDAB3` | sand |
-| Secondary | `#FFC107` | amber |
+| Accent | `#456882` + white text | slate |
 | Success | `#22C55E` | send-green |
 | Error | `#EF4444` | fall-red |
 
+**Contrast rules (ADR-005 amended, WCAG AA, ratios computed not eyeballed):**
+- Primary flips per theme: chalk-beige fill + ink text on dark (11.35:1), deep-water fill + white text on light (11.07:1).
+- Success and error fills take ink foregrounds, not white (white on send-green is 2.28:1).
+- Muted text: `#A8BCCB` on deep-water (5.90:1), `#5C6B78` on paper (4.71:1).
+
 ### Typography
-- **Headings:** Space Grotesk (techy, monospace-inspired)
+- **Poster/Stamps:** Anton (condensed, uppercase, hard offset shadows)
+- **Headings:** Clash Display (confident, characterful, mixed case)
 - **Body:** Satoshi (warm, approachable)
 - **Mono/Data:** JetBrains Mono (grades, angles, coordinates)
 
@@ -367,7 +374,8 @@ What becomes easier or more difficult because of this change?
 **Typography classes:**
 | Class | Font |
 |-------|------|
-| `font-heading` | Space Grotesk (headings) |
+| `font-poster` | Anton (posters, stamps, HUD) |
+| `font-heading` | Clash Display (headings) |
 | `font-body` | Satoshi (body text) |
 | `font-mono` | JetBrains Mono (data, grades) |
 
