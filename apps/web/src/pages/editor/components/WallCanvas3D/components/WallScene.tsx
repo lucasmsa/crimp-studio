@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { OrbitControls } from '@react-three/drei'
-import { EffectComposer, Vignette } from '@react-three/postprocessing'
+import { EffectComposer, SMAA, Vignette } from '@react-three/postprocessing'
 import { useWallStore } from '@/stores/wallStore'
 import { Wall3D } from './Wall3D'
 import { EditorLights } from './EditorLights'
@@ -51,7 +51,11 @@ export function WallScene() {
         maxDistance={ORBIT_CONTROLS.MAX_DISTANCE}
       />
 
-      <EffectComposer>
+      {/* multisampling: the composer bypasses canvas MSAA, so without it
+          every edge in the editor renders aliased. SMAA on top keeps edges
+          clean on dpr-1 displays where MSAA alone still shows steps */}
+      <EffectComposer multisampling={8}>
+        <SMAA />
         <Vignette eskil={false} offset={0.1} darkness={0.4} />
       </EffectComposer>
     </>

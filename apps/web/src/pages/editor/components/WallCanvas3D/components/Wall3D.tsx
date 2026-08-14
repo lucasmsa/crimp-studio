@@ -1,20 +1,40 @@
 import { useRef, useMemo } from 'react'
+import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
+import { colors } from '@/lib/colors'
 import { Hold3D } from './Hold3D'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
+import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { checkCollision } from '../utils/holdCollision'
+import { createWallTexture } from '../utils/wallTexture'
+import { getToonGradientMap } from '@/lib/three/toon'
+import { createOutlineGeometry } from '@/lib/three/outline'
 
 interface Wall3DProps {
   onDragStateChange: (isDragging: boolean) => void
 }
 
 export function Wall3D({ onDragStateChange }: Wall3DProps) {
-  const { wall, selectedHoldId } = useWallStore()
+  const { wall, selectedHoldId, deletingHoldIds } = useWallStore()
 
   const wallWidthM = wall.width * CM_TO_M
   const wallHeightM = wall.height * CM_TO_M
+
+  /* T-nut grid + plywood seams; white base so wallColor tints it */
+  const wallTexture = useMemo(
+    () => createWallTexture(wallWidthM, wallHeightM),
+    [wallWidthM, wallHeightM],
+  )
+
+  const wallOutlineGeometry = useMemo(() => {
+    if (SCENE_STYLE !== 'toon') return null
+    const box = new THREE.BoxGeometry(wallWidthM, wallHeightM, WALL_DEPTH)
+    const outline = createOutlineGeometry(box, toonConfig.wallOutline)
+    box.dispose()
+    return outline
+  }, [wallWidthM, wallHeightM])
 
   const {
     wallMeshRef,
@@ -57,6 +77,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
             hold={hold}
             isSelected={hold.id === selectedHoldId}
             isColliding={collidingHoldIds.has(hold.id)}
+            isDeleting={deletingHoldIds.includes(hold.id)}
             isDraggingAny={isDragging}
             onPointerDown={handleHoldPointerDown(hold.id)}
           />
@@ -70,11 +91,26 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
         receiveShadow
       >
         <boxGeometry args={[wallWidthM, wallHeightM, WALL_DEPTH]} />
-        <meshStandardMaterial
-          color={wall.wallColor}
-          roughness={0.85}
-          metalness={0.05}
-        />
+        {SCENE_STYLE === 'toon' ? (
+          <>
+            <meshToonMaterial
+              color={wall.wallColor}
+              map={wallTexture}
+              gradientMap={getToonGradientMap(toonConfig.gradientSteps)}
+            />
+            {/* Inverted hull rim around the wall slab */}
+            <mesh geometry={wallOutlineGeometry!} raycast={() => null}>
+              <meshBasicMaterial color={colors.scene.outline} side={THREE.BackSide} />
+            </mesh>
+          </>
+        ) : (
+          <meshStandardMaterial
+            color={wall.wallColor}
+            map={wallTexture}
+            roughness={0.85}
+            metalness={0.05}
+          />
+        )}
       </mesh>
     </group>
   )

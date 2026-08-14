@@ -4,8 +4,9 @@ export const CM_TO_M = 0.01
 /** Wall panel depth in meters (thicker = more realistic visual weight) */
 export const WALL_DEPTH = 0.08
 
-/** How deep holds sink into the wall surface (meters) — eliminates shadow gaps */
-export const HOLD_EMBED_DEPTH = 0.015
+/** Hold base offset into the wall (meters). Just enough to stop z-fighting;
+    deeper embedding visibly sinks holds at glancing view angles */
+export const HOLD_EMBED_DEPTH = 0.002
 
 export const CAMERA = {
   FOV: 50,

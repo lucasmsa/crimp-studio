@@ -43,6 +43,9 @@ export interface Hold {
   // Optional per-hold color override (hex string)
   color?: string
 
+  // GLB model variant for this hold; undefined = procedural geometry
+  variant?: string
+
   // 1 = neutral, <1 = easier, >1 = harder
   difficultyModifier?: number
 }

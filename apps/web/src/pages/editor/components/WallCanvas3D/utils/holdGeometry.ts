@@ -182,13 +182,33 @@ function createPocketGeometry(scale: number): THREE.BufferGeometry {
 }
 
 /**
- * Volume — Large geometric polyhedron with flat triangular faces.
+ * Volume — Plywood wedge, the triangular prism climbing gyms bolt on to
+ * create a local angle change. The triangle is the side profile (base on
+ * the wall, ridge out), extruded along the wall. Sharp edges, no bevel.
  */
 function createVolumeGeometry(scale: number): THREE.BufferGeometry {
   const s = scale
 
-  const geometry = new THREE.IcosahedronGeometry(2.0 * s, 0)
-  geometry.scale(rand(1.3, 1.7), rand(1.3, 1.7), rand(0.4, 0.6))
+  const halfW = rand(1.4, 1.8) * s
+  const ridgeHeight = rand(0.8, 1.2) * s
+  const ridgeX = rand(-0.7, 0.7) * s
+  const length = rand(2.4, 3.2) * s
+
+  /* Side profile: base sits on the wall, ridge pokes out */
+  const profile = new THREE.Shape()
+  profile.moveTo(-halfW, 0)
+  profile.lineTo(halfW, 0)
+  profile.lineTo(ridgeX, ridgeHeight)
+  profile.lineTo(-halfW, 0)
+
+  const geometry = new THREE.ExtrudeGeometry(profile, {
+    depth: length,
+    bevelEnabled: false,
+  })
+
+  /* Extrusion runs along Z; tip it so the profile's Y becomes the
+     protrusion axis and the length lies along the wall */
+  geometry.rotateX(-Math.PI / 2)
   geometry.rotateZ(rand(0, Math.PI * 2))
   flushBackFace(geometry)
 

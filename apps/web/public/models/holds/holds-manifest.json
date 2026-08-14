@@ -1,0 +1,386 @@
+{
+  "attribution": {
+    "author": "Jérémy LAFAYE (SarDou3D)",
+    "profile": "https://www.printables.com/@JeremyLAFAYE_2080610",
+    "toolset": "https://github.com/JeremSparte/BHToolset",
+    "toolsetLicense": "MIT",
+    "notes": "Hold meshes generated with BHToolset and published on Printables. Each pack page states its license."
+  },
+  "packs": {
+    "881407": {
+      "name": "Jugs sample pack",
+      "url": "https://www.printables.com/model/881407-jugs-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881406": {
+      "name": "Finger pocket hold pack",
+      "url": "https://www.printables.com/model/881406-finger-pocket-hold-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881413": {
+      "name": "5x5 Holds Sample pack",
+      "url": "https://www.printables.com/model/881413-5x5-holds-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881409": {
+      "name": "10x5 Holds Sample pack",
+      "url": "https://www.printables.com/model/881409-10x5-holds-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    },
+    "881408": {
+      "name": "Rock sample pack",
+      "url": "https://www.printables.com/model/881408-rock-sample-pack",
+      "license": "Creative Commons — Attribution  — Share Alike"
+    }
+  },
+  "holds": {
+    "jug": [
+      {
+        "variant": "ch1_xs",
+        "path": "/models/holds/jug/ch1_xs.glb",
+        "pack": "881407",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0663,
+          0.0525,
+          0.0294
+        ],
+        "fileBytes": 120944
+      },
+      {
+        "variant": "ch2_xs",
+        "path": "/models/holds/jug/ch2_xs.glb",
+        "pack": "881407",
+        "faces": 4998,
+        "sizeMeters": [
+          0.077,
+          0.0523,
+          0.0319
+        ],
+        "fileBytes": 120948
+      },
+      {
+        "variant": "ch3_xs",
+        "path": "/models/holds/jug/ch3_xs.glb",
+        "pack": "881407",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0911,
+          0.0442,
+          0.0321
+        ],
+        "fileBytes": 120944
+      },
+      {
+        "variant": "ch4_xs",
+        "path": "/models/holds/jug/ch4_xs.glb",
+        "pack": "881407",
+        "faces": 5000,
+        "sizeMeters": [
+          0.077,
+          0.0764,
+          0.0377
+        ],
+        "fileBytes": 120992
+      }
+    ],
+    "pocket": [
+      {
+        "variant": "fh1_1",
+        "path": "/models/holds/pocket/fh1_1.glb",
+        "pack": "881406",
+        "faces": 4998,
+        "sizeMeters": [
+          0.1374,
+          0.1375,
+          0.0459
+        ],
+        "fileBytes": 120848
+      },
+      {
+        "variant": "fh2_1",
+        "path": "/models/holds/pocket/fh2_1.glb",
+        "pack": "881406",
+        "faces": 4998,
+        "sizeMeters": [
+          0.1352,
+          0.1353,
+          0.063
+        ],
+        "fileBytes": 120844
+      },
+      {
+        "variant": "fh3_1",
+        "path": "/models/holds/pocket/fh3_1.glb",
+        "pack": "881406",
+        "faces": 4998,
+        "sizeMeters": [
+          0.1828,
+          0.1406,
+          0.0654
+        ],
+        "fileBytes": 120704
+      },
+      {
+        "variant": "fh4_1",
+        "path": "/models/holds/pocket/fh4_1.glb",
+        "pack": "881406",
+        "faces": 4998,
+        "sizeMeters": [
+          0.1909,
+          0.1415,
+          0.0518
+        ],
+        "fileBytes": 120696
+      }
+    ],
+    "crimp": [
+      {
+        "variant": "bh_5x5_01",
+        "path": "/models/holds/crimp/bh_5x5_01.glb",
+        "pack": "881413",
+        "faces": 5000,
+        "sizeMeters": [
+          0.051,
+          0.0403,
+          0.0393
+        ],
+        "fileBytes": 121040
+      },
+      {
+        "variant": "bh_5x5_09",
+        "path": "/models/holds/crimp/bh_5x5_09.glb",
+        "pack": "881413",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0525,
+          0.0512,
+          0.0481
+        ],
+        "fileBytes": 120992
+      },
+      {
+        "variant": "bh_5x5_17",
+        "path": "/models/holds/crimp/bh_5x5_17.glb",
+        "pack": "881413",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0378,
+          0.0454,
+          0.0486
+        ],
+        "fileBytes": 121036
+      },
+      {
+        "variant": "bh_5x5_25",
+        "path": "/models/holds/crimp/bh_5x5_25.glb",
+        "pack": "881413",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0454,
+          0.047,
+          0.0357
+        ],
+        "fileBytes": 120944
+      },
+      {
+        "variant": "bh_5x5_33",
+        "path": "/models/holds/crimp/bh_5x5_33.glb",
+        "pack": "881413",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0714,
+          0.052,
+          0.0465
+        ],
+        "fileBytes": 121040
+      },
+      {
+        "variant": "bh_5x5_41",
+        "path": "/models/holds/crimp/bh_5x5_41.glb",
+        "pack": "881413",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0481,
+          0.0667,
+          0.036
+        ],
+        "fileBytes": 121040
+      }
+    ],
+    "pinch": [
+      {
+        "variant": "bh_10x5_03",
+        "path": "/models/holds/pinch/bh_10x5_03.glb",
+        "pack": "881409",
+        "faces": 4998,
+        "sizeMeters": [
+          0.102,
+          0.0538,
+          0.0366
+        ],
+        "fileBytes": 120896
+      },
+      {
+        "variant": "bh_10x5_12",
+        "path": "/models/holds/pinch/bh_10x5_12.glb",
+        "pack": "881409",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0975,
+          0.0572,
+          0.0306
+        ],
+        "fileBytes": 120896
+      },
+      {
+        "variant": "bh_10x5_21",
+        "path": "/models/holds/pinch/bh_10x5_21.glb",
+        "pack": "881409",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0989,
+          0.0527,
+          0.0354
+        ],
+        "fileBytes": 120944
+      },
+      {
+        "variant": "bh_10x5_30",
+        "path": "/models/holds/pinch/bh_10x5_30.glb",
+        "pack": "881409",
+        "faces": 5000,
+        "sizeMeters": [
+          0.1055,
+          0.0377,
+          0.029
+        ],
+        "fileBytes": 120944
+      }
+    ],
+    "sloper": [
+      {
+        "variant": "rockhold_t1_04",
+        "path": "/models/holds/sloper/rockhold_t1_04.glb",
+        "pack": "881408",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0847,
+          0.1491,
+          0.033
+        ],
+        "fileBytes": 120896
+      },
+      {
+        "variant": "rockhold_t2_04",
+        "path": "/models/holds/sloper/rockhold_t2_04.glb",
+        "pack": "881408",
+        "faces": 5000,
+        "sizeMeters": [
+          0.0553,
+          0.1093,
+          0.0349
+        ],
+        "fileBytes": 120940
+      },
+      {
+        "variant": "rockhold_t2_06",
+        "path": "/models/holds/sloper/rockhold_t2_06.glb",
+        "pack": "881408",
+        "faces": 4998,
+        "sizeMeters": [
+          0.0945,
+          0.0665,
+          0.0339
+        ],
+        "fileBytes": 120896
+      },
+      {
+        "variant": "rockhold_t3_06",
+        "path": "/models/holds/sloper/rockhold_t3_06.glb",
+        "pack": "881408",
+        "faces": 5000,
+        "sizeMeters": [
+          0.1464,
+          0.0738,
+          0.0287
+        ],
+        "fileBytes": 120940
+      }
+    ],
+    "volume": [
+      {
+        "variant": "vol_tetra_tall",
+        "path": "/models/holds/volume/vol_tetra_tall.glb",
+        "pack": "crimp-studio",
+        "faces": 4,
+        "sizeMeters": [
+          0.32,
+          0.84,
+          0.22
+        ],
+        "fileBytes": 1168
+      },
+      {
+        "variant": "vol_tetra_squat",
+        "path": "/models/holds/volume/vol_tetra_squat.glb",
+        "pack": "crimp-studio",
+        "faces": 4,
+        "sizeMeters": [
+          0.6,
+          0.56,
+          0.28
+        ],
+        "fileBytes": 1172
+      },
+      {
+        "variant": "vol_tetra_ridge",
+        "path": "/models/holds/volume/vol_tetra_ridge.glb",
+        "pack": "crimp-studio",
+        "faces": 4,
+        "sizeMeters": [
+          0.84,
+          0.64,
+          0.18
+        ],
+        "fileBytes": 1172
+      },
+      {
+        "variant": "vol_rail_long",
+        "path": "/models/holds/volume/vol_rail_long.glb",
+        "pack": "crimp-studio",
+        "faces": 12,
+        "sizeMeters": [
+          0.34,
+          1.15,
+          0.17
+        ],
+        "fileBytes": 1500
+      },
+      {
+        "variant": "vol_ramp",
+        "path": "/models/holds/volume/vol_ramp.glb",
+        "pack": "crimp-studio",
+        "faces": 8,
+        "sizeMeters": [
+          0.36,
+          1.0,
+          0.24
+        ],
+        "fileBytes": 1296
+      },
+      {
+        "variant": "vol_box",
+        "path": "/models/holds/volume/vol_box.glb",
+        "pack": "crimp-studio",
+        "faces": 12,
+        "sizeMeters": [
+          0.62,
+          0.62,
+          0.2
+        ],
+        "fileBytes": 1488
+      }
+    ]
+  }
+}
