@@ -1,30 +1,50 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useCallback } from 'react'
+import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { WallFace3D } from './WallFace3D'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { useWallInteraction } from '../hooks/useWallInteraction'
-import { useFaceTransforms } from '../hooks/useFaceTransforms'
+import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
 import { checkCollision } from '../utils/holdCollision'
-import { getRootFace, listFaces } from '../utils/faceTree'
+import { listFaces } from '../utils/faceTree'
+import { computeFaceUvTransform } from '../utils/faceUv'
 
 interface Wall3DProps {
   onDragStateChange: (isDragging: boolean) => void
 }
 
 export function Wall3D({ onDragStateChange }: Wall3DProps) {
-  const { wall, selectedHoldId, deletingHoldIds } = useWallStore()
+  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds } = useWallStore()
 
   const faces = useMemo(() => listFaces(wall.faces), [wall.faces])
-  const transforms = useFaceTransforms(wall.faces)
-  const rootFace = getRootFace(wall.faces)
+
+  const uvTransforms = useMemo(
+    () =>
+      Object.fromEntries(
+        faces.map((face) => [face.id, computeFaceUvTransform(wall.faces, face.id)]),
+      ),
+    [faces, wall.faces],
+  )
+
+  /* The springs are the only writer of face group transforms; see the hook */
+  const faceGroups = useRef(new Map<string, THREE.Group>())
+  useFaceAngleSprings(wall.faces, faceGroups)
+
+  const registerFaceGroup = useCallback(
+    (faceId: string) => (group: THREE.Group | null) => {
+      if (group) faceGroups.current.set(faceId, group)
+      else faceGroups.current.delete(faceId)
+    },
+    [],
+  )
 
   const {
-    wallMeshRef,
+    registerFaceMesh,
     isDragging,
-    handleWallPointerDown,
+    handleFacePointerDown,
     handleHoldPointerDown,
-  } = useWallInteraction(rootFace)
+  } = useWallInteraction()
 
   /* Build set of all hold IDs that overlap with at least one other hold */
   const collidingHoldIds = useMemo(() => {
@@ -65,15 +85,17 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
         <WallFace3D
           key={face.id}
           face={face}
-          transform={transforms[face.id]}
+          uvTransform={uvTransforms[face.id]}
+          groupRef={registerFaceGroup(face.id)}
           holds={wall.holds.filter((hold) => hold.faceId === face.id)}
           wallColor={wall.wallColor}
           selectedHoldId={selectedHoldId}
           collidingHoldIds={collidingHoldIds}
           deletingHoldIds={deletingHoldIds}
           isDraggingAny={isDragging}
-          meshRef={face.id === rootFace.id ? wallMeshRef : undefined}
-          onPointerDown={handleWallPointerDown}
+          isSelected={face.id === selectedFaceId}
+          meshRef={registerFaceMesh(face.id)}
+          onPointerDown={handleFacePointerDown(face.id)}
           onHoldPointerDown={handleHoldPointerDown}
         />
       ))}

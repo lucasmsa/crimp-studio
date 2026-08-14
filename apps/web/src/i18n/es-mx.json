@@ -64,6 +64,21 @@
     "model": {
       "label": "Modelo",
       "auto": "Auto"
+    },
+    "face": {
+      "label": "Cara",
+      "presets": {
+        "slab": "Placa",
+        "vertical": "Vertical",
+        "overhang": "Desplome",
+        "roof": "Techo"
+      },
+      "degrees": "{{value}} grados",
+      "increase": "Mas desplome",
+      "decrease": "Menos desplome",
+      "cutAcross": "Cortar Horizontal",
+      "cutUp": "Cortar Vertical",
+      "remove": "Unir Abajo"
     }
   },
   "about": {

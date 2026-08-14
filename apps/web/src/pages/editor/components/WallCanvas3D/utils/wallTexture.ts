@@ -1,37 +1,38 @@
 import * as THREE from 'three'
 
 const PIXELS_PER_METER = 256
-/** Real climbing walls drill T-nuts on a ~15cm grid */
-const TNUT_SPACING_M = 0.15
-/** Plywood sheets are 1.22m (4ft) wide, so seams land every 1.22m */
-const PANEL_WIDTH_M = 1.22
+/** Plywood sheets are 1.22m (4ft) square, so seams land every 1.22m */
+export const PANEL_WIDTH_M = 1.22
+/** Real walls drill T-nuts on a 6 inch grid, which fits a sheet exactly 8 times */
+const TNUTS_PER_PANEL = 8
 
 /**
- * Procedural wall map: white base (so material color tints it), T-nut hole
- * grid, and plywood panel seams. Shared by both scene styles.
+ * One plywood sheet: white base (so the material color tints it), a T-nut grid
+ * and the seam along two edges. Every face samples this same tile with its own
+ * offset, so the grid runs continuously across a seam instead of restarting at
+ * each panel's edge.
  */
-export function createWallTexture(widthM: number, heightM: number): THREE.CanvasTexture {
+function createPlywoodTile(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas')
-  canvas.width = Math.round(widthM * PIXELS_PER_METER)
-  canvas.height = Math.round(heightM * PIXELS_PER_METER)
+  canvas.width = Math.round(PANEL_WIDTH_M * PIXELS_PER_METER)
+  canvas.height = canvas.width
   const ctx = canvas.getContext('2d')!
 
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  /* Panel seams: thin vertical lines every plywood-sheet width */
+  /* Seam along the left and bottom edges; tiling turns them into the grid of
+     sheet joins across the whole wall */
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.13)'
   ctx.lineWidth = 3
-  for (let x = PANEL_WIDTH_M; x < widthM; x += PANEL_WIDTH_M) {
-    const px = x * PIXELS_PER_METER
-    ctx.beginPath()
-    ctx.moveTo(px, 0)
-    ctx.lineTo(px, canvas.height)
-    ctx.stroke()
-  }
+  ctx.beginPath()
+  ctx.moveTo(1.5, 0)
+  ctx.lineTo(1.5, canvas.height)
+  ctx.moveTo(0, canvas.height - 1.5)
+  ctx.lineTo(canvas.width, canvas.height - 1.5)
+  ctx.stroke()
 
-  /* T-nut grid: small recessed holes, offset half a cell from the edges */
-  const spacing = TNUT_SPACING_M * PIXELS_PER_METER
+  const spacing = canvas.width / TNUTS_PER_PANEL
   const radius = 0.008 * PIXELS_PER_METER
   ctx.fillStyle = 'rgba(0, 0, 0, 0.22)'
   for (let y = spacing / 2; y < canvas.height; y += spacing) {
@@ -45,5 +46,28 @@ export function createWallTexture(widthM: number, heightM: number): THREE.Canvas
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
   texture.anisotropy = 4
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  return texture
+}
+
+let sharedTile: THREE.CanvasTexture | null = null
+
+/**
+ * A view of the shared plywood tile for one face. Clones share the underlying
+ * image (one GPU upload) and carry only their own offset and repeat.
+ */
+export function createFaceTexture(uvTransform: {
+  repeat: [number, number]
+  offset: [number, number]
+}): THREE.Texture {
+  if (!sharedTile) sharedTile = createPlywoodTile()
+
+  const texture = sharedTile.clone()
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  texture.repeat.set(...uvTransform.repeat)
+  texture.offset.set(...uvTransform.offset)
+  texture.needsUpdate = true
   return texture
 }

@@ -7,21 +7,25 @@ import { Hold3D } from './Hold3D'
 import { HoldActionsOverlay } from './HoldActionsOverlay'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
-import { createWallTexture } from '../utils/wallTexture'
+import { createFaceTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
 import type { WallFace } from '../utils/faceTree'
-import type { FaceTransform } from '../utils/faceTransform'
+import type { FaceUvTransform } from '../utils/faceUv'
 
 interface WallFace3DProps {
   face: WallFace
-  transform: FaceTransform
+  uvTransform: FaceUvTransform
   holds: Hold[]
   wallColor: string
   selectedHoldId: string | null
   collidingHoldIds: Set<string>
   deletingHoldIds: string[]
   isDraggingAny: React.RefObject<boolean>
+  /** The focused face, the one the sidebar is shaping */
+  isSelected: boolean
+  /** The angle springs drive this group directly, so it takes no transform props */
+  groupRef: React.Ref<THREE.Group>
   meshRef?: React.Ref<THREE.Mesh>
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void
   onHoldPointerDown: (holdId: string) => (e: ThreeEvent<PointerEvent>) => void
@@ -38,13 +42,15 @@ interface WallFace3DProps {
  */
 export function WallFace3D({
   face,
-  transform,
+  uvTransform,
   holds,
   wallColor,
   selectedHoldId,
   collidingHoldIds,
   deletingHoldIds,
   isDraggingAny,
+  isSelected,
+  groupRef,
   meshRef,
   onPointerDown,
   onHoldPointerDown,
@@ -52,21 +58,24 @@ export function WallFace3D({
   const widthM = face.width * CM_TO_M
   const heightM = face.height * CM_TO_M
 
-  /* T-nut grid + plywood seams; white base so wallColor tints it */
-  const texture = useMemo(() => createWallTexture(widthM, heightM), [widthM, heightM])
+  /* T-nut grid + plywood seams, phased by where this face sits on the sheet */
+  const texture = useMemo(() => createFaceTexture(uvTransform), [uvTransform])
 
+  /* The focused panel wears a heavier rim. Recoloring it instead would have to
+     survive a beige wall and a beige primary, and ink always reads */
   const outlineGeometry = useMemo(() => {
     if (SCENE_STYLE !== 'toon') return null
     const box = new THREE.BoxGeometry(widthM, heightM, WALL_DEPTH)
-    const outline = createOutlineGeometry(box, toonConfig.wallOutline)
+    const thickness = isSelected ? toonConfig.wallOutline * 2.4 : toonConfig.wallOutline
+    const outline = createOutlineGeometry(box, thickness)
     box.dispose()
     return outline
-  }, [widthM, heightM])
+  }, [widthM, heightM, isSelected])
 
   const selectedHold = selectedHoldId ? holds.find((h) => h.id === selectedHoldId) : undefined
 
   return (
-    <group position={transform.position} quaternion={transform.quaternion}>
+    <group ref={groupRef}>
       {holds.map((hold) => (
         <Hold3D
           key={hold.id}

@@ -64,6 +64,21 @@
     "model": {
       "label": "Modelo",
       "auto": "Auto"
+    },
+    "face": {
+      "label": "Face",
+      "presets": {
+        "slab": "Placa",
+        "vertical": "Vertical",
+        "overhang": "Negativo",
+        "roof": "Teto"
+      },
+      "degrees": "{{value}} graus",
+      "increase": "Mais negativo",
+      "decrease": "Menos negativo",
+      "cutAcross": "Cortar na Horizontal",
+      "cutUp": "Cortar na Vertical",
+      "remove": "Juntar Abaixo"
     }
   },
   "about": {

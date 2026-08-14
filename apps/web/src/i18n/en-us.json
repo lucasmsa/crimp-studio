@@ -64,6 +64,21 @@
     "model": {
       "label": "Model",
       "auto": "Auto"
+    },
+    "face": {
+      "label": "Face",
+      "presets": {
+        "slab": "Slab",
+        "vertical": "Vertical",
+        "overhang": "Overhang",
+        "roof": "Roof"
+      },
+      "degrees": "{{value}} deg",
+      "increase": "Steeper",
+      "decrease": "Shallower",
+      "cutAcross": "Cut Across",
+      "cutUp": "Cut Up",
+      "remove": "Merge Down"
     }
   },
   "about": {

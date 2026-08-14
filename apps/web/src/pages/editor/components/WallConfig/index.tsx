@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { colors } from '@/lib/colors'
 import { getModelVariants } from '../WallCanvas3D/utils/holdModels'
+import { FaceSection } from './components/FaceSection'
 import { HOLD_TYPES } from './constants/holdTypes'
 import { formatVariantLabel } from './utils/variantLabel'
 import {
@@ -35,6 +36,8 @@ export function WallConfig() {
 
   return (
     <div className="space-y-6">
+      <FaceSection />
+
       {/* Hold type selector */}
       <section className="space-y-3 border-b-2 border-border pb-6">
         <h2 className={sectionLabel}>{t('editor.holdTypes.label')}</h2>

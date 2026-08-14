@@ -12,6 +12,17 @@ import { holdGeometryConfigs } from '@/pages/editor/components/WallCanvas3D/conf
 import { CM_TO_M } from '@/pages/editor/components/WallCanvas3D/constants/editor3d'
 import type { FaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
 import { createRootFaceTree, getFace } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+import type { CutAxis } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
+import {
+  canCutFace,
+  cutFaceTree,
+  mergeFaceIntoParent,
+} from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
+import {
+  computeFaceTransforms,
+  getFaceTilt,
+} from '@/pages/editor/components/WallCanvas3D/utils/faceTransform'
+import { clampFaceAngle } from '@/pages/editor/components/WallCanvas3D/config/faceAngleConfig'
 
 export type HoldType = 'jug' | 'crimp' | 'sloper' | 'pinch' | 'pocket' | 'volume'
 
@@ -52,6 +63,8 @@ export interface Wall {
 interface WallState {
   wall: Wall
   selectedHoldId: string | null
+  /** The face being shaped; clicks inside it place holds */
+  selectedFaceId: string | null
   selectedHoldType: HoldType
   /** Model variant for the next placement; null = deterministic auto pick */
   selectedVariant: string | null
@@ -65,6 +78,13 @@ interface WallState {
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
   selectHold: (id: string | null) => void
+  selectFace: (faceId: string | null) => void
+  /** Splits a face in two along the seam; refuses if canCutFace says no */
+  cutFace: (faceId: string, axis: CutAxis, at: number) => void
+  /** Takes the absolute tilt from vertical and stores it relative to the parent */
+  setFaceAngle: (faceId: string, tiltDeg: number) => void
+  /** Merges a face back into its parent, undoing its cut */
+  removeFace: (faceId: string) => void
   setSelectedHoldType: (type: HoldType) => void
   setSelectedVariant: (variant: string | null) => void
   setWallColor: (color: string) => void
@@ -89,6 +109,7 @@ const defaultWall: Wall = {
 export const useWallStore = create<WallState>((set) => ({
   wall: defaultWall,
   selectedHoldId: null,
+  selectedFaceId: null,
   selectedHoldType: 'jug',
   selectedVariant: null,
   deletingHoldIds: [],
@@ -167,6 +188,56 @@ export const useWallStore = create<WallState>((set) => ({
     })),
 
   selectHold: (id) => set({ selectedHoldId: id }),
+
+  selectFace: (faceId) => set({ selectedFaceId: faceId }),
+
+  cutFace: (faceId, axis, at) =>
+    set((state) => {
+      const check = canCutFace(state.wall.faces, state.wall.holds, faceId, axis, at)
+      if (!check.ok) return state
+
+      const cut = cutFaceTree(state.wall.faces, state.wall.holds, faceId, axis, at)
+
+      return {
+        wall: { ...state.wall, faces: cut.tree, holds: cut.holds },
+        selectedFaceId: cut.newFaceId,
+      }
+    }),
+
+  setFaceAngle: (faceId, tiltDeg) =>
+    set((state) => {
+      const face = getFace(state.wall.faces, faceId)
+      const tilt = clampFaceAngle(tiltDeg)
+
+      /* Stored relative to the parent so bending a lower face swings whatever
+         is above it as one assembly. A left hinge yaws rather than tilts, so
+         its angle has no absolute reading to convert. */
+      const parentTilt =
+        face.hinge === 'bottom' && face.parentId
+          ? getFaceTilt(computeFaceTransforms(state.wall.faces)[face.parentId])
+          : 0
+
+      const faces = {
+        rootId: state.wall.faces.rootId,
+        byId: {
+          ...state.wall.faces.byId,
+          [faceId]: { ...face, angle: face.hinge === 'left' ? tilt : tilt - parentTilt },
+        },
+      }
+
+      return { wall: { ...state.wall, faces } }
+    }),
+
+  removeFace: (faceId) =>
+    set((state) => {
+      const merged = mergeFaceIntoParent(state.wall.faces, state.wall.holds, faceId)
+      if (merged.tree === state.wall.faces) return state
+
+      return {
+        wall: { ...state.wall, faces: merged.tree, holds: merged.holds },
+        selectedFaceId: state.selectedFaceId === faceId ? null : state.selectedFaceId,
+      }
+    }),
 
   setSelectedHoldType: (type) => set({ selectedHoldType: type, selectedVariant: null }),
 

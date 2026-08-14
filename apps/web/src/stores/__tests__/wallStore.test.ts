@@ -17,6 +17,7 @@ function resetStore() {
       holds: [],
     },
     selectedHoldId: null,
+    selectedFaceId: null,
     selectedHoldType: 'jug',
     selectedVariant: null,
     deletingHoldIds: [],
@@ -256,6 +257,93 @@ describe('wallStore', () => {
       useWallStore.getState().setWallColor('#FF5722')
 
       expect(useWallStore.getState().wall.wallColor).toBe('#FF5722')
+    })
+  })
+
+  describe('cutFace', () => {
+    it('splits the root and selects the new face', () => {
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+
+      const { wall, selectedFaceId } = useWallStore.getState()
+      expect(Object.keys(wall.faces.byId)).toHaveLength(2)
+      expect(selectedFaceId).not.toBeNull()
+      expect(wall.faces.byId[rootFaceId()].height).toBe(250)
+    })
+
+    it('refuses a cut through a hold and leaves the wall alone', () => {
+      place(150, 250)
+      const before = useWallStore.getState().wall.faces
+
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+
+      expect(useWallStore.getState().wall.faces).toBe(before)
+    })
+
+    it('moves holds above the seam onto the new face', () => {
+      place(150, 350)
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+
+      const hold = useWallStore.getState().wall.holds[0]
+      expect(hold.faceId).toBe(useWallStore.getState().selectedFaceId)
+      expect(hold.v).toBe(100)
+    })
+  })
+
+  describe('setFaceAngle', () => {
+    it('stores the root tilt as given', () => {
+      useWallStore.getState().setFaceAngle(rootFaceId(), 30)
+
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(30)
+    })
+
+    it('clamps past the fold-back limits', () => {
+      useWallStore.getState().setFaceAngle(rootFaceId(), 200)
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(135)
+
+      useWallStore.getState().setFaceAngle(rootFaceId(), -90)
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(-45)
+    })
+
+    it('stores a child angle relative to its parent, so the absolute tilt is what was asked for', () => {
+      useWallStore.getState().setFaceAngle(rootFaceId(), 20)
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const childId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().setFaceAngle(childId, 30)
+
+      expect(useWallStore.getState().wall.faces.byId[childId].angle).toBeCloseTo(10, 5)
+    })
+  })
+
+  describe('removeFace', () => {
+    it('merges a face back into its parent', () => {
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const childId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().removeFace(childId)
+
+      const { wall, selectedFaceId } = useWallStore.getState()
+      expect(Object.keys(wall.faces.byId)).toHaveLength(1)
+      expect(wall.faces.byId[rootFaceId()].height).toBe(HEIGHT)
+      expect(selectedFaceId).toBeNull()
+    })
+
+    it('ignores the root, which has nothing to merge into', () => {
+      const before = useWallStore.getState().wall.faces
+
+      useWallStore.getState().removeFace(rootFaceId())
+
+      expect(useWallStore.getState().wall.faces).toBe(before)
+    })
+  })
+
+  describe('selectFace', () => {
+    it('selects and clears', () => {
+      useWallStore.getState().selectFace(rootFaceId())
+      expect(useWallStore.getState().selectedFaceId).toBe(rootFaceId())
+
+      useWallStore.getState().selectFace(null)
+      expect(useWallStore.getState().selectedFaceId).toBeNull()
     })
   })
 
