@@ -42,11 +42,13 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Wall resizing: drag wall edges; clamp or warn when shrinking would orphan holds
 - [x] Wall surface realism (2026-08-12): T-nut grid + plywood seams via procedural canvas texture
 - [x] Triangular volumes (2026-08-12): the volume type IS now a plywood wedge prism; the icosahedron is gone
-- [ ] Wall subdivisions with angle bending (slab, vertical, overhang, roof per section; holds stay attached). Needs a PRD before implementation.
+- [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
+- [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 
 ### Problem generation
 
-- [ ] Procedural problem builder (genetic algorithm, see ADR-002); fitness must penalize hold collisions (store already exposes collision state)
+- [ ] Procedural problem builder (genetic algorithm, see ADR-002); fitness must penalize hold collisions (store already exposes collision state). Runs on the wall you already have, sections and all; proposing a wall with its own sections is a second mode, not the only one. Generated problems must be humanly climbable and graded, not decorative.
+- [ ] Angle as a difficulty input: a hold's face angle (ADR-006) feeds the grade estimate and the generator's fitness
 - [ ] Difficulty assessment: heuristic grade estimate per problem. Must be interrogable: visible factor weights, per-factor contributions, no single unexplained number.
 - [ ] Style preferences (crimpy, dynamic, technical)
 - [ ] User feedback loop (rate routes to improve fitness function)
@@ -56,13 +58,13 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 
 ## Scan
 
-- [ ] Teaser page (/scan) while the pillar is built
+- [x] Teaser page (/scan) while the pillar is built (2026-08-13)
 - [ ] Train YOLOv8 on Kaggle climbing hold dataset
 - [ ] FastAPI endpoint for image upload
 - [ ] Auto-detect holds from wall photo
 - [ ] Color-based route detection (identify circuits/problems on the wall)
 - [ ] Hold type classification
-- [ ] Beta generation: given a detected problem, generate a movement sequence and demonstrate it with an animated climber character. PRD: `docs/prd/scan.md`.
+- [ ] Beta generation: given a detected problem, generate a movement sequence and demonstrate it with an animated climber character. PRD: `docs/prd/scan.md`. The sequence has to look like a body actually moving, so the solver leans on physical constraints (reach, balance, center of mass over the feet) the way Endorphin-style motion tools do, not on keyframes alone.
 - [ ] Wall angle auto-detection from photo
 
 ---
@@ -78,6 +80,10 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Embed widget for gyms
 - [ ] Comments / beta sharing
 - [ ] Route difficulty voting
+
+### Safety and legal
+
+- [ ] Build-safety notice (about page or its own page, all three locales): the app designs walls, it does not certify them. A real wall's material, fixings, backing structure and foundation depend on load and construction, and federal, state, municipal and international standards govern them. Anyone building from a design here needs a qualified professional. Wording needs a check by someone who knows the local rules before it ships.
 
 ### V3: Advanced
 
@@ -105,7 +111,7 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Landing restyle (shoe scene stays, poster treatment around it)
 - [ ] About restyle
 - [ ] Editor chrome restyle (header, sidebar, overlays)
-- [ ] HUD stamps: "BLOCKED" on collision rejection, banner on route generation
+- [ ] HUD banner on route generation (blocked until generation exists). The "BLOCKED" collision stamp was cut 2026-08-14: the red hold already says it, and stamping every refused click gets old.
 - [ ] Copy pass: light slang at key moments, all three locales
 - [ ] Shaping session for the points/combo system (blocked until shaped; no score feedback before then)
 

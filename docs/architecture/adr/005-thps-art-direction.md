@@ -39,8 +39,10 @@ THPS 1-2 grunge is the app-wide art direction. Concretely:
   wall, No More Heroes-style. `SCENE_STYLE` in `sceneStyleConfig.ts` flips between
   'toon' (default) and 'standard' (PBR three-point rig) in one line. This
   supersedes the original wall-stays-realistic note; the Scan pillar's detection
-  quality never depended on the editor's render style. HUD stamps ("BLOCKED" on
-  collision, banner on generation) remain planned.
+  quality never depended on the editor's render style. The planned "BLOCKED" stamp
+  on collision was dropped 2026-08-14: the holds already turn red on a rejected
+  placement, and a slam-in stamp on every refused click wears out fast. A banner on
+  route generation stays planned for when generation exists.
 - **Texture and motion**: static print texture (grain, halftone, torn edges). Motion
   only at entrances, hovers, and HUD stamps; prefers-reduced-motion respected; no
   ambient animation competing with the editor's frame budget.
