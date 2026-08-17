@@ -15,7 +15,7 @@ import type { FaceUvTransform } from '../utils/faceUv'
 import { applyFaceUvTransform } from '../utils/faceUv'
 
 /** How far an unfocused panel fades toward the background */
-const DIM_AMOUNT = 0.3
+const DIM_AMOUNT = 0.45
 
 /** Seam line thickness in metres, and how far it floats off the surface */
 const SEAM_WIDTH = 0.018

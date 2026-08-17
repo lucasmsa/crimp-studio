@@ -7,25 +7,26 @@
  */
 
 export const colors = {
-  // Brand colors (ADR-005 amended 2026-08-17: graphite chrome, chalk primary.
-  // Deep-water blue behind a sand wall read as sea and beach)
-  primary: '#0F1720',
-  secondary: '#1B6FE0',
+  // Brand colours (ADR-005). Deep-water blue chrome with pastel accents: sky
+  // leads interaction, pink marks attention, mint means success. On this blue
+  // each works as text and as a fill carrying ink text
+  primary: '#87CEFA',
+  secondary: '#FFB6C1',
   /* Interaction only: at 16 degrees from crimp red and 22 from pinch amber,
      an orange fill on anything wall-sized reads as a hold type */
-  accent: '#1B6FE0',
+  accent: '#FFB6C1',
 
   // Semantic colors
-  success: '#35D07F',
+  success: '#98FB98',
   error: '#EF4444',
 
   // Dark mode palette
   dark: {
-    background: '#131518',
-    surface: '#20242A',
-    border: '#6A737F',
-    text: '#F3F0E8',
-    textMuted: '#A9B0B9',
+    background: '#1B3C53',
+    surface: '#234C6A',
+    border: '#6B8EAB',
+    text: '#F7F3E8',
+    textMuted: '#A8BCCB',
   },
 
   // Light mode palette
@@ -49,7 +50,7 @@ export const colors = {
 
   // Wall editor canvas
   wall: {
-    surface: '#CFC5B4', // Birch plywood; the old sand read as beach against the chrome
+    surface: '#E8D5B7', // Plywood; reads warm against the deep-water chrome
     /* Scene lighting stays decoupled from brand tokens: the wall must look
        physically real regardless of art direction (ADR-005) */
     warmLight: '#FFDAB3',
@@ -57,11 +58,10 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
-    /* The viewport keeps its own tone rather than taking the page's: a birch
-       wall on a near-white page is 1.5:1 and stops reading as an object at
-       all. Steel blue is the gym floor, and it puts the wall in front of it */
-    viewport: '#4F6478',
-    outline: '#0B0D10', // ink outline hull for cel-shaded meshes
+    /* The viewport matches the page: plywood on deep-water blue is 8:1, so
+       the wall reads as an object without a separate backdrop tone */
+    viewport: '#1B3C53',
+    outline: '#14242F', // ink outline hull for cel-shaded meshes
   },
 } as const
 

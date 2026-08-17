@@ -29,120 +29,112 @@ body {
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --radius: 0rem;
 
-  /* Crimp Studio Colors - Light (default: the app opens bright, like the gym) */
-  --background: #EDF1F6;
-  --foreground: #0F1720;
-  --card: #FFFFFF;
-  --card-foreground: #0F1720;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F1720;
-  --primary: #0F1720;
-  --primary-foreground: #FFFFFF;
-  --secondary: #DCE4EE;
-  --secondary-foreground: #0F1720;
-  --muted: #DCE4EE;
-  --muted-foreground: #55606E;
-  --accent: #1B6FE0;
-  --accent-foreground: #FFFFFF;
-  --destructive: #D92D20;
-  --destructive-foreground: #FFFFFF;
-  --success: #12864F;
-  --success-foreground: #FFFFFF;
-  --border: #8593A6;
-  --input: #8593A6;
-  --ring: #1B6FE0;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #0F1720;
-  --sidebar-primary: #0F1720;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1B6FE0;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #8593A6;
-  --sidebar-ring: #1B6FE0;
-}
-
-/* Dark, opt in */
-.dark, [data-theme="dark"] {
-  color-scheme: dark;
-
-  --background: #131518;
-  --foreground: #F3F0E8;
-  --card: #20242A;
-  --card-foreground: #F3F0E8;
-  --popover: #20242A;
-  --popover-foreground: #F3F0E8;
-  --primary: #F7F3E8;
+  /* Crimp Studio colours (ADR-005). Deep-water blue chrome; the pastels clear
+     5.5-9:1 as text on it and 12-15.6:1 as fills carrying ink text, so the
+     same three work for both jobs here */
+  --background: #1B3C53;
+  --foreground: #F7F3E8;
+  --card: #234C6A;
+  --card-foreground: #F7F3E8;
+  --popover: #234C6A;
+  --popover-foreground: #F7F3E8;
+  --primary: #87CEFA;
   --primary-foreground: #0A0A0A;
-  --secondary: #20242A;
-  --secondary-foreground: #F3F0E8;
-  --muted: #20242A;
-  --muted-foreground: #A9B0B9;
-  --accent: #FF6B35;
+  --secondary: #234C6A;
+  --secondary-foreground: #F7F3E8;
+  --muted: #234C6A;
+  --muted-foreground: #A8BCCB;
+  --accent: #FFB6C1;
   --accent-foreground: #0A0A0A;
   --destructive: #EF4444;
   --destructive-foreground: #0A0A0A;
-  --success: #35D07F;
+  --success: #98FB98;
   --success-foreground: #0A0A0A;
-  --border: #6A737F;
-  --input: #6A737F;
-  --ring: #FF6B35;
-  --sidebar: #20242A;
-  --sidebar-foreground: #F3F0E8;
-  --sidebar-primary: #F7F3E8;
+  --border: #6B8EAB;
+  --input: #6B8EAB;
+  --ring: #87CEFA;
+  --sidebar: #234C6A;
+  --sidebar-foreground: #F7F3E8;
+  --sidebar-primary: #87CEFA;
   --sidebar-primary-foreground: #0A0A0A;
-  --sidebar-accent: #FF6B35;
+  --sidebar-accent: #FFB6C1;
   --sidebar-accent-foreground: #0A0A0A;
-  --sidebar-border: #6A737F;
-  --sidebar-ring: #FF6B35;
-  --chart-1: #D2C1B6;
-  --chart-2: #456882;
-  --chart-3: #22C55E;
-  --chart-4: #3B82F6;
-  --chart-5: #A855F7;
+  --sidebar-border: #6B8EAB;
+  --sidebar-ring: #87CEFA;
 }
 
-/* System preference dark */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light):not([data-theme="light"]) {
-    color-scheme: dark;
+/* Light, opt in */
+.light, [data-theme="light"] {
+  color-scheme: light;
 
-    --background: #131518;
-    --foreground: #F3F0E8;
-    --card: #20242A;
-    --card-foreground: #F3F0E8;
-    --popover: #20242A;
-    --popover-foreground: #F3F0E8;
-    --primary: #F7F3E8;
-    --primary-foreground: #0A0A0A;
-    --secondary: #20242A;
-    --secondary-foreground: #F3F0E8;
-    --muted: #20242A;
-    --muted-foreground: #A9B0B9;
-    --accent: #FF6B35;
-    --accent-foreground: #0A0A0A;
-    --destructive: #EF4444;
-    --destructive-foreground: #0A0A0A;
-    --success: #35D07F;
-    --success-foreground: #0A0A0A;
-    --border: #6A737F;
-    --input: #6A737F;
-    --ring: #FF6B35;
-    --sidebar: #20242A;
-    --sidebar-foreground: #F3F0E8;
-    --sidebar-primary: #F7F3E8;
-    --sidebar-primary-foreground: #0A0A0A;
-    --sidebar-accent: #FF6B35;
-    --sidebar-accent-foreground: #0A0A0A;
-    --sidebar-border: #6A737F;
-    --sidebar-ring: #FF6B35;
-    --chart-1: #D2C1B6;
-    --chart-2: #456882;
-    --chart-3: #22C55E;
-    --chart-4: #3B82F6;
-    --chart-5: #A855F7;
+  --background: #F2EDE7;
+  --foreground: #171717;
+  --card: #FFFFFF;
+  --card-foreground: #171717;
+  --popover: #FFFFFF;
+  --popover-foreground: #171717;
+  --primary: #1B3C53;
+  --primary-foreground: #F7F3E8;
+  --secondary: #E4DCD1;
+  --secondary-foreground: #171717;
+  --muted: #E4DCD1;
+  --muted-foreground: #5C6B78;
+  --accent: #C2185B;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C0392B;
+  --destructive-foreground: #FFFFFF;
+  --success: #1B7F4B;
+  --success-foreground: #FFFFFF;
+  --border: #9A948B;
+  --input: #9A948B;
+  --ring: #0B6FB4;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #1B3C53;
+  --sidebar-primary-foreground: #F7F3E8;
+  --sidebar-accent: #C2185B;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #9A948B;
+  --sidebar-ring: #0B6FB4;
+}
+
+/* System preference light */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark):not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --background: #F2EDE7;
+    --foreground: #171717;
+    --card: #FFFFFF;
+    --card-foreground: #171717;
+    --popover: #FFFFFF;
+    --popover-foreground: #171717;
+    --primary: #1B3C53;
+    --primary-foreground: #F7F3E8;
+    --secondary: #E4DCD1;
+    --secondary-foreground: #171717;
+    --muted: #E4DCD1;
+    --muted-foreground: #5C6B78;
+    --accent: #C2185B;
+    --accent-foreground: #FFFFFF;
+    --destructive: #C0392B;
+    --destructive-foreground: #FFFFFF;
+    --success: #1B7F4B;
+    --success-foreground: #FFFFFF;
+    --border: #9A948B;
+    --input: #9A948B;
+    --ring: #0B6FB4;
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #171717;
+    --sidebar-primary: #1B3C53;
+    --sidebar-primary-foreground: #F7F3E8;
+    --sidebar-accent: #C2185B;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #9A948B;
+    --sidebar-ring: #0B6FB4;
   }
 }
 

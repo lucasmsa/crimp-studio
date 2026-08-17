@@ -20,8 +20,18 @@ THPS 1-2 grunge is the app-wide art direction. Concretely:
 - **Themes**: both palettes stay, dark-first. Poster-on-black dark, zine-paper light.
 - **Type**: Anton for posters and stamps, Clash Display for UI headings (replaces
   Space Grotesk), Satoshi for body, JetBrains Mono for data.
-- **Palette** (amended 2026-08-17, supersedes the industrial-blue set below):
-  graphite chrome with a chalk primary. Deep-water blue behind a sand-coloured
+- **Palette** (amended 2026-08-17 evening, final): the deep-water blue set is
+  restored and the accents become pastels. Two detours are recorded below and
+  both are rejected: graphite chrome read as bleak, and a white/silver posh
+  direction fought the THPS language on every other page, which is what made
+  the app stop looking like one product. The art direction itself was never the
+  problem. Sky `#87CEFA` leads interaction and marks the selected state, pink
+  `#FFB6C1` marks attention, mint `#98FB98` means success; on deep-water blue
+  each clears 5.5-9:1 as text and 12-15.6:1 as a fill carrying ink text, so one
+  set covers both jobs. Borders lift to `#6B8EAB` for 3.35:1 against the
+  background. On the light theme the same three need their deep siblings
+  (`#C2185B`, `#0B6FB4`, `#1B7F4B`), since pastels on white are 1.3-1.7:1.
+- **Palette** (rejected detour, 2026-08-17): graphite chrome with a chalk primary. Deep-water blue behind a sand-coloured
   wall read as sea and beach once the wall filled the viewport, and the beige
   primary never read as "selected" because it looked like another material
   sample. New roles: `#14161A` graphite background, `#1E2229` surfaces,

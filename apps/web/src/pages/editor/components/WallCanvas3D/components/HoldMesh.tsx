@@ -17,7 +17,7 @@ import { useHoldHover } from '../hooks/useHoldHover'
 import { useReportCollisionBox } from '../hooks/useReportCollisionBox'
 
 /** How far a hold on an unfocused panel fades toward the background */
-const DIM_AMOUNT = 0.3
+const DIM_AMOUNT = 0.45
 
 /* Shared grip texture — created once, reused across all holds */
 let sharedGripTexture: THREE.CanvasTexture | null = null
