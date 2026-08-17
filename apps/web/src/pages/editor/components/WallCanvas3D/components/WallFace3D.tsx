@@ -7,7 +7,7 @@ import { Hold3D } from './Hold3D'
 import { HoldActionsOverlay } from './HoldActionsOverlay'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
-import { getPlywoodTexture } from '../utils/wallTexture'
+import { getBlurredPlywoodTexture, getPlywoodTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
 import type { WallFace } from '../utils/faceTree'
@@ -15,7 +15,7 @@ import type { FaceUvTransform } from '../utils/faceUv'
 import { applyFaceUvTransform } from '../utils/faceUv'
 
 /** How far an unfocused panel fades toward the background */
-const DIM_AMOUNT = 0.55
+const DIM_AMOUNT = 0.3
 
 /** Seam line thickness in metres, and how far it floats off the surface */
 const SEAM_WIDTH = 0.018
@@ -70,7 +70,10 @@ export function WallFace3D({
   const widthM = face.width * CM_TO_M
   const heightM = face.height * CM_TO_M
 
-  const texture = getPlywoodTexture()
+  /* Unfocused panels lose their detail rather than their colour: a soft
+     surface reads as out of focus, and swapping a prebuilt texture costs
+     nothing per frame the way a blur pass would */
+  const texture = isDimmed ? getBlurredPlywoodTexture() : getPlywoodTexture()
 
   /* The panel slab, with the T-nut grid phased by where this face sits on the
      unrolled sheet so the pattern runs on across a seam */
@@ -109,6 +112,7 @@ export function WallFace3D({
           isSelected={hold.id === selectedHoldId}
           isColliding={collidingHoldIds.has(hold.id)}
           isDeleting={deletingHoldIds.includes(hold.id)}
+          isDimmed={isDimmed}
           isDraggingAny={isDraggingAny}
           onPointerDown={onHoldPointerDown(hold.id)}
         />

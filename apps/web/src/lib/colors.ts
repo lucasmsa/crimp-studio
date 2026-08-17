@@ -9,20 +9,23 @@
 export const colors = {
   // Brand colors (ADR-005 amended 2026-08-17: graphite chrome, chalk primary.
   // Deep-water blue behind a sand wall read as sea and beach)
-  primary: '#FAFAFA',
-  secondary: '#456882',
+  primary: '#F7F3E8',
+  secondary: '#63B3ED',
+  /* Interaction only: at 16 degrees from crimp red and 22 from pinch amber,
+     an orange fill on anything wall-sized reads as a hold type */
+  accent: '#FF6B35',
 
   // Semantic colors
-  success: '#22C55E',
+  success: '#35D07F',
   error: '#EF4444',
 
   // Dark mode palette
   dark: {
-    background: '#14161A',
-    surface: '#1E2229',
-    border: '#6B7480',
-    text: '#FAFAFA',
-    textMuted: '#9BA5B0',
+    background: '#131518',
+    surface: '#20242A',
+    border: '#6A737F',
+    text: '#F3F0E8',
+    textMuted: '#A9B0B9',
   },
 
   // Light mode palette
@@ -54,7 +57,7 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
-    outline: '#0D0F12', // ink outline hull for cel-shaded meshes
+    outline: '#0B0D10', // ink outline hull for cel-shaded meshes
   },
 } as const
 

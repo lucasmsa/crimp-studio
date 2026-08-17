@@ -67,7 +67,7 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Auto-detect holds from wall photo
 - [ ] Color-based route detection (identify circuits/problems on the wall)
 - [ ] Hold type classification
-- [ ] Reference to mine for the beta work: https://www.reddit.com/r/TopologyAI/s/L4D3dTGCpF (Reddit blocks fetching, so the takeaway still needs writing down here)
+- [ ] Evaluate NVIDIA MotionBricks for the animated beta (https://nvlabs.github.io/motionbricks/, found via r/TopologyAI 2026-08-17). A generative character-animation model: one backbone over ~350k motion clips, quoted at 15k FPS and 2ms latency, combining locomotion, style and interactions from "smart primitives" instead of a hand-built animation graph. Code and pretrained checkpoints are out. Caveats worth checking before betting on it: the release is a preview (an interactive G1 demo plus a synthetic training pipeline), the full version was said to be about a month out, and the demos read as physically plausible bumbling rather than directed movement, which is the opposite of what a beta needs. The climbing case is also far outside its locomotion training distribution.
 - [ ] Beta generation: given a detected problem, generate a movement sequence and demonstrate it with an animated climber character. PRD: `docs/prd/scan.md`. The sequence has to look like a body actually moving, so the solver leans on physical constraints (reach, balance, center of mass over the feet) the way Endorphin-style motion tools do, not on keyframes alone.
 - [ ] Wall angle auto-detection from photo
 

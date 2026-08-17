@@ -16,6 +16,9 @@ import { CM_TO_M, HOLD_EMBED_DEPTH } from '../constants/editor3d'
 import { useHoldHover } from '../hooks/useHoldHover'
 import { useReportCollisionBox } from '../hooks/useReportCollisionBox'
 
+/** How far a hold on an unfocused panel fades toward the background */
+const DIM_AMOUNT = 0.3
+
 /* Shared grip texture — created once, reused across all holds */
 let sharedGripTexture: THREE.CanvasTexture | null = null
 function getGripTexture(): THREE.CanvasTexture {
@@ -29,6 +32,8 @@ export interface HoldMeshProps {
   flatShading: boolean
   isSelected: boolean
   isColliding?: boolean
+  /** Its panel is not the focused one, so the hold steps back with it */
+  isDimmed?: boolean
   /** Plays the pop-off exit animation, then removes the hold from the store */
   isDeleting?: boolean
   isDraggingAny: React.RefObject<boolean>
@@ -46,6 +51,7 @@ export function HoldMesh({
   flatShading,
   isSelected,
   isColliding,
+  isDimmed = false,
   isDeleting = false,
   isDraggingAny,
   onPointerDown,
@@ -53,7 +59,16 @@ export function HoldMesh({
   const { isHovered, onPointerEnter, onPointerLeave } = useHoldHover(isDraggingAny)
   const removeHold = useWallStore((s) => s.removeHold)
 
-  const holdColor = hold.color ?? colors.holds[hold.type]
+  const baseColor = hold.color ?? colors.holds[hold.type]
+  /* Holds ride their panel's focus: a lit hold on a dimmed panel pulled the
+     eye straight back to the panel you had just stepped away from */
+  const holdColor = useMemo(
+    () =>
+      isDimmed
+        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.dark.background), DIM_AMOUNT)
+        : new THREE.Color(baseColor),
+    [baseColor, isDimmed],
+  )
   const config = holdGeometryConfigs[hold.type]
   /* Suppress hover effect while any hold is being dragged */
   const visual = getHoldVisualState({

@@ -15,6 +15,8 @@ getAllModelPaths().forEach((path) => useGLTF.preload(path))
 interface Hold3DProps {
   hold: Hold
   isSelected: boolean
+  /** Its panel is not the focused one, so the hold steps back with it */
+  isDimmed?: boolean
   isColliding?: boolean
   isDeleting?: boolean
   isDraggingAny: React.RefObject<boolean>

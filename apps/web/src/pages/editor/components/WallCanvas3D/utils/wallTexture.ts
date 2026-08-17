@@ -51,6 +51,35 @@ function createPlywoodTile(): THREE.CanvasTexture {
   return texture
 }
 
+/**
+ * The same sheet with its detail smeared. Used for panels that are not in
+ * focus: losing the T-nut detail reads as out-of-focus without a second render
+ * pass, so the frame cost is nil no matter how many panels there are.
+ */
+function createBlurredTile(): THREE.CanvasTexture {
+  const source = getPlywoodTexture().image as HTMLCanvasElement
+  const canvas = document.createElement('canvas')
+  canvas.width = source.width
+  canvas.height = source.height
+  const ctx = canvas.getContext('2d')!
+  ctx.filter = 'blur(3px)'
+  ctx.drawImage(source, 0, 0)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  return texture
+}
+
+let sharedBlurredTile: THREE.CanvasTexture | null = null
+
+export function getBlurredPlywoodTexture(): THREE.CanvasTexture {
+  if (!sharedBlurredTile) sharedBlurredTile = createBlurredTile()
+  return sharedBlurredTile
+}
+
 let sharedTile: THREE.CanvasTexture | null = null
 
 /**
