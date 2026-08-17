@@ -38,12 +38,15 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 
 ### Editor UX (former V0.5)
 
+- [x] Palette v4 + selection pass (2026-08-17): graphite chrome and a birch wall (ADR-005 amended; blue behind sand read as sea and beach), chalk-white selected state (beige read as a material sample, not as 'on'), Clash Display labels (Anton was illegible at 12px, Bagnard worse), focus shown by dimming the other panels rather than thickening a hull stroke that juts out flat edge-on, mode picker actually gates what a click selects, click-away deselects
+- [x] Wall sections increment 1-2 (2026-08-17): face tree, cutting, angles, sprung bending, panel picker. Round of fixes after first real use: panels never cast shadows (only holds did), so an overhang left the wall below it lit and holds glowed inside their own shadow; the shadow map was spread over a 14m frustum, which speckled holds with acne and gave shadow edges a staircase; clicks obeyed click history rather than the mode picker; the base panel could be laid flat as a ceiling at floor height; a vertical seam offered roof and overhang, which mean nothing sideways.
+
 - [ ] Hold resizing: drag border handles to scale, live preview
 - [ ] Wall resizing: drag wall edges; clamp or warn when shrinking would orphan holds
 - [x] Wall surface realism (2026-08-12): T-nut grid + plywood seams via procedural canvas texture
 - [x] Triangular volumes (2026-08-12): the volume type IS now a plywood wedge prism; the icosahedron is gone
 - [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
-- [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
+- [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Wanted sooner rather than later (2026-08-17): a drawn line says exactly where the cut lands, where the current buttons cut at the last tap and slide off any hold in the way, which is hard to aim. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 
 ### Problem generation
 
@@ -64,6 +67,7 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Auto-detect holds from wall photo
 - [ ] Color-based route detection (identify circuits/problems on the wall)
 - [ ] Hold type classification
+- [ ] Reference to mine for the beta work: https://www.reddit.com/r/TopologyAI/s/L4D3dTGCpF (Reddit blocks fetching, so the takeaway still needs writing down here)
 - [ ] Beta generation: given a detected problem, generate a movement sequence and demonstrate it with an animated climber character. PRD: `docs/prd/scan.md`. The sequence has to look like a body actually moving, so the solver leans on physical constraints (reach, balance, center of mass over the feet) the way Endorphin-style motion tools do, not on keyframes alone.
 - [ ] Wall angle auto-detection from photo
 

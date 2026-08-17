@@ -20,7 +20,17 @@ THPS 1-2 grunge is the app-wide art direction. Concretely:
 - **Themes**: both palettes stay, dark-first. Poster-on-black dark, zine-paper light.
 - **Type**: Anton for posters and stamps, Clash Display for UI headings (replaces
   Space Grotesk), Satoshi for body, JetBrains Mono for data.
-- **Palette** (amended 2026-08-12, supersedes the hot-orange decision below): an
+- **Palette** (amended 2026-08-17, supersedes the industrial-blue set below):
+  graphite chrome with a chalk primary. Deep-water blue behind a sand-coloured
+  wall read as sea and beach once the wall filled the viewport, and the beige
+  primary never read as "selected" because it looked like another material
+  sample. New roles: `#14161A` graphite background, `#1E2229` surfaces,
+  `#6B7480` borders, `#9BA5B0` muted text, `#FAFAFA` chalk primary with ink
+  text; light theme is `#F5F4F2` paper with an ink primary. The wall itself
+  moves from `#E8D5B7` sand to `#CFC5B4` birch, which is closer to real
+  plywood. Full matrix passes AA: chalk on graphite 17.35:1, muted on graphite
+  7.25:1, ink on chalk 18.97:1, muted on paper 5.47:1.
+- **Palette** (amended 2026-08-12, superseded by the graphite set above): an
   industrial set replaces hot orange after a day of use showed the orange caused
   eye strain, and corrected contrast math put orange display text on light at
   2.97:1, under the 3:1 large-text bar. New roles: `#1B3C53` deep-water background

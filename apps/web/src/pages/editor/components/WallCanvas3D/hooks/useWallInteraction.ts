@@ -188,6 +188,11 @@ export function useWallInteraction() {
 
   /* Hold pointer down — select + start drag, save pre-drag position */
   const handleHoldPointerDown = useCallback((holdId: string) => (e: ThreeEvent<PointerEvent>) => {
+    /* While shaping panels a hold is scenery: let the press fall through to
+       the panel underneath rather than grabbing something the mode picker
+       says is not what clicks are for */
+    if (useWallStore.getState().editorMode === 'shape') return
+
     e.stopPropagation()
     useWallStore.getState().selectHold(holdId)
 

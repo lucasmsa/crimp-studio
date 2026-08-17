@@ -95,7 +95,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           collidingHoldIds={collidingHoldIds}
           deletingHoldIds={deletingHoldIds}
           isDraggingAny={isDragging}
-          isSelected={face.id === selectedFaceId}
+          isDimmed={selectedFaceId !== null && face.id !== selectedFaceId}
           meshRef={registerFaceMesh(face.id)}
           onPointerDown={handleFacePointerDown(face.id)}
           onPointerEnter={handleFacePointerEnter}

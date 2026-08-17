@@ -7,8 +7,9 @@
  */
 
 export const colors = {
-  // Brand colors (ADR-005 amended 2026-08-12: industrial palette, beige primary on dark)
-  primary: '#D2C1B6',
+  // Brand colors (ADR-005 amended 2026-08-17: graphite chrome, chalk primary.
+  // Deep-water blue behind a sand wall read as sea and beach)
+  primary: '#FAFAFA',
   secondary: '#456882',
 
   // Semantic colors
@@ -17,20 +18,20 @@ export const colors = {
 
   // Dark mode palette
   dark: {
-    background: '#1B3C53',
-    surface: '#234C6A',
-    border: '#456882',
+    background: '#14161A',
+    surface: '#1E2229',
+    border: '#6B7480',
     text: '#FAFAFA',
-    textMuted: '#A8BCCB',
+    textMuted: '#9BA5B0',
   },
 
   // Light mode palette
   light: {
-    background: '#F2EDE7',
+    background: '#F5F4F2',
     surface: '#FFFFFF',
-    border: '#D2C1B6',
+    border: '#9A948B',
     text: '#171717',
-    textMuted: '#5C6B78',
+    textMuted: '#5A6470',
   },
 
   // Hold types - for wall editor
@@ -45,7 +46,7 @@ export const colors = {
 
   // Wall editor canvas
   wall: {
-    surface: '#E8D5B7', // Plywood/sand color for climbing wall
+    surface: '#CFC5B4', // Birch plywood; the old sand read as beach against the chrome
     /* Scene lighting stays decoupled from brand tokens: the wall must look
        physically real regardless of art direction (ADR-005) */
     warmLight: '#FFDAB3',
@@ -53,7 +54,7 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
-    outline: '#14242F', // ink-navy outline hull for cel-shaded meshes
+    outline: '#0D0F12', // ink outline hull for cel-shaded meshes
   },
 } as const
 

@@ -202,11 +202,18 @@ export const useWallStore = create<WallState>((set) => ({
       selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
     })),
 
-  selectHold: (id) => set({ selectedHoldId: id }),
+  /* Selecting one thing lets go of the other, so the sidebar is never
+     showing controls for something you are not looking at. Deselecting a hold
+     leaves the panel focus alone. */
+  selectHold: (id) =>
+    set((state) => ({
+      selectedHoldId: id,
+      selectedFaceId: id ? null : state.selectedFaceId,
+    })),
 
   setEditorMode: (mode) => set({ editorMode: mode, selectedHoldId: null }),
 
-  selectFace: (faceId) => set({ selectedFaceId: faceId }),
+  selectFace: (faceId) => set({ selectedFaceId: faceId, selectedHoldId: null }),
 
   setFaceCutPoint: (point) => set({ faceCutPoint: point }),
 

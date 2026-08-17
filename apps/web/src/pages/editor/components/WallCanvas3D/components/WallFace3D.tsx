@@ -14,6 +14,9 @@ import type { WallFace } from '../utils/faceTree'
 import type { FaceUvTransform } from '../utils/faceUv'
 import { applyFaceUvTransform } from '../utils/faceUv'
 
+/** How far an unfocused panel fades toward the background */
+const DIM_AMOUNT = 0.55
+
 /** Seam line thickness in metres, and how far it floats off the surface */
 const SEAM_WIDTH = 0.018
 const SEAM_LIFT = 0.002
@@ -27,8 +30,8 @@ interface WallFace3DProps {
   collidingHoldIds: Set<string>
   deletingHoldIds: string[]
   isDraggingAny: React.RefObject<boolean>
-  /** The focused face, the one the sidebar is shaping */
-  isSelected: boolean
+  /** Another panel has the focus, so this one steps back */
+  isDimmed: boolean
   /** The angle springs drive this group directly, so it takes no transform props */
   groupRef: React.Ref<THREE.Group>
   meshRef?: React.Ref<THREE.Mesh>
@@ -56,7 +59,7 @@ export function WallFace3D({
   collidingHoldIds,
   deletingHoldIds,
   isDraggingAny,
-  isSelected,
+  isDimmed,
   groupRef,
   meshRef,
   onPointerDown,
@@ -79,16 +82,21 @@ export function WallFace3D({
 
   useEffect(() => () => panelGeometry.dispose(), [panelGeometry])
 
-  /* The focused panel wears a heavier rim. Recoloring it instead would have to
-     survive a beige wall and a beige primary, and ink always reads */
   const outlineGeometry = useMemo(() => {
     if (SCENE_STYLE !== 'toon') return null
     const box = new THREE.BoxGeometry(widthM, heightM, WALL_DEPTH)
-    const thickness = isSelected ? toonConfig.wallOutline * 2.4 : toonConfig.wallOutline
-    const outline = createOutlineGeometry(box, thickness)
+    const outline = createOutlineGeometry(box, toonConfig.wallOutline)
     box.dispose()
     return outline
-  }, [widthM, heightM, isSelected])
+  }, [widthM, heightM])
+
+  /* Focus reads by dimming the rest of the wall rather than by thickening this
+     panel's rim: a hull stroke is geometry, so it juts out flat wherever the
+     panel is seen edge-on, which is exactly where focus matters most */
+  const surfaceColor = useMemo(() => {
+    const color = new THREE.Color(wallColor)
+    return isDimmed ? color.lerp(new THREE.Color(colors.dark.background), DIM_AMOUNT) : color
+  }, [wallColor, isDimmed])
 
   const selectedHold = selectedHoldId ? holds.find((h) => h.id === selectedHoldId) : undefined
 
@@ -143,7 +151,7 @@ export function WallFace3D({
             {/* Shadow from the back face: a panel is 8cm of plywood, so its far
                 side puts that thickness between caster and receiver */}
             <meshToonMaterial
-              color={wallColor}
+              color={surfaceColor}
               map={texture}
               gradientMap={getToonGradientMap(toonConfig.gradientSteps)}
               shadowSide={THREE.BackSide}
@@ -155,7 +163,7 @@ export function WallFace3D({
           </>
         ) : (
           <meshStandardMaterial
-            color={wallColor}
+            color={surfaceColor}
             map={texture}
             roughness={0.85}
             metalness={0.05}

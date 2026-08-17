@@ -14,10 +14,10 @@ export const holdTypeButtonStates = {
 
 /** Readout chips: hold and panel counts */
 export const countChip =
-  'inline-block border-2 border-border px-2.5 py-1 font-poster text-sm uppercase tracking-wide text-muted-foreground'
+  'inline-block border-2 border-border px-2.5 py-1 font-heading text-xs font-semibold uppercase tracking-wider text-muted-foreground'
 
 export const sectionLabel =
-  'font-poster text-sm uppercase tracking-[0.18em] text-muted-foreground'
+  'font-heading text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground'
 
 export const colorInput =
   'h-10 w-16 border-2 border-foreground bg-card p-1 cursor-pointer ' +

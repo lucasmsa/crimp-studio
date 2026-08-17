@@ -13,7 +13,7 @@ function resetStore() {
       width: WIDTH,
       height: HEIGHT,
       faces: createRootFaceTree(WIDTH, HEIGHT),
-      wallColor: '#E8D5B7',
+      wallColor: '#CFC5B4',
       holds: [],
     },
     selectedHoldId: null,
