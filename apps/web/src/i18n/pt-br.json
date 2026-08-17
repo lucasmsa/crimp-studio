@@ -90,7 +90,9 @@
         "too-small": "O painel ficaria pequeno demais para escalar",
         "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
         "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes"
-      }
+      },
+      "axisTilt": "Inclinando parede acima",
+      "axisWrap": "Girando na quina"
     },
     "faceCount": "{{count}} paineis",
     "faceCount_one": "{{count}} painel",

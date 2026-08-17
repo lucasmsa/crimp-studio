@@ -9,11 +9,11 @@
 export const colors = {
   // Brand colors (ADR-005 amended 2026-08-17: graphite chrome, chalk primary.
   // Deep-water blue behind a sand wall read as sea and beach)
-  primary: '#F7F3E8',
-  secondary: '#63B3ED',
+  primary: '#0F1720',
+  secondary: '#1B6FE0',
   /* Interaction only: at 16 degrees from crimp red and 22 from pinch amber,
      an orange fill on anything wall-sized reads as a hold type */
-  accent: '#FF6B35',
+  accent: '#1B6FE0',
 
   // Semantic colors
   success: '#35D07F',
@@ -30,11 +30,11 @@ export const colors = {
 
   // Light mode palette
   light: {
-    background: '#F5F4F2',
+    background: '#EDF1F6',
     surface: '#FFFFFF',
-    border: '#9A948B',
-    text: '#171717',
-    textMuted: '#5A6470',
+    border: '#8593A6',
+    text: '#0F1720',
+    textMuted: '#55606E',
   },
 
   // Hold types - for wall editor
@@ -57,6 +57,10 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
+    /* The viewport keeps its own tone rather than taking the page's: a birch
+       wall on a near-white page is 1.5:1 and stops reading as an object at
+       all. Steel blue is the gym floor, and it puts the wall in front of it */
+    viewport: '#4F6478',
     outline: '#0B0D10', // ink outline hull for cel-shaded meshes
   },
 } as const

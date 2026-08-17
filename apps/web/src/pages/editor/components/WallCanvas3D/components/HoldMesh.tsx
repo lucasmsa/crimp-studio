@@ -65,7 +65,7 @@ export function HoldMesh({
   const holdColor = useMemo(
     () =>
       isDimmed
-        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.dark.background), DIM_AMOUNT)
+        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.scene.viewport), DIM_AMOUNT)
         : new THREE.Color(baseColor),
     [baseColor, isDimmed],
   )
@@ -150,24 +150,20 @@ export function HoldMesh({
       >
         {SCENE_STYLE === 'toon' ? (
           <>
-            {/* A hold on an unfocused panel drops the two things that make it
-                read sharp: its ink stroke and its hard cel steps. Geometry
-                cannot be blurred by a texture swap the way the wall can, and
-                softening it this way costs nothing per frame */}
             <meshToonMaterial
               color={visual.colorOverride ?? holdColor}
-              gradientMap={isDimmed ? null : getToonGradientMap(toonConfig.gradientSteps)}
+              gradientMap={getToonGradientMap(toonConfig.gradientSteps)}
               emissive={visual.colorOverride ?? '#ffffff'}
               emissiveIntensity={visual.emissiveIntensity}
               transparent={visual.opacity < 1}
               opacity={visual.opacity}
             />
-            {!isDimmed && (
-              /* Inverted hull baked along smoothed normals for a uniform stroke */
-              <mesh geometry={outlineGeometry!} raycast={() => null}>
-                <meshBasicMaterial color={colors.scene.outline} side={THREE.BackSide} />
-              </mesh>
-            )}
+            {/* Inverted hull baked along smoothed normals for a uniform stroke.
+                Every hold keeps it: without the stroke an unfocused hold stops
+                looking like a hold at all, which is worse than looking sharp */}
+            <mesh geometry={outlineGeometry!} raycast={() => null}>
+              <meshBasicMaterial color={colors.scene.outline} side={THREE.BackSide} />
+            </mesh>
           </>
         ) : (
           <meshStandardMaterial

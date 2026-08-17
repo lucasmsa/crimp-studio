@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { WallScene } from './components/WallScene'
 import { useWallStore } from '@/stores/wallStore'
+import { colors } from '@/lib/colors'
 import { CAMERA } from './constants/editor3d'
 
 export function WallCanvas3D() {
@@ -15,7 +16,8 @@ export function WallCanvas3D() {
   }
 
   return (
-    <div className="relative w-full h-full min-h-[500px] bg-surface rounded-lg border border-border overflow-hidden">
+    <div className="relative w-full h-full min-h-[500px] rounded-lg border-2 border-border overflow-hidden"
+      style={{ backgroundColor: colors.scene.viewport }}>
       <Canvas
         camera={{
           fov: CAMERA.FOV,

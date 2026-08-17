@@ -90,7 +90,9 @@
         "too-small": "The panel would be too small to climb",
         "child-in-the-way": "A seam already crosses this way; cut the other panel instead",
         "holds-in-the-way": "Holds sit on the seam. Move them first"
-      }
+      },
+      "axisTilt": "Tilting up the wall",
+      "axisWrap": "Wrapping around the corner"
     },
     "faceCount": "{{count}} panels",
     "faceCount_one": "{{count}} panel",

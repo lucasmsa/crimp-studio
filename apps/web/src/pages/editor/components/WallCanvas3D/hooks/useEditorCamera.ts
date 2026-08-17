@@ -8,10 +8,14 @@ import { computeWallProfile } from '../utils/faceProfile'
 
 /** Room to leave around the profile once it is framed */
 const FIT_MARGIN = 1.15
-/** Fraction of the remaining distance covered per frame */
-const EASE = 3.5
+/** Fraction of the remaining distance covered per frame. Slow enough to read
+    as the camera following the wall rather than cutting to a new shot */
+const EASE = 1.6
 /** Close enough to stop chasing and hand the camera back */
 const SETTLED = 0.01
+
+/** How far the profile can change before the camera bothers to follow */
+const REFRAME_SLACK_CM = 25
 
 /**
  * Frames the whole profile and follows it when it changes shape. Bending trades
@@ -33,7 +37,9 @@ export function useEditorCamera(): THREE.Vector3 {
 
   useFrame((_, delta) => {
     const profile = computeWallProfile(wall.faces, computeFaceTransforms(wall.faces))
-    const shape = `${Math.round(profile.heightCm)}x${Math.round(profile.reachCm)}`
+    /* Quantised so a spring settling by a centimetre does not restart the
+       chase, and so small edits leave the camera where you put it */
+    const shape = `${quantise(profile.heightCm)}x${quantise(profile.reachCm)}`
     if (shape !== lastShape.current) {
       lastShape.current = shape
       refitting.current = true
@@ -68,4 +74,8 @@ export function useEditorCamera(): THREE.Vector3 {
   })
 
   return target
+}
+
+function quantise(cm: number): number {
+  return Math.round(cm / REFRAME_SLACK_CM)
 }

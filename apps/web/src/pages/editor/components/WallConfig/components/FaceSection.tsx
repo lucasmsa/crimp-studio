@@ -27,12 +27,18 @@ export function FaceSection() {
   if (!face) return null
 
   const editingLabel = isEditingHold ? 'editor.face.editingHold' : 'editor.face.editingFace'
+  /* A panel hinged on its left edge yaws around a vertical seam; one hinged on
+     its bottom tilts. The presets alone did not say which, so the header does */
+  const axisLabel = face.hinge === 'left' ? 'editor.face.axisWrap' : 'editor.face.axisTilt'
 
   return (
     <section className="space-y-3 border-b-2 border-border pb-6" data-testid="face-section">
       <h2 className={sectionLabel}>
         {t('editor.face.editing')}: {t(editingLabel)}
       </h2>
+      <p className="font-mono text-[11px] uppercase tracking-wider text-accent" data-testid="face-axis">
+        {t(axisLabel)}
+      </p>
 
       <div className="grid grid-cols-2 gap-2.5">
         {presets.map((preset) => (
