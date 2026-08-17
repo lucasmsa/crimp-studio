@@ -150,18 +150,24 @@ export function HoldMesh({
       >
         {SCENE_STYLE === 'toon' ? (
           <>
+            {/* A hold on an unfocused panel drops the two things that make it
+                read sharp: its ink stroke and its hard cel steps. Geometry
+                cannot be blurred by a texture swap the way the wall can, and
+                softening it this way costs nothing per frame */}
             <meshToonMaterial
               color={visual.colorOverride ?? holdColor}
-              gradientMap={getToonGradientMap(toonConfig.gradientSteps)}
+              gradientMap={isDimmed ? null : getToonGradientMap(toonConfig.gradientSteps)}
               emissive={visual.colorOverride ?? '#ffffff'}
               emissiveIntensity={visual.emissiveIntensity}
               transparent={visual.opacity < 1}
               opacity={visual.opacity}
             />
-            {/* Inverted hull baked along smoothed normals for a uniform stroke */}
-            <mesh geometry={outlineGeometry!} raycast={() => null}>
-              <meshBasicMaterial color={colors.scene.outline} side={THREE.BackSide} />
-            </mesh>
+            {!isDimmed && (
+              /* Inverted hull baked along smoothed normals for a uniform stroke */
+              <mesh geometry={outlineGeometry!} raycast={() => null}>
+                <meshBasicMaterial color={colors.scene.outline} side={THREE.BackSide} />
+              </mesh>
+            )}
           </>
         ) : (
           <meshStandardMaterial
