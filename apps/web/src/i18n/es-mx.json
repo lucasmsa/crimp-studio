@@ -51,7 +51,8 @@
     },
     "colors": {
       "wallColor": "Color del Muro",
-      "holdColor": "Color de Presa"
+      "holdColor": "Color de Presa",
+      "custom": "Color personalizado"
     },
     "modes": {
       "generate": "Modo Generación",
@@ -100,6 +101,17 @@
       "label": "El clic elige",
       "holds": "Presas",
       "shape": "Paneles"
+    },
+    "swatches": {
+      "red": "Rojo",
+      "orange": "Naranja",
+      "yellow": "Amarillo",
+      "green": "Verde",
+      "blue": "Azul",
+      "purple": "Morado",
+      "pink": "Rosa",
+      "black": "Negro",
+      "white": "Blanco"
     }
   },
   "about": {

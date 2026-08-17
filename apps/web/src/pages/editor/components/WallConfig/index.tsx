@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { colors } from '@/lib/colors'
 import { getModelVariants } from '../WallCanvas3D/utils/holdModels'
 import { FaceSection } from './components/FaceSection'
+import { HoldSwatches } from './components/HoldSwatches'
 import { HOLD_TYPES } from './constants/holdTypes'
 import { formatVariantLabel } from './utils/variantLabel'
 import {
@@ -119,12 +120,20 @@ export function WallConfig() {
       {selectedHold && (
         <section className="space-y-3 border-b-2 border-border pb-6">
           <h2 className={sectionLabel}>{t('editor.colors.holdColor')}</h2>
+
+          <HoldSwatches
+            value={selectedHold.color ?? colors.holds[selectedHold.type]}
+            onPick={(hex) => updateHold(selectedHold.id, { color: hex })}
+          />
+
+          {/* The wheel stays for anything the setter palette does not carry */}
           <div className="flex items-center gap-3">
             <input
               type="color"
               value={selectedHold.color ?? colors.holds[selectedHold.type]}
               onChange={(e) => updateHold(selectedHold.id, { color: e.target.value })}
               className={colorInput}
+              aria-label={t('editor.colors.custom')}
             />
             <span className="font-mono text-sm uppercase text-foreground">
               {selectedHold.color ?? colors.holds[selectedHold.type]}

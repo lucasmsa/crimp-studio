@@ -51,7 +51,8 @@
     },
     "colors": {
       "wallColor": "Wall Color",
-      "holdColor": "Hold Color"
+      "holdColor": "Hold Color",
+      "custom": "Custom colour"
     },
     "modes": {
       "generate": "Generate Mode",
@@ -100,6 +101,17 @@
       "label": "Clicking selects",
       "holds": "Holds",
       "shape": "Panels"
+    },
+    "swatches": {
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink",
+      "black": "Black",
+      "white": "White"
     }
   },
   "about": {

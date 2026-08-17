@@ -51,7 +51,8 @@
     },
     "colors": {
       "wallColor": "Cor da Parede",
-      "holdColor": "Cor da Agarra"
+      "holdColor": "Cor da Agarra",
+      "custom": "Cor personalizada"
     },
     "modes": {
       "generate": "Modo Geração",
@@ -100,6 +101,17 @@
       "label": "Clique seleciona",
       "holds": "Presas",
       "shape": "Paineis"
+    },
+    "swatches": {
+      "red": "Vermelho",
+      "orange": "Laranja",
+      "yellow": "Amarelo",
+      "green": "Verde",
+      "blue": "Azul",
+      "purple": "Roxo",
+      "pink": "Rosa",
+      "black": "Preto",
+      "white": "Branco"
     }
   },
   "about": {
