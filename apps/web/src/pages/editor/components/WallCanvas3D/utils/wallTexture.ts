@@ -54,20 +54,12 @@ function createPlywoodTile(): THREE.CanvasTexture {
 let sharedTile: THREE.CanvasTexture | null = null
 
 /**
- * A view of the shared plywood tile for one face. Clones share the underlying
- * image (one GPU upload) and carry only their own offset and repeat.
+ * The one plywood texture, shared by every panel. Each panel carries its own
+ * phase in its UVs instead of in a texture clone: clones share their image, so
+ * the first one disposed takes the pixels away from all the others and the
+ * panels render blank.
  */
-export function createFaceTexture(uvTransform: {
-  repeat: [number, number]
-  offset: [number, number]
-}): THREE.Texture {
+export function getPlywoodTexture(): THREE.CanvasTexture {
   if (!sharedTile) sharedTile = createPlywoodTile()
-
-  const texture = sharedTile.clone()
-  texture.wrapS = THREE.RepeatWrapping
-  texture.wrapT = THREE.RepeatWrapping
-  texture.repeat.set(...uvTransform.repeat)
-  texture.offset.set(...uvTransform.offset)
-  texture.needsUpdate = true
-  return texture
+  return sharedTile
 }

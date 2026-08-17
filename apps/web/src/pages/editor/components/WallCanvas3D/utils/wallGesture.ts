@@ -1,24 +1,22 @@
+import type { EditorMode } from '@/stores/wallStore'
+
 export type WallTapAction = 'deselectHold' | 'selectFace' | 'place'
 
 interface WallTapOptions {
+  mode: EditorMode
   selectedHoldId: string | null
-  selectedFaceId: string | null
   /** The face under the pointer */
   hitFaceId: string
 }
 
 /**
- * One click on the wall has three jobs, so it resolves in this order: a
- * selected hold gets dismissed first, then an unfocused face gets focused,
- * and only a click inside the focused face places a hold. Focusing first is
- * what stops holds landing on a roof that is barely visible edge-on.
+ * What a click on a panel does. The mode picker decides rather than the click
+ * history: aiming at a panel and aiming at the wall surface are different
+ * intentions, and inferring them from click order made the first click on
+ * every panel do something other than what it looked like.
  */
-export function resolveWallTap({
-  selectedHoldId,
-  selectedFaceId,
-  hitFaceId,
-}: WallTapOptions): WallTapAction {
+export function resolveWallTap({ mode, selectedHoldId }: WallTapOptions): WallTapAction {
+  if (mode === 'shape') return 'selectFace'
   if (selectedHoldId) return 'deselectHold'
-  if (selectedFaceId !== hitFaceId) return 'selectFace'
   return 'place'
 }

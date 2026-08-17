@@ -175,6 +175,17 @@ export function useWallInteraction() {
     [worldToFaceCoords],
   )
 
+  /* A face is clickable, so it says so; holds set their own cursor and stop
+     the event before it reaches here */
+  const handleFacePointerEnter = useCallback((e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation()
+    if (!isDraggingRef.current) document.body.style.cursor = 'pointer'
+  }, [])
+
+  const handleFacePointerLeave = useCallback(() => {
+    if (!isDraggingRef.current) document.body.style.cursor = 'default'
+  }, [])
+
   /* Hold pointer down — select + start drag, save pre-drag position */
   const handleHoldPointerDown = useCallback((holdId: string) => (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
@@ -194,6 +205,8 @@ export function useWallInteraction() {
     registerFaceMesh,
     isDragging: isDraggingRef,
     handleFacePointerDown,
+    handleFacePointerEnter,
+    handleFacePointerLeave,
     handleHoldPointerDown,
   }
 }
@@ -204,10 +217,14 @@ function isTap(down: PointerDown, up: PointerEvent): boolean {
 }
 
 function resolveTap(down: PointerDown) {
-  const { selectedHoldId, selectedFaceId, selectHold, selectFace, addHold } =
+  const { editorMode, selectedHoldId, selectHold, selectFace, addHold, setFaceCutPoint } =
     useWallStore.getState()
 
-  const action = resolveWallTap({ selectedHoldId, selectedFaceId, hitFaceId: down.faceId })
+  /* Every tap on a panel also marks where a cut would land, so the cut buttons
+     split where you were looking rather than always down the middle */
+  setFaceCutPoint({ faceId: down.faceId, u: down.u, v: down.v })
+
+  const action = resolveWallTap({ mode: editorMode, selectedHoldId, hitFaceId: down.faceId })
 
   if (action === 'deselectHold') selectHold(null)
   else if (action === 'selectFace') selectFace(down.faceId)

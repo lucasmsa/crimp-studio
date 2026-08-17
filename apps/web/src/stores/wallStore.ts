@@ -22,7 +22,10 @@ import {
   computeFaceTransforms,
   getFaceTilt,
 } from '@/pages/editor/components/WallCanvas3D/utils/faceTransform'
-import { clampFaceAngle } from '@/pages/editor/components/WallCanvas3D/config/faceAngleConfig'
+import {
+  clampFaceAngle,
+  getAngleLimits,
+} from '@/pages/editor/components/WallCanvas3D/config/faceAngleConfig'
 
 export type HoldType = 'jug' | 'crimp' | 'sloper' | 'pinch' | 'pocket' | 'volume'
 
@@ -60,11 +63,17 @@ export interface Wall {
   holds: Hold[]
 }
 
+/** What a click on the canvas is aiming at */
+export type EditorMode = 'holds' | 'shape'
+
 interface WallState {
   wall: Wall
+  editorMode: EditorMode
   selectedHoldId: string | null
   /** The face being shaped; clicks inside it place holds */
   selectedFaceId: string | null
+  /** Where the pointer last landed on a face, so a cut splits there */
+  faceCutPoint: { faceId: string; u: number; v: number } | null
   selectedHoldType: HoldType
   /** Model variant for the next placement; null = deterministic auto pick */
   selectedVariant: string | null
@@ -78,7 +87,9 @@ interface WallState {
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
   selectHold: (id: string | null) => void
+  setEditorMode: (mode: EditorMode) => void
   selectFace: (faceId: string | null) => void
+  setFaceCutPoint: (point: { faceId: string; u: number; v: number }) => void
   /** Splits a face in two along the seam; refuses if canCutFace says no */
   cutFace: (faceId: string, axis: CutAxis, at: number) => void
   /** Takes the absolute tilt from vertical and stores it relative to the parent */
@@ -108,8 +119,12 @@ const defaultWall: Wall = {
 
 export const useWallStore = create<WallState>((set) => ({
   wall: defaultWall,
+  editorMode: 'holds',
   selectedHoldId: null,
-  selectedFaceId: null,
+  /* The wall opens focused, so the shaping controls are there from the start
+     and the first click on a blank wall places a hold */
+  selectedFaceId: defaultWall.faces.rootId,
+  faceCutPoint: null,
   selectedHoldType: 'jug',
   selectedVariant: null,
   deletingHoldIds: [],
@@ -189,7 +204,11 @@ export const useWallStore = create<WallState>((set) => ({
 
   selectHold: (id) => set({ selectedHoldId: id }),
 
+  setEditorMode: (mode) => set({ editorMode: mode, selectedHoldId: null }),
+
   selectFace: (faceId) => set({ selectedFaceId: faceId }),
+
+  setFaceCutPoint: (point) => set({ faceCutPoint: point }),
 
   cutFace: (faceId, axis, at) =>
     set((state) => {
@@ -207,7 +226,7 @@ export const useWallStore = create<WallState>((set) => ({
   setFaceAngle: (faceId, tiltDeg) =>
     set((state) => {
       const face = getFace(state.wall.faces, faceId)
-      const tilt = clampFaceAngle(tiltDeg)
+      const tilt = clampFaceAngle(tiltDeg, getAngleLimits(face.parentId === null))
 
       /* Stored relative to the parent so bending a lower face swings whatever
          is above it as one assembly. A left hinge yaws rather than tilts, so

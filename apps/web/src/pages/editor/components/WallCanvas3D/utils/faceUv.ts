@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import type { FaceTree } from './faceTree'
 import { computeFaceSheetOrigin, getFace } from './faceTree'
 import { PANEL_WIDTH_M } from './wallTexture'
@@ -14,6 +15,23 @@ export interface FaceUvTransform {
  * the T-nut grid and seams carry across a bend. Phase comes from the sheet
  * position, which no angle can change.
  */
+/**
+ * Bakes a face's phase into its own UVs, so every panel can share one texture
+ * object rather than owning a clone of it.
+ */
+export function applyFaceUvTransform(
+  geometry: THREE.BufferGeometry,
+  { repeat, offset }: FaceUvTransform,
+): void {
+  const uv = geometry.getAttribute('uv')
+
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, uv.getX(i) * repeat[0] + offset[0], uv.getY(i) * repeat[1] + offset[1])
+  }
+
+  uv.needsUpdate = true
+}
+
 export function computeFaceUvTransform(tree: FaceTree, faceId: string): FaceUvTransform {
   const face = getFace(tree, faceId)
   const { u0, v0 } = computeFaceSheetOrigin(tree, faceId)

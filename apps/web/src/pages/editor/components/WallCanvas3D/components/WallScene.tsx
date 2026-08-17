@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import { OrbitControls } from '@react-three/drei'
 import { EffectComposer, SMAA, Vignette } from '@react-three/postprocessing'
-import { useWallStore } from '@/stores/wallStore'
 import { Wall3D } from './Wall3D'
 import { EditorLights } from './EditorLights'
 import { useEditorCamera } from '../hooks/useEditorCamera'
@@ -9,10 +8,9 @@ import { useEditorKeyboard } from '../hooks/useEditorKeyboard'
 import { ORBIT_CONTROLS } from '../constants/editor3d'
 
 export function WallScene() {
-  const { wall } = useWallStore()
   const [orbitEnabled, setOrbitEnabled] = useState(true)
 
-  const wallCenter = useEditorCamera(wall.width, wall.height)
+  const wallCenter = useEditorCamera()
   useEditorKeyboard()
 
   const handleDragStateChange = useCallback((isDragging: boolean) => {

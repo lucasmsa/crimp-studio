@@ -2,27 +2,25 @@ import { describe, it, expect } from 'vitest'
 import { resolveWallTap } from '../wallGesture'
 
 describe('resolveWallTap', () => {
-  it('dismisses a selected hold before anything else', () => {
+  it('picks the panel while shaping, whatever is selected', () => {
     expect(
-      resolveWallTap({ selectedHoldId: 'hold_1', selectedFaceId: 'face_1', hitFaceId: 'face_1' }),
-    ).toBe('deselectHold')
-  })
+      resolveWallTap({ mode: 'shape', selectedHoldId: null, hitFaceId: 'face_1' }),
+    ).toBe('selectFace')
 
-  it('focuses a face that is not focused yet', () => {
     expect(
-      resolveWallTap({ selectedHoldId: null, selectedFaceId: null, hitFaceId: 'face_1' }),
+      resolveWallTap({ mode: 'shape', selectedHoldId: 'hold_1', hitFaceId: 'face_1' }),
     ).toBe('selectFace')
   })
 
-  it('switches focus when another face is tapped', () => {
+  it('places a hold when that is what clicks are aimed at', () => {
     expect(
-      resolveWallTap({ selectedHoldId: null, selectedFaceId: 'face_1', hitFaceId: 'face_2' }),
-    ).toBe('selectFace')
-  })
-
-  it('places a hold inside the focused face', () => {
-    expect(
-      resolveWallTap({ selectedHoldId: null, selectedFaceId: 'face_1', hitFaceId: 'face_1' }),
+      resolveWallTap({ mode: 'holds', selectedHoldId: null, hitFaceId: 'face_1' }),
     ).toBe('place')
+  })
+
+  it('dismisses a selected hold first, so one click does not both deselect and place', () => {
+    expect(
+      resolveWallTap({ mode: 'holds', selectedHoldId: 'hold_1', hitFaceId: 'face_1' }),
+    ).toBe('deselectHold')
   })
 })

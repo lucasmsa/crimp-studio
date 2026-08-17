@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { FACE_ANGLE_PRESETS } from '../../WallCanvas3D/config/faceAngleConfig'
 import { useFaceSection } from '../hooks/useFaceSection'
 import { holdTypeButtonBase, holdTypeButtonStates, sectionLabel } from '../config/wallConfigStyles'
 
@@ -11,22 +10,40 @@ import { holdTypeButtonBase, holdTypeButtonStates, sectionLabel } from '../confi
  */
 export function FaceSection() {
   const { t } = useTranslation()
-  const { face, tilt, cuts, canRemove, setAngle, stepAngle, cut, remove } = useFaceSection()
+  const {
+    face,
+    tilt,
+    limits,
+    presets,
+    isEditingHold,
+    cuts,
+    canRemove,
+    setAngle,
+    stepAngle,
+    cut,
+    remove,
+  } = useFaceSection()
 
   if (!face) return null
 
+  const editingLabel = isEditingHold ? 'editor.face.editingHold' : 'editor.face.editingFace'
+
   return (
     <section className="space-y-3 border-b-2 border-border pb-6" data-testid="face-section">
-      <h2 className={sectionLabel}>{t('editor.face.label')}</h2>
+      <h2 className={sectionLabel}>
+        {t('editor.face.editing')}: {t(editingLabel)}
+      </h2>
 
       <div className="grid grid-cols-2 gap-2.5">
-        {FACE_ANGLE_PRESETS.map((preset) => (
+        {presets.map((preset) => (
           <button
             key={preset.key}
             onClick={() => setAngle(preset.angle)}
+            disabled={preset.angle > limits.max || preset.angle < limits.min}
             className={cn(
               holdTypeButtonBase,
               tilt === preset.angle ? holdTypeButtonStates.selected : holdTypeButtonStates.idle,
+              'disabled:pointer-events-none disabled:opacity-40',
             )}
             data-testid={`face-angle-${preset.key}`}
           >
@@ -65,7 +82,8 @@ export function FaceSection() {
       <div className="grid grid-cols-2 gap-2.5">
         <button
           onClick={() => cut('across')}
-          disabled={!cuts.across}
+          disabled={!cuts.across.ok}
+          title={cuts.across.ok ? undefined : t(`editor.face.refusal.${cuts.across.reason}`)}
           className={cn(
             holdTypeButtonBase,
             holdTypeButtonStates.idle,
@@ -77,7 +95,8 @@ export function FaceSection() {
         </button>
         <button
           onClick={() => cut('up')}
-          disabled={!cuts.up}
+          disabled={!cuts.up.ok}
+          title={cuts.up.ok ? undefined : t(`editor.face.refusal.${cuts.up.reason}`)}
           className={cn(
             holdTypeButtonBase,
             holdTypeButtonStates.idle,

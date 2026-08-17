@@ -71,14 +71,33 @@
         "slab": "Placa",
         "vertical": "Vertical",
         "overhang": "Desplome",
-        "roof": "Techo"
+        "roof": "Techo",
+        "cornerIn": "Diedro",
+        "flush": "Alineado",
+        "prow": "Proa",
+        "wall": "Pared Lateral"
       },
       "degrees": "{{value}} grados",
       "increase": "Mas desplome",
       "decrease": "Menos desplome",
       "cutAcross": "Cortar Horizontal",
       "cutUp": "Cortar Vertical",
-      "remove": "Unir Abajo"
+      "remove": "Unir Abajo",
+      "editing": "Editando",
+      "editingFace": "Panel",
+      "editingHold": "Presa",
+      "refusal": {
+        "too-small": "El panel quedaria muy chico para escalar",
+        "child-in-the-way": "Ya hay una union en ese sentido; corta el otro panel",
+        "holds-in-the-way": "Hay presas sobre la union. Muevelas primero"
+      }
+    },
+    "faceCount": "{{count}} paneles",
+    "faceCount_one": "{{count}} panel",
+    "mode": {
+      "label": "El clic elige",
+      "holds": "Presas",
+      "shape": "Paneles"
     }
   },
   "about": {

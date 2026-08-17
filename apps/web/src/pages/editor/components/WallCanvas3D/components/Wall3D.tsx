@@ -43,6 +43,8 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
     registerFaceMesh,
     isDragging,
     handleFacePointerDown,
+    handleFacePointerEnter,
+    handleFacePointerLeave,
     handleHoldPointerDown,
   } = useWallInteraction()
 
@@ -96,6 +98,8 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           isSelected={face.id === selectedFaceId}
           meshRef={registerFaceMesh(face.id)}
           onPointerDown={handleFacePointerDown(face.id)}
+          onPointerEnter={handleFacePointerEnter}
+          onPointerLeave={handleFacePointerLeave}
           onHoldPointerDown={handleHoldPointerDown}
         />
       ))}

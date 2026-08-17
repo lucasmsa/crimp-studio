@@ -71,14 +71,33 @@
         "slab": "Placa",
         "vertical": "Vertical",
         "overhang": "Negativo",
-        "roof": "Teto"
+        "roof": "Teto",
+        "cornerIn": "Diedro",
+        "flush": "Alinhado",
+        "prow": "Proa",
+        "wall": "Parede Lateral"
       },
       "degrees": "{{value}} graus",
       "increase": "Mais negativo",
       "decrease": "Menos negativo",
       "cutAcross": "Cortar na Horizontal",
       "cutUp": "Cortar na Vertical",
-      "remove": "Juntar Abaixo"
+      "remove": "Juntar Abaixo",
+      "editing": "Editando",
+      "editingFace": "Painel",
+      "editingHold": "Presa",
+      "refusal": {
+        "too-small": "O painel ficaria pequeno demais para escalar",
+        "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
+        "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes"
+      }
+    },
+    "faceCount": "{{count}} paineis",
+    "faceCount_one": "{{count}} painel",
+    "mode": {
+      "label": "Clique seleciona",
+      "holds": "Presas",
+      "shape": "Paineis"
     }
   },
   "about": {

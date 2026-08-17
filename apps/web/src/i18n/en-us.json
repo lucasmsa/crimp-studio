@@ -71,14 +71,33 @@
         "slab": "Slab",
         "vertical": "Vertical",
         "overhang": "Overhang",
-        "roof": "Roof"
+        "roof": "Roof",
+        "cornerIn": "Corner In",
+        "flush": "Flush",
+        "prow": "Prow",
+        "wall": "Side Wall"
       },
       "degrees": "{{value}} deg",
       "increase": "Steeper",
       "decrease": "Shallower",
       "cutAcross": "Cut Across",
       "cutUp": "Cut Up",
-      "remove": "Merge Down"
+      "remove": "Merge Down",
+      "editing": "Editing",
+      "editingFace": "Panel",
+      "editingHold": "Hold",
+      "refusal": {
+        "too-small": "The panel would be too small to climb",
+        "child-in-the-way": "A seam already crosses this way; cut the other panel instead",
+        "holds-in-the-way": "Holds sit on the seam. Move them first"
+      }
+    },
+    "faceCount": "{{count}} panels",
+    "faceCount_one": "{{count}} panel",
+    "mode": {
+      "label": "Clicking selects",
+      "holds": "Holds",
+      "shape": "Panels"
     }
   },
   "about": {

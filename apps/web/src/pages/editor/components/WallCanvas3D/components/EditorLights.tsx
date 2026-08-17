@@ -17,21 +17,25 @@ function ToonLights() {
          volumes (pyramids, whose sides lean inward) nothing at all since their
          projected apex stays inside the base. y/z must clear ~2 for those to
          read. normalBias stays small for the same reason: 8mm of normal offset
-         erased the contact shadow on every flat hold. */}
+         erased the contact shadow on every flat hold.
+         Frustum and map size are a pair: they set the texel size, and texels
+         are what a hold's shadow edge is drawn with. Too wide a frustum and a
+         10cm hold gets a staircase for an outline and speckles itself with
+         acne; too narrow and a bent panel's shadow is clipped off mid-wall. */}
       <directionalLight
         position={[8, 12, 5]}
         intensity={2.2}
         castShadow
-        shadow-mapSize-width={4096}
-        shadow-mapSize-height={4096}
-        shadow-camera-left={-4}
-        shadow-camera-right={4}
-        shadow-camera-top={4}
-        shadow-camera-bottom={-4}
+        shadow-mapSize-width={8192}
+        shadow-mapSize-height={8192}
+        shadow-camera-left={-5}
+        shadow-camera-right={5}
+        shadow-camera-top={5}
+        shadow-camera-bottom={-5}
         shadow-camera-near={0.1}
-        shadow-camera-far={20}
-        shadow-bias={-0.0002}
-        shadow-normalBias={0.002}
+        shadow-camera-far={24}
+        shadow-bias={-0.0003}
+        shadow-normalBias={0.006}
       />
     </>
   )
@@ -55,10 +59,10 @@ function StandardLights() {
         shadow-mapSize-width={4096}
         shadow-mapSize-height={4096}
         shadow-radius={3}
-        shadow-camera-left={-4}
-        shadow-camera-right={4}
-        shadow-camera-top={4}
-        shadow-camera-bottom={-4}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={7}
+        shadow-camera-bottom={-7}
         shadow-camera-near={0.1}
         shadow-camera-far={20}
         shadow-bias={-0.0002}

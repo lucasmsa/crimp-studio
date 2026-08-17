@@ -130,6 +130,7 @@ export function HoldMesh({
         rotation-z={rz}
         scale={scale}
         castShadow
+        receiveShadow
         raycast={() => null}
       >
         {SCENE_STYLE === 'toon' ? (

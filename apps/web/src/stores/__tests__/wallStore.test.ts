@@ -296,12 +296,21 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(30)
     })
 
-    it('clamps past the fold-back limits', () => {
+    it('stops the base panel short of horizontal, since it stands on the floor', () => {
       useWallStore.getState().setFaceAngle(rootFaceId(), 200)
-      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(135)
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(60)
 
       useWallStore.getState().setFaceAngle(rootFaceId(), -90)
       expect(useWallStore.getState().wall.faces.byId[rootFaceId()].angle).toBe(-45)
+    })
+
+    it('lets a panel above the base go all the way to a roof', () => {
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const childId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().setFaceAngle(childId, 200)
+
+      expect(useWallStore.getState().wall.faces.byId[childId].angle).toBe(135)
     })
 
     it('stores a child angle relative to its parent, so the absolute tilt is what was asked for', () => {

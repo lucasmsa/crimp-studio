@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import type { Hold } from '@/stores/wallStore'
@@ -7,11 +7,16 @@ import { Hold3D } from './Hold3D'
 import { HoldActionsOverlay } from './HoldActionsOverlay'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
-import { createFaceTexture } from '../utils/wallTexture'
+import { getPlywoodTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
 import type { WallFace } from '../utils/faceTree'
 import type { FaceUvTransform } from '../utils/faceUv'
+import { applyFaceUvTransform } from '../utils/faceUv'
+
+/** Seam line thickness in metres, and how far it floats off the surface */
+const SEAM_WIDTH = 0.018
+const SEAM_LIFT = 0.002
 
 interface WallFace3DProps {
   face: WallFace
@@ -28,6 +33,8 @@ interface WallFace3DProps {
   groupRef: React.Ref<THREE.Group>
   meshRef?: React.Ref<THREE.Mesh>
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void
+  onPointerEnter: (e: ThreeEvent<PointerEvent>) => void
+  onPointerLeave: () => void
   onHoldPointerDown: (holdId: string) => (e: ThreeEvent<PointerEvent>) => void
 }
 
@@ -53,13 +60,24 @@ export function WallFace3D({
   groupRef,
   meshRef,
   onPointerDown,
+  onPointerEnter,
+  onPointerLeave,
   onHoldPointerDown,
 }: WallFace3DProps) {
   const widthM = face.width * CM_TO_M
   const heightM = face.height * CM_TO_M
 
-  /* T-nut grid + plywood seams, phased by where this face sits on the sheet */
-  const texture = useMemo(() => createFaceTexture(uvTransform), [uvTransform])
+  const texture = getPlywoodTexture()
+
+  /* The panel slab, with the T-nut grid phased by where this face sits on the
+     unrolled sheet so the pattern runs on across a seam */
+  const panelGeometry = useMemo(() => {
+    const box = new THREE.BoxGeometry(widthM, heightM, WALL_DEPTH)
+    applyFaceUvTransform(box, uvTransform)
+    return box
+  }, [widthM, heightM, uvTransform])
+
+  useEffect(() => () => panelGeometry.dispose(), [panelGeometry])
 
   /* The focused panel wears a heavier rim. Recoloring it instead would have to
      survive a beige wall and a beige primary, and ink always reads */
@@ -90,19 +108,45 @@ export function WallFace3D({
 
       {selectedHold && <HoldActionsOverlay hold={selectedHold} />}
 
+      {/* Ink line along the hinge. Two panels folded flat leave only a hairline
+          between their rims, which reads as nothing at all from the front */}
+      {face.hinge && (
+        <mesh
+          position={
+            face.hinge === 'bottom'
+              ? [widthM / 2, SEAM_WIDTH / 2, SEAM_LIFT]
+              : [SEAM_WIDTH / 2, heightM / 2, SEAM_LIFT]
+          }
+          raycast={() => null}
+        >
+          <planeGeometry
+            args={
+              face.hinge === 'bottom' ? [widthM, SEAM_WIDTH] : [SEAM_WIDTH, heightM]
+            }
+          />
+          <meshBasicMaterial color={colors.scene.outline} />
+        </mesh>
+      )}
+
       <mesh
         ref={meshRef}
         position={[widthM / 2, heightM / 2, -WALL_DEPTH / 2]}
         onPointerDown={onPointerDown}
+        onPointerEnter={onPointerEnter}
+        onPointerLeave={onPointerLeave}
+        castShadow
         receiveShadow
+        geometry={panelGeometry}
       >
-        <boxGeometry args={[widthM, heightM, WALL_DEPTH]} />
         {SCENE_STYLE === 'toon' ? (
           <>
+            {/* Shadow from the back face: a panel is 8cm of plywood, so its far
+                side puts that thickness between caster and receiver */}
             <meshToonMaterial
               color={wallColor}
               map={texture}
               gradientMap={getToonGradientMap(toonConfig.gradientSteps)}
+              shadowSide={THREE.BackSide}
             />
             {/* Inverted hull rim around the panel */}
             <mesh geometry={outlineGeometry!} raycast={() => null}>

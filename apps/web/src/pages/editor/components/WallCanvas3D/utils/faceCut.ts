@@ -78,6 +78,32 @@ export function canCutFace(
   return { ok: true, blockingHoldIds: [] }
 }
 
+/**
+ * The seam nearest to where the user aimed that is actually legal. Aiming and
+ * placing are the same click, so the aimed spot is often exactly where a hold
+ * just landed; this walks outward from there to the first clear line rather
+ * than leaving the cut button dead with no way forward.
+ */
+export function findCutPosition(
+  tree: FaceTree,
+  holds: Hold[],
+  faceId: string,
+  axis: CutAxis,
+  preferred: number,
+): number | null {
+  const extent = faceExtent(getFace(tree, faceId), axis)
+  const legal = (at: number) => canCutFace(tree, holds, faceId, axis, at).ok
+
+  if (legal(preferred)) return preferred
+
+  for (let offset = 5; offset <= extent; offset += 5) {
+    if (legal(preferred + offset)) return preferred + offset
+    if (legal(preferred - offset)) return preferred - offset
+  }
+
+  return null
+}
+
 export interface CutResult {
   tree: FaceTree
   holds: Hold[]

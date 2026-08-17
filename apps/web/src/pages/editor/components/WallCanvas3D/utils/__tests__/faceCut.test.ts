@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import type { Hold } from '@/stores/wallStore'
 import { createRootFaceTree, computeSurfaceArea, getFace, listFaces } from '../faceTree'
-import { canCutFace, cutFaceTree, mergeFaceIntoParent, MIN_FACE_SIZE } from '../faceCut'
+import {
+  canCutFace,
+  cutFaceTree,
+  findCutPosition,
+  mergeFaceIntoParent,
+  MIN_FACE_SIZE,
+} from '../faceCut'
 
 const tree = () => createRootFaceTree(400, 500)
 
@@ -54,6 +60,32 @@ describe('canCutFace', () => {
     expect(canCutFace(withArete.tree, [], base.rootId, 'across', 250).reason).toBe(
       'child-in-the-way',
     )
+  })
+})
+
+describe('findCutPosition', () => {
+  it('keeps the aimed seam when it is already clear', () => {
+    const base = tree()
+
+    expect(findCutPosition(base, [], base.rootId, 'across', 300)).toBe(300)
+  })
+
+  it('slides off a hold to the nearest clear line', () => {
+    const base = tree()
+    const hold = makeHold(base.rootId, 200, 300)
+
+    const at = findCutPosition(base, [hold], base.rootId, 'across', 300)
+
+    expect(at).not.toBeNull()
+    expect(Math.abs(at! - 300)).toBeGreaterThanOrEqual(15)
+    expect(canCutFace(base, [hold], base.rootId, 'across', at!).ok).toBe(true)
+  })
+
+  it('gives up when a child seam already crosses the other way', () => {
+    const base = tree()
+    const withArete = cutFaceTree(base, [], base.rootId, 'up', 200)
+
+    expect(findCutPosition(withArete.tree, [], base.rootId, 'across', 250)).toBeNull()
   })
 })
 
