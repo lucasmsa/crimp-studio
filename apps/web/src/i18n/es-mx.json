@@ -51,8 +51,7 @@
     },
     "colors": {
       "wallColor": "Color del Muro",
-      "holdColor": "Color de Presa",
-      "custom": "Color personalizado"
+      "holdColor": "Color de Presa"
     },
     "modes": {
       "generate": "Modo Generación",
@@ -112,6 +111,14 @@
       "pink": "Rosa",
       "black": "Negro",
       "white": "Blanco"
+    },
+    "panelSwatches": {
+      "plywood": "Triplay",
+      "birch": "Abedul",
+      "bone": "Hueso",
+      "grey": "Gris",
+      "slate": "Pizarra",
+      "charcoal": "Carbon"
     }
   },
   "about": {

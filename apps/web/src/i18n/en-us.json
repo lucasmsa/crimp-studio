@@ -51,8 +51,7 @@
     },
     "colors": {
       "wallColor": "Wall Color",
-      "holdColor": "Hold Color",
-      "custom": "Custom colour"
+      "holdColor": "Hold Color"
     },
     "modes": {
       "generate": "Generate Mode",
@@ -112,6 +111,14 @@
       "pink": "Pink",
       "black": "Black",
       "white": "White"
+    },
+    "panelSwatches": {
+      "plywood": "Plywood",
+      "birch": "Birch",
+      "bone": "Bone",
+      "grey": "Grey",
+      "slate": "Slate",
+      "charcoal": "Charcoal"
     }
   },
   "about": {

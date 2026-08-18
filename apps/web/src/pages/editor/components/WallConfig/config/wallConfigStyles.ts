@@ -18,7 +18,3 @@ export const countChip =
 
 export const sectionLabel =
   'font-heading text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground'
-
-export const colorInput =
-  'h-10 w-16 border-2 border-foreground bg-card p-1 cursor-pointer ' +
-  'shadow-[3px_3px_0_0_var(--color-foreground)]'

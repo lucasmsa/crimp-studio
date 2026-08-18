@@ -1,25 +1,39 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { HOLD_SWATCHES } from '../config/holdSwatches'
 
-interface HoldSwatchesProps {
+interface Swatch {
+  key: string
+  hex: string
+}
+
+interface ColorSwatchesProps {
+  swatches: Swatch[]
   value?: string
+  /** i18n prefix the swatch keys hang off, e.g. editor.swatches */
+  labelPrefix: string
+  testIdPrefix: string
   onPick: (hex: string) => void
 }
 
-/** The colours a setter actually reaches for, as a row of chalk-ringed dots */
-export function HoldSwatches({ value, onPick }: HoldSwatchesProps) {
+/** A row of colour dots. The only way to set a colour: there is no wheel */
+export function ColorSwatches({
+  swatches,
+  value,
+  labelPrefix,
+  testIdPrefix,
+  onPick,
+}: ColorSwatchesProps) {
   const { t } = useTranslation()
   const active = value?.toUpperCase()
 
   return (
-    <div className="flex flex-wrap gap-2" data-testid="hold-swatches">
-      {HOLD_SWATCHES.map((swatch) => (
+    <div className="flex flex-wrap gap-2" data-testid={testIdPrefix}>
+      {swatches.map((swatch) => (
         <button
           key={swatch.key}
           onClick={() => onPick(swatch.hex)}
-          title={t(`editor.swatches.${swatch.key}`)}
-          aria-label={t(`editor.swatches.${swatch.key}`)}
+          title={t(`${labelPrefix}.${swatch.key}`)}
+          aria-label={t(`${labelPrefix}.${swatch.key}`)}
           aria-pressed={active === swatch.hex}
           className={cn(
             'h-6 w-6 shrink-0 cursor-pointer rounded-full border-2 transition-transform',
@@ -29,7 +43,7 @@ export function HoldSwatches({ value, onPick }: HoldSwatchesProps) {
               : 'border-foreground/50',
           )}
           style={{ backgroundColor: swatch.hex }}
-          data-testid={`hold-swatch-${swatch.key}`}
+          data-testid={`${testIdPrefix}-${swatch.key}`}
         />
       ))}
     </div>

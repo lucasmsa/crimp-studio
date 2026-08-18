@@ -51,8 +51,7 @@
     },
     "colors": {
       "wallColor": "Cor da Parede",
-      "holdColor": "Cor da Agarra",
-      "custom": "Cor personalizada"
+      "holdColor": "Cor da Agarra"
     },
     "modes": {
       "generate": "Modo Geração",
@@ -112,6 +111,14 @@
       "pink": "Rosa",
       "black": "Preto",
       "white": "Branco"
+    },
+    "panelSwatches": {
+      "plywood": "Compensado",
+      "birch": "Betula",
+      "bone": "Osso",
+      "grey": "Cinza",
+      "slate": "Ardosia",
+      "charcoal": "Grafite"
     }
   },
   "about": {
