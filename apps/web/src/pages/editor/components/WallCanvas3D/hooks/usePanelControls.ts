@@ -1,26 +1,24 @@
 import { useMemo } from 'react'
 import { useWallStore } from '@/stores/wallStore'
-import { getFace } from '../../WallCanvas3D/utils/faceTree'
-import { computeFaceTransforms, getFaceTilt } from '../../WallCanvas3D/utils/faceTransform'
-import { canCutFace, findCutPosition, MIN_FACE_SIZE } from '../../WallCanvas3D/utils/faceCut'
-import type { CutAxis, CutCheck } from '../../WallCanvas3D/utils/faceCut'
-import {
-  getAngleLimits,
-  getFaceAnglePresets,
-  stepFaceAngle,
-} from '../../WallCanvas3D/config/faceAngleConfig'
+import { getFace } from '../utils/faceTree'
+import { computeFaceTransforms, getFaceTilt } from '../utils/faceTransform'
+import { canCutFace, findCutPosition, MIN_FACE_SIZE } from '../utils/faceCut'
+import type { CutAxis, CutCheck } from '../utils/faceCut'
+import { getAngleLimits, getFaceAnglePresets, stepFaceAngle } from '../config/faceAngleConfig'
+import { getSeamLabelKey } from '../utils/panelSeam'
 
 /**
- * Everything the FACE section needs about the focused panel: its angle in the
- * terms its hinge speaks, where a cut would land, and why a cut is refused.
+ * Everything the panel popover needs about the selected panel: its angle in the
+ * terms its hinge speaks, which seam that angle drives, where a cut would land,
+ * why a cut is refused, and its paint.
  */
-export function useFaceSection() {
+export function usePanelControls() {
   const {
     wall,
     selectedFaceId,
-    selectedHoldId,
     faceCutPoint,
     setFaceAngle,
+    setFaceColor,
     cutFace,
     removeFace,
   } = useWallStore()
@@ -64,13 +62,15 @@ export function useFaceSection() {
     tilt,
     limits,
     presets: getFaceAnglePresets(face?.hinge ?? null),
-    /* A selected hold takes over the sidebar's attention, so the header says so */
-    isEditingHold: Boolean(selectedHoldId),
+    /* One face owns one hinge, so the seam its angle drives is a readout and
+       not a choice: the popover says which one is moving */
+    seamLabelKey: getSeamLabelKey(face?.hinge ?? null),
     cuts,
     canRemove: Boolean(face?.parentId),
     setAngle: (angle: number) => face && setFaceAngle(face.id, angle),
     stepAngle: (direction: 1 | -1, coarse: boolean) =>
       face && setFaceAngle(face.id, stepFaceAngle(tilt, direction, coarse, limits)),
+    setColor: (color: string) => face && setFaceColor(face.id, color),
     cut: (axis: CutAxis) => {
       if (!face) return
       const at = cutAt(axis)

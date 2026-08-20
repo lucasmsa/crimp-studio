@@ -13,6 +13,8 @@ export interface WallFace {
   height: number
   /** degrees about the hinge axis, relative to the parent */
   angle: number
+  /** Paint on this panel alone, so a wall can be two tones the way gyms are */
+  color: string
   childIds: string[]
 }
 
@@ -23,7 +25,7 @@ export interface FaceTree {
 
 const createFaceId = () => `face_${Math.random().toString(36).substring(2, 9)}`
 
-export function createRootFaceTree(width: number, height: number): FaceTree {
+export function createRootFaceTree(width: number, height: number, color: string): FaceTree {
   const root: WallFace = {
     id: createFaceId(),
     parentId: null,
@@ -31,6 +33,7 @@ export function createRootFaceTree(width: number, height: number): FaceTree {
     width,
     height,
     angle: 0,
+    color,
     childIds: [],
   }
 

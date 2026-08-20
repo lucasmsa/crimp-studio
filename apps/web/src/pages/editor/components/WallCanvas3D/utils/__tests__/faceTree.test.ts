@@ -9,6 +9,8 @@ import {
   listFaces,
 } from '../faceTree'
 
+const PANEL = '#E8D5B7'
+
 /** Stacks a face on top of the given parent, as an across-cut would */
 function stackOn(tree: FaceTree, parentId: string, height: number): { tree: FaceTree; id: string } {
   const parent = getFace(tree, parentId)
@@ -28,6 +30,7 @@ function stackOn(tree: FaceTree, parentId: string, height: number): { tree: Face
           width: parent.width,
           height,
           angle: 0,
+          color: PANEL,
           childIds: [],
         },
       },
@@ -37,7 +40,7 @@ function stackOn(tree: FaceTree, parentId: string, height: number): { tree: Face
 
 describe('createRootFaceTree', () => {
   it('starts as one face covering the whole sheet', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
     const root = getRootFace(tree)
 
     expect(root.parentId).toBeNull()
@@ -51,7 +54,7 @@ describe('createRootFaceTree', () => {
 
 describe('computeSurfaceArea', () => {
   it('is unchanged by splitting the sheet', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
     const once = stackOn(tree, tree.rootId, 200)
     const twice = stackOn(once.tree, once.id, 100)
 
@@ -63,7 +66,7 @@ describe('computeSurfaceArea', () => {
 
 describe('computeFaceSheetOrigin', () => {
   it('measures a face position on the unrolled sheet, not in the world', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
     const middle = stackOn(tree, tree.rootId, 200)
     const top = stackOn(middle.tree, middle.id, 100)
 
@@ -75,7 +78,7 @@ describe('computeFaceSheetOrigin', () => {
 
 describe('listFaces', () => {
   it('walks the whole tree from the root', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
     const { tree: withChild, id } = stackOn(tree, tree.rootId, 200)
 
     expect(listFaces(withChild).map((f) => f.id)).toEqual([tree.rootId, id])
@@ -84,7 +87,7 @@ describe('listFaces', () => {
 
 describe('getFace', () => {
   it('throws on an unknown face rather than returning undefined', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
 
     expect(() => getFace(tree, 'nope')).toThrow('Unknown face: nope')
   })

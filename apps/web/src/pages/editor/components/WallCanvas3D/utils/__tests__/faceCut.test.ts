@@ -9,7 +9,9 @@ import {
   MIN_FACE_SIZE,
 } from '../faceCut'
 
-const tree = () => createRootFaceTree(400, 500)
+const PANEL = '#E8D5B7'
+
+const tree = () => createRootFaceTree(400, 500, PANEL)
 
 const makeHold = (faceId: string, u: number, v: number): Hold => ({
   id: `hold_${u}_${v}`,
@@ -122,6 +124,19 @@ describe('cutFaceTree', () => {
     expect(holds[0]).toEqual(below)
     expect(holds[1].faceId).toBe(newFaceId)
     expect(holds[1].v).toBe(100)
+  })
+
+  it('gives both halves the paint the panel already had', () => {
+    const base = tree()
+    const painted = {
+      rootId: base.rootId,
+      byId: { [base.rootId]: { ...getFace(base, base.rootId), color: '#5A6B78' } },
+    }
+
+    const { tree: cut, newFaceId } = cutFaceTree(painted, [], base.rootId, 'across', 300)
+
+    expect(getFace(cut, base.rootId).color).toBe('#5A6B78')
+    expect(getFace(cut, newFaceId).color).toBe('#5A6B78')
   })
 
   it('re-parents a child that hinges on the edge the new face takes', () => {

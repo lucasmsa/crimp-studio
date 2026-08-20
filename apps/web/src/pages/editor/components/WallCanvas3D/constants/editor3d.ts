@@ -27,7 +27,9 @@ export const ORBIT_CONTROLS = {
 export const KEYBOARD_SHORTCUTS = {
   DELETE_HOLD: ['Backspace', 'Delete'] as readonly string[],
   ROTATE_HOLD: ['r', 'R'] as readonly string[],
-  DESELECT: ['Escape', 'Enter'] as readonly string[],
+  /* Escape alone: Enter activates whatever control the popover has focused,
+     so closing the selection on it would undo the click it just made */
+  DESELECT: ['Escape'] as readonly string[],
   NUDGE_UP: ['ArrowUp', 'w', 'W'] as readonly string[],
   NUDGE_DOWN: ['ArrowDown', 's', 'S'] as readonly string[],
   NUDGE_LEFT: ['ArrowLeft', 'a', 'A'] as readonly string[],

@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
 import { createRootFaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+import {
+  getModelVariant,
+  getModelVariants,
+} from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
+
+const PANEL = '#E8D5B7'
 
 const WIDTH = 300
 const HEIGHT = 400
@@ -12,8 +18,7 @@ function resetStore() {
       name: 'My Wall',
       width: WIDTH,
       height: HEIGHT,
-      faces: createRootFaceTree(WIDTH, HEIGHT),
-      wallColor: '#CFC5B4',
+      faces: createRootFaceTree(WIDTH, HEIGHT, PANEL),
       holds: [],
     },
     selectedHoldId: null,
@@ -252,11 +257,72 @@ describe('wallStore', () => {
     })
   })
 
-  describe('setWallColor', () => {
-    it('updates the wall color', () => {
-      useWallStore.getState().setWallColor('#FF5722')
+  describe('setHoldType', () => {
+    it('retypes the hold and gives it a model of the new type', () => {
+      place(150, 250)
+      const before = useWallStore.getState().wall.holds[0]
 
-      expect(useWallStore.getState().wall.wallColor).toBe('#FF5722')
+      useWallStore.getState().setHoldType(before.id, 'volume')
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.type).toBe('volume')
+      expect(getModelVariant('volume', after.variant)).not.toBeNull()
+    })
+
+    /* Pinch to pocket, because every pinch model measures the same and so does
+       every pocket one: the footprint grows whichever variant gets picked */
+    it('re-measures the footprint, since a different shape covers different plywood', () => {
+      useWallStore.getState().setSelectedHoldType('pinch')
+      place(150, 250)
+      const before = useWallStore.getState().wall.holds[0]
+
+      useWallStore.getState().setHoldType(before.id, 'pocket')
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.collisionBox!.halfW).toBeGreaterThan(before.collisionBox!.halfW)
+    })
+
+    it('refuses a type whose bigger footprint would land on a neighbour', () => {
+      useWallStore.getState().setSelectedHoldType('pinch')
+      place(100, 250)
+      const first = useWallStore.getState().wall.holds[0]
+      place(100 + first.collisionBox!.halfW * 2 + 1, 250)
+
+      useWallStore.getState().setHoldType(first.id, 'pocket')
+
+      expect(useWallStore.getState().wall.holds[0].type).toBe('pinch')
+    })
+  })
+
+  describe('setHoldVariant', () => {
+    it('swaps the model and keeps the type', () => {
+      useWallStore.getState().setSelectedHoldType('crimp')
+      place(150, 250)
+      const before = useWallStore.getState().wall.holds[0]
+      const other = getModelVariants('crimp').find((v) => v.variant !== before.variant)!
+
+      useWallStore.getState().setHoldVariant(before.id, other.variant)
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.variant).toBe(other.variant)
+      expect(after.type).toBe('crimp')
+    })
+  })
+
+  describe('setFaceColor', () => {
+    it('paints one panel', () => {
+      useWallStore.getState().setFaceColor(rootFaceId(), '#FF5722')
+
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].color).toBe('#FF5722')
+    })
+
+    it('leaves the neighbouring panel alone', () => {
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const upperId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().setFaceColor(upperId, '#FF5722')
+
+      expect(useWallStore.getState().wall.faces.byId[rootFaceId()].color).toBe(PANEL)
     })
   })
 

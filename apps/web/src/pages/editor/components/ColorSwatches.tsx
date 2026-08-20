@@ -27,7 +27,7 @@ export function ColorSwatches({
   const active = value?.toUpperCase()
 
   return (
-    <div className="flex flex-wrap gap-2" data-testid={testIdPrefix}>
+    <div className="flex flex-wrap gap-1.5" data-testid={testIdPrefix}>
       {swatches.map((swatch) => (
         <button
           key={swatch.key}

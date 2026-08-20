@@ -17,10 +17,20 @@ import { getFace } from '../utils/faceTree'
  * - WASD/Arrows: nudge selected hold (Shift = larger nudge)
  */
 export function useEditorKeyboard() {
-  const { wall, selectedHoldId, markHoldDeleting, updateHold, selectHold } = useWallStore()
+  const { wall, selectedHoldId, selectedFaceId, markHoldDeleting, updateHold, selectHold, selectFace } =
+    useWallStore()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      /* Escape closes whatever popover is open, which is the keyboard's version
+         of clicking empty canvas */
+      if (KEYBOARD_SHORTCUTS.DESELECT.includes(e.key) && (selectedHoldId || selectedFaceId)) {
+        e.preventDefault()
+        selectHold(null)
+        selectFace(null)
+        return
+      }
+
       if (!selectedHoldId) return
 
       if (KEYBOARD_SHORTCUTS.DELETE_HOLD.includes(e.key)) {
@@ -35,12 +45,6 @@ export function useEditorKeyboard() {
         if (hold) {
           updateHold(selectedHoldId, { rotation: getNextRotation(hold.rotation) })
         }
-        return
-      }
-
-      if (KEYBOARD_SHORTCUTS.DESELECT.includes(e.key)) {
-        e.preventDefault()
-        selectHold(null)
         return
       }
 
@@ -70,5 +74,14 @@ export function useEditorKeyboard() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [selectedHoldId, markHoldDeleting, updateHold, selectHold, wall.holds, wall.faces])
+  }, [
+    selectedHoldId,
+    selectedFaceId,
+    markHoldDeleting,
+    updateHold,
+    selectHold,
+    selectFace,
+    wall.holds,
+    wall.faces,
+  ])
 }

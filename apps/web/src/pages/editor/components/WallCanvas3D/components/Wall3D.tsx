@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { WallFace3D } from './WallFace3D'
+import { SelectionPopovers } from './SelectionPopovers'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
@@ -90,7 +91,6 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           uvTransform={uvTransforms[face.id]}
           groupRef={registerFaceGroup(face.id)}
           holds={wall.holds.filter((hold) => hold.faceId === face.id)}
-          wallColor={wall.wallColor}
           selectedHoldId={selectedHoldId}
           collidingHoldIds={collidingHoldIds}
           deletingHoldIds={deletingHoldIds}
@@ -103,6 +103,8 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           onHoldPointerDown={handleHoldPointerDown}
         />
       ))}
+
+      <SelectionPopovers />
     </group>
   )
 }

@@ -4,8 +4,10 @@ import { createRootFaceTree } from '../faceTree'
 import { computeFaceTransforms } from '../faceTransform'
 import { computeWallProfile } from '../faceProfile'
 
+const PANEL = '#E8D5B7'
+
 function bendTopSection(sheetHeight: number, topHeight: number, angle: number): FaceTree {
-  const base = createRootFaceTree(400, sheetHeight - topHeight)
+  const base = createRootFaceTree(400, sheetHeight - topHeight, PANEL)
   const topId = 'face_top'
   const root = base.byId[base.rootId]
 
@@ -20,6 +22,7 @@ function bendTopSection(sheetHeight: number, topHeight: number, angle: number): 
         width: 400,
         height: topHeight,
         angle,
+        color: PANEL,
         childIds: [],
       },
     },
@@ -28,7 +31,7 @@ function bendTopSection(sheetHeight: number, topHeight: number, angle: number): 
 
 describe('computeWallProfile', () => {
   it('reports the plywood size for a flat wall', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
 
     const profile = computeWallProfile(tree, computeFaceTransforms(tree))
 

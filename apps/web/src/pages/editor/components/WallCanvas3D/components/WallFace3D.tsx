@@ -4,7 +4,6 @@ import type { ThreeEvent } from '@react-three/fiber'
 import type { Hold } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
 import { Hold3D } from './Hold3D'
-import { HoldActionsOverlay } from './HoldActionsOverlay'
 import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
 import { getBlurredPlywoodTexture, getPlywoodTexture } from '../utils/wallTexture'
@@ -25,7 +24,6 @@ interface WallFace3DProps {
   face: WallFace
   uvTransform: FaceUvTransform
   holds: Hold[]
-  wallColor: string
   selectedHoldId: string | null
   collidingHoldIds: Set<string>
   deletingHoldIds: string[]
@@ -54,7 +52,6 @@ export function WallFace3D({
   face,
   uvTransform,
   holds,
-  wallColor,
   selectedHoldId,
   collidingHoldIds,
   deletingHoldIds,
@@ -97,11 +94,9 @@ export function WallFace3D({
      panel's rim: a hull stroke is geometry, so it juts out flat wherever the
      panel is seen edge-on, which is exactly where focus matters most */
   const surfaceColor = useMemo(() => {
-    const color = new THREE.Color(wallColor)
+    const color = new THREE.Color(face.color)
     return isDimmed ? color.lerp(new THREE.Color(colors.scene.viewport), DIM_AMOUNT) : color
-  }, [wallColor, isDimmed])
-
-  const selectedHold = selectedHoldId ? holds.find((h) => h.id === selectedHoldId) : undefined
+  }, [face.color, isDimmed])
 
   return (
     <group ref={groupRef}>
@@ -117,8 +112,6 @@ export function WallFace3D({
           onPointerDown={onHoldPointerDown(hold.id)}
         />
       ))}
-
-      {selectedHold && <HoldActionsOverlay hold={selectedHold} />}
 
       {/* Ink line along the hinge. Two panels folded flat leave only a hairline
           between their rims, which reads as nothing at all from the front */}

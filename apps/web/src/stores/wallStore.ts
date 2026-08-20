@@ -1,15 +1,12 @@
 import { create } from 'zustand'
 import { colors } from '@/lib/colors'
 import { hasCollision } from '@/pages/editor/components/WallCanvas3D/utils/holdCollision'
-import { measureCollisionBox } from '@/pages/editor/components/WallCanvas3D/utils/holdGeometry'
 import {
   getModelVariant,
-  measureModelCollisionBox,
   pickModelVariant,
 } from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
+import { measureHoldFootprint } from '@/pages/editor/components/WallCanvas3D/utils/holdFootprint'
 import { clampHoldToFace } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
-import { holdGeometryConfigs } from '@/pages/editor/components/WallCanvas3D/config/holdGeometryConfig'
-import { CM_TO_M } from '@/pages/editor/components/WallCanvas3D/constants/editor3d'
 import type { FaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
 import { createRootFaceTree, getFace } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
 import type { CutAxis } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
@@ -59,7 +56,6 @@ export interface Wall {
   height: number
   /** Flat faces hinged into a profile; one root face means a flat wall */
   faces: FaceTree
-  wallColor: string
   holds: Hold[]
 }
 
@@ -83,6 +79,10 @@ interface WallState {
   /** Places a hold at (u, v) on the given face */
   addHold: (faceId: string, u: number, v: number) => void
   updateHold: (id: string, updates: Partial<Hold>) => void
+  /** Retypes a placed hold, re-picking its model and re-measuring its footprint */
+  setHoldType: (id: string, type: HoldType) => void
+  /** Swaps a placed hold's model, re-measuring its footprint */
+  setHoldVariant: (id: string, variant: string) => void
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
@@ -98,11 +98,42 @@ interface WallState {
   removeFace: (faceId: string) => void
   setSelectedHoldType: (type: HoldType) => void
   setSelectedVariant: (variant: string | null) => void
-  setWallColor: (color: string) => void
+  /** Paints one panel. Colour lives on the face, so neighbours keep theirs */
+  setFaceColor: (faceId: string, color: string) => void
   clearHolds: () => void
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9)
+
+/**
+ * Puts a new type or model on a placed hold. A different shape is a different
+ * footprint, so the box is re-measured and the hold pulled back onto its panel;
+ * a change that would land the new footprint on a neighbour is refused rather
+ * than allowed to overlap.
+ */
+function reshapeHold(
+  state: WallState,
+  id: string,
+  type: HoldType,
+  variant: string | undefined,
+): Partial<WallState> | WallState {
+  const hold = state.wall.holds.find((h) => h.id === id)
+  if (!hold) return state
+
+  const collisionBox = measureHoldFootprint(type, variant, hold.size)
+  const face = getFace(state.wall.faces, hold.faceId)
+  const clamped = clampHoldToFace(hold.u, hold.v, collisionBox, face.width, face.height)
+  const reshaped: Hold = { ...hold, type, variant, collisionBox, u: clamped.u, v: clamped.v }
+
+  if (hasCollision(reshaped, state.wall.holds)) return state
+
+  return {
+    wall: {
+      ...state.wall,
+      holds: state.wall.holds.map((h) => (h.id === id ? reshaped : h)),
+    },
+  }
+}
 
 const WALL_WIDTH = 400
 const WALL_HEIGHT = 500
@@ -112,8 +143,7 @@ const defaultWall: Wall = {
   name: 'My Wall',
   width: WALL_WIDTH,
   height: WALL_HEIGHT,
-  faces: createRootFaceTree(WALL_WIDTH, WALL_HEIGHT),
-  wallColor: colors.wall.surface,
+  faces: createRootFaceTree(WALL_WIDTH, WALL_HEIGHT, colors.wall.surface),
   holds: [],
 }
 
@@ -121,9 +151,9 @@ export const useWallStore = create<WallState>((set) => ({
   wall: defaultWall,
   editorMode: 'holds',
   selectedHoldId: null,
-  /* The wall opens focused, so the shaping controls are there from the start
-     and the first click on a blank wall places a hold */
-  selectedFaceId: defaultWall.faces.rootId,
+  /* The wall opens with nothing selected: controls come to a selection, so an
+     editor that opens with a popover already up has nothing to show it about */
+  selectedFaceId: null,
   faceCutPoint: null,
   selectedHoldType: 'jug',
   selectedVariant: null,
@@ -143,10 +173,7 @@ export const useWallStore = create<WallState>((set) => ({
           ? state.selectedVariant
           : pickModelVariant(id, type)
       const variant = pickedVariant
-      const model = getModelVariant(type, variant)
-      const collisionBox = model
-        ? measureModelCollisionBox(model, type, size)
-        : measureCollisionBox(type, size * CM_TO_M * holdGeometryConfigs[type].sizeMultiplier)
+      const collisionBox = measureHoldFootprint(type, variant, size)
 
       /* Keep the full extents on the face, not just the center point */
       const clamped = clampHoldToFace(u, v, collisionBox, face.width, face.height)
@@ -183,6 +210,15 @@ export const useWallStore = create<WallState>((set) => ({
         ),
       },
     })),
+
+  setHoldType: (id, type) =>
+    set((state) => reshapeHold(state, id, type, pickModelVariant(id, type))),
+
+  setHoldVariant: (id, variant) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      return hold ? reshapeHold(state, id, hold.type, variant) : state
+    }),
 
   markHoldDeleting: (id) =>
     set((state) => ({
@@ -269,9 +305,18 @@ export const useWallStore = create<WallState>((set) => ({
 
   setSelectedVariant: (variant) => set({ selectedVariant: variant }),
 
-  setWallColor: (color) =>
+  setFaceColor: (faceId, color) =>
     set((state) => ({
-      wall: { ...state.wall, wallColor: color },
+      wall: {
+        ...state.wall,
+        faces: {
+          rootId: state.wall.faces.rootId,
+          byId: {
+            ...state.wall.faces.byId,
+            [faceId]: { ...getFace(state.wall.faces, faceId), color },
+          },
+        },
+      },
     })),
 
   clearHolds: () =>

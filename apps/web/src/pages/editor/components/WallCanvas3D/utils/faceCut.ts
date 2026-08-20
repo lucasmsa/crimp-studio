@@ -139,6 +139,8 @@ export function cutFaceTree(
     width: acrossCut ? face.width : face.width - at,
     height: acrossCut ? face.height - at : face.height,
     angle: 0,
+    /* A cut splits one painted panel, so both halves keep the paint */
+    color: face.color,
     childIds: movingChildIds,
   }
 

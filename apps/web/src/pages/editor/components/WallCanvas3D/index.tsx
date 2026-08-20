@@ -2,21 +2,15 @@ import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { WallScene } from './components/WallScene'
-import { useWallStore } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
 import { CAMERA } from './constants/editor3d'
+import { useCanvasDeselect } from './hooks/useCanvasDeselect'
 
 export function WallCanvas3D() {
-  const { selectHold, selectFace } = useWallStore()
-
-  /* Clicking past the wall lets go of whatever was focused */
-  const handleMissed = () => {
-    selectHold(null)
-    selectFace(null)
-  }
+  const handleMissed = useCanvasDeselect()
 
   return (
-    <div className="relative w-full h-full min-h-[500px] rounded-lg border-2 border-border overflow-hidden"
+    <div className="relative h-full w-full rounded-lg border-2 border-border overflow-hidden"
       style={{ backgroundColor: colors.scene.viewport }}>
       <Canvas
         camera={{

@@ -50,7 +50,7 @@
       "volume": "Volume"
     },
     "colors": {
-      "wallColor": "Cor da Parede",
+      "panelColor": "Cor do Painel",
       "holdColor": "Cor da Agarra"
     },
     "modes": {
@@ -66,7 +66,6 @@
       "auto": "Auto"
     },
     "face": {
-      "label": "Face",
       "presets": {
         "slab": "Placa",
         "vertical": "Vertical",
@@ -83,24 +82,14 @@
       "cutAcross": "Cortar na Horizontal",
       "cutUp": "Cortar na Vertical",
       "remove": "Juntar Abaixo",
-      "editing": "Editando",
-      "editingFace": "Painel",
-      "editingHold": "Presa",
       "refusal": {
         "too-small": "O painel ficaria pequeno demais para escalar",
         "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
         "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes"
-      },
-      "axisTilt": "Inclinando parede acima",
-      "axisWrap": "Girando na quina"
+      }
     },
     "faceCount": "{{count}} paineis",
     "faceCount_one": "{{count}} painel",
-    "mode": {
-      "label": "Clique seleciona",
-      "holds": "Presas",
-      "shape": "Paineis"
-    },
     "swatches": {
       "red": "Vermelho",
       "orange": "Laranja",
@@ -119,6 +108,31 @@
       "grey": "Cinza",
       "slate": "Ardosia",
       "charcoal": "Grafite"
+    },
+    "panel": {
+      "label": "Painel",
+      "seam": {
+        "across": "Dobra na emenda horizontal",
+        "up": "Dobra na emenda vertical",
+        "floor": "Dobra na linha do chao"
+      }
+    },
+    "hold": {
+      "label": "Agarra"
+    },
+    "rail": {
+      "label": "Ferramentas",
+      "collapse": "Recolher ferramentas",
+      "expand": "Expandir ferramentas",
+      "tools": {
+        "holds": "Colocar Presas",
+        "shape": "Moldar Paineis"
+      }
+    },
+    "readout": {
+      "height": "{{value}} m de altura",
+      "reach": "{{value}} m de avanco",
+      "plywood": "{{value}} m2 de compensado"
     }
   },
   "about": {

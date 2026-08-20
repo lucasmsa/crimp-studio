@@ -50,7 +50,7 @@
       "volume": "Volumen"
     },
     "colors": {
-      "wallColor": "Color del Muro",
+      "panelColor": "Color del Panel",
       "holdColor": "Color de Presa"
     },
     "modes": {
@@ -66,7 +66,6 @@
       "auto": "Auto"
     },
     "face": {
-      "label": "Cara",
       "presets": {
         "slab": "Placa",
         "vertical": "Vertical",
@@ -83,24 +82,14 @@
       "cutAcross": "Cortar Horizontal",
       "cutUp": "Cortar Vertical",
       "remove": "Unir Abajo",
-      "editing": "Editando",
-      "editingFace": "Panel",
-      "editingHold": "Presa",
       "refusal": {
         "too-small": "El panel quedaria muy chico para escalar",
         "child-in-the-way": "Ya hay una union en ese sentido; corta el otro panel",
         "holds-in-the-way": "Hay presas sobre la union. Muevelas primero"
-      },
-      "axisTilt": "Inclinando hacia arriba",
-      "axisWrap": "Girando en la esquina"
+      }
     },
     "faceCount": "{{count}} paneles",
     "faceCount_one": "{{count}} panel",
-    "mode": {
-      "label": "El clic elige",
-      "holds": "Presas",
-      "shape": "Paneles"
-    },
     "swatches": {
       "red": "Rojo",
       "orange": "Naranja",
@@ -119,6 +108,31 @@
       "grey": "Gris",
       "slate": "Pizarra",
       "charcoal": "Carbon"
+    },
+    "panel": {
+      "label": "Panel",
+      "seam": {
+        "across": "Dobla en la union horizontal",
+        "up": "Dobla en la union vertical",
+        "floor": "Dobla en la linea del piso"
+      }
+    },
+    "hold": {
+      "label": "Presa"
+    },
+    "rail": {
+      "label": "Herramientas",
+      "collapse": "Ocultar herramientas",
+      "expand": "Mostrar herramientas",
+      "tools": {
+        "holds": "Poner Presas",
+        "shape": "Moldear Paneles"
+      }
+    },
+    "readout": {
+      "height": "{{value}} m de alto",
+      "reach": "{{value}} m de avance",
+      "plywood": "{{value}} m2 de triplay"
     }
   },
   "about": {

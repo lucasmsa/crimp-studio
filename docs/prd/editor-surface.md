@@ -52,8 +52,8 @@ every panel or every hold at once is a later item, not this one.
 
 **Curated swatches, not a colour wheel.** Panels get plywood and gym-paint tones;
 holds get the set real setters buy, which is roughly the hold-type palette plus
-black, white and a couple of extras. A custom picker stays available behind a
-"custom" swatch, so nothing is taken away.
+black, white and a couple of extras. A custom picker behind a "custom" swatch is
+a later item; see the decisions below.
 
 Constraint: hold colour carries meaning in this editor, so a swatch set that
 collides with the type legend is worse than no swatch set. The panel swatches stay
@@ -62,7 +62,7 @@ share a tone.
 
 ## Flow
 
-1. Open the editor. The wall is focused, the rail sits on the left, the canvas has
+1. Open the editor. Nothing is selected, the rail sits on the left, the canvas has
    the rest.
 2. Click a hold. Its popover appears beside it with type, model and colour.
 3. Click a panel. Its popover appears at the panel with angle, cuts and colour.
@@ -75,11 +75,12 @@ share a tone.
 - Left tool rail, collapsible, replacing the mode picker
 - Status strip with counts and the profile readout
 - Per-panel wall colour
-- Curated swatch sets for panel and hold colour, with a custom escape hatch
-- "Bend on: across / up" when a panel touches more than one seam
+- Curated swatch sets for panel and hold colour
+- A readout of which seam the selected panel's angle drives
 
 ### Out
 - Painting all panels or all holds at once
+- A custom colour picker behind a "custom" swatch
 - Generation controls (nothing to control yet)
 - Save and load (still placeholders)
 - Blade-mode cuts (backlogged, unchanged by this)
@@ -106,10 +107,46 @@ share a tone.
 - Moving `wallColor` onto faces changes the wall shape in the store, so save and
   load will need a migration when they arrive. Cheap now, since nothing persists.
 
-## Open questions
+## Resolved questions
 
-- Does the popover live in the canvas (drei `Html`, moves with the wall) or float
-  over it in DOM anchored to a projected point? The overlay already uses `Html`,
-  but a popover that rotates with a roof panel is unusable.
-- How many swatches before a set stops being curated? Eight per set is the
-  starting guess.
+- **The popover lives in the canvas**, as drei `Html` without `transform`. That
+  mode is already plain DOM projected to a screen point, so a roof panel rotating
+  to face the ceiling leaves its controls upright. It costs no camera-to-DOM
+  bridge and no second projection.
+- **The set size follows the domain, not a number.** Holds get the nine setter
+  colours both sources agree on; panels get six material tones. Eight per set was
+  a guess at a tidy grid, and trimming a colour setters buy to reach it would make
+  the set less useful, not more curated.
+
+## Decisions taken while building
+
+- **Popovers sit beside their subject, not above it.** The camera frames the whole
+  wall, so a panel's top edge is at the top of the canvas and there is never room
+  over it. `placePopover` puts the box to the right of the anchor, flips it left
+  near the right edge, and rides it up or down so it stays inside the canvas.
+- **"Bend on: across / up" is a readout, not a picker.** A face hinges on exactly
+  one edge, so the seam its angle drives is never ambiguous and a picker would
+  have one option. The popover names the seam instead.
+- **The rail carries the armed tool's settings.** Hold type and model belong to
+  the next placement rather than to anything on the wall, so they cannot live in a
+  selection popover. They sit under the holds tool and disappear with it.
+- **The custom colour escape hatch is deferred.** The curated sets cover the
+  decision; a picker behind a "custom" swatch is a later item, tracked in the
+  backlog next to painting every panel at once.
+- **Placement is written to the DOM, not held in state.** Orbiting moves an
+  anchor across the screen every frame, and a re-render per frame costs more than
+  the wall does.
+
+## Fixed on the way through
+
+- The 3D canvas had been rendering 150px tall since the editor was built: R3F's
+  wrapper asks for `height: 100%`, and the flex-grown box it sat in never gave a
+  percentage anything to resolve against. The container's background matched the
+  scene, so the wall just looked small. It now sits in an absolutely positioned
+  box, which has a height.
+- A click on a popover control also read as a click on empty canvas, because the
+  popover's DOM events bubble to the element R3F watches for a missed pointer.
+  Setting a colour closed the popover it came from. `useCanvasDeselect` now only
+  clears the selection for clicks that land on the canvas itself.
+- The status strip's chips were muted text straight on the scene blue, under 2:1.
+  They carry a card fill now.

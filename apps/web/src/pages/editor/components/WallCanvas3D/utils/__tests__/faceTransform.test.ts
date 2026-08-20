@@ -8,6 +8,8 @@ import {
   getFaceTilt,
 } from '../faceTransform'
 
+const PANEL = '#E8D5B7'
+
 /** Splits the tree's last face, giving the new one the requested angle */
 function addFace(
   tree: FaceTree,
@@ -26,7 +28,7 @@ function addFace(
       byId: {
         ...tree.byId,
         [parentId]: { ...parent, childIds: [...parent.childIds, id] },
-        [id]: { id, parentId, hinge, ...size, angle, childIds: [] },
+        [id]: { id, parentId, hinge, ...size, angle, color: PANEL, childIds: [] },
       },
     },
   }
@@ -34,7 +36,7 @@ function addFace(
 
 describe('computeFaceTransforms', () => {
   it('maps a flat wall straight through, which is what keeps holds where they were', () => {
-    const tree = createRootFaceTree(400, 500)
+    const tree = createRootFaceTree(400, 500, PANEL)
     const transforms = computeFaceTransforms(tree)
     const world = faceLocalToWorld(transforms[tree.rootId], 250, 130)
 
@@ -44,7 +46,7 @@ describe('computeFaceTransforms', () => {
   })
 
   it('hinges a bottom child at the top of its parent and leans it out', () => {
-    const base = createRootFaceTree(400, 300)
+    const base = createRootFaceTree(400, 300, PANEL)
     const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 30)
 
     const transform = computeFaceTransforms(tree)[id]
@@ -58,7 +60,7 @@ describe('computeFaceTransforms', () => {
   })
 
   it('turns a 90 degree face into a roof', () => {
-    const base = createRootFaceTree(400, 300)
+    const base = createRootFaceTree(400, 300, PANEL)
     const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 90)
 
     const transform = computeFaceTransforms(tree)[id]
@@ -69,14 +71,14 @@ describe('computeFaceTransforms', () => {
   })
 
   it('leans a negative face back into a slab', () => {
-    const base = createRootFaceTree(400, 300)
+    const base = createRootFaceTree(400, 300, PANEL)
     const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, -15)
 
     expect(faceLocalToWorld(computeFaceTransforms(tree)[id], 0, 200).z).toBeLessThan(0)
   })
 
   it('hinges a left child at its parent right edge and wraps it toward the climber', () => {
-    const base = createRootFaceTree(300, 400)
+    const base = createRootFaceTree(300, 400, PANEL)
     const { tree, id } = addFace(base, base.rootId, 'left', { width: 100, height: 400 }, 90)
 
     const transform = computeFaceTransforms(tree)[id]
@@ -90,7 +92,7 @@ describe('computeFaceTransforms', () => {
   })
 
   it('compounds down a chain, so a third face rides the second', () => {
-    const base = createRootFaceTree(400, 200)
+    const base = createRootFaceTree(400, 200, PANEL)
     const second = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 30)
     const third = addFace(second.tree, second.id, 'bottom', { width: 400, height: 200 }, 30)
 
@@ -103,7 +105,7 @@ describe('computeFaceTransforms', () => {
 
 describe('getFaceTilt', () => {
   it('reads zero for a flat wall and ignores a pure yaw', () => {
-    const base = createRootFaceTree(300, 400)
+    const base = createRootFaceTree(300, 400, PANEL)
     const { tree, id } = addFace(base, base.rootId, 'left', { width: 100, height: 400 }, 45)
 
     const transforms = computeFaceTransforms(tree)

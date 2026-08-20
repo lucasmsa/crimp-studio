@@ -2,15 +2,16 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { WallCanvas3D } from './components/WallCanvas3D'
-import { WallConfig } from './components/WallConfig'
 import { EditorLoading } from './components/EditorLoading'
-import { ModePicker } from './components/ModePicker'
-import { useWallStore } from '@/stores/wallStore'
-import { countChip } from './components/WallConfig/config/wallConfigStyles'
+import { ToolRail } from './components/ToolRail'
+import { StatusStrip } from './components/StatusStrip'
 
+/**
+ * The wall gets the screen. Chrome is the header, the tool rail, the status
+ * strip, and whatever popover the current selection calls for.
+ */
 export function EditorPage() {
   const { t } = useTranslation()
-  const { wall } = useWallStore()
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -35,26 +36,17 @@ export function EditorPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex">
-        <main className="relative flex-1 p-4">
+      <main className="relative flex-1 p-4">
+        {/* Absolute rather than stretched: the canvas needs a height a
+            percentage can resolve against, and a flex-grown box does not
+            give its children one */}
+        <div className="absolute inset-4">
           <WallCanvas3D />
-          <ModePicker />
-          <EditorLoading />
-        </main>
-
-        <aside className="w-72 border-l-2 border-border bg-gradient-to-b from-card to-background p-4 space-y-6">
-          <WallConfig />
-
-          <div className="flex flex-wrap gap-2">
-            <span className={countChip} data-testid="hold-count">
-              {t('editor.holdCount', { count: wall.holds.length })}
-            </span>
-            <span className={countChip} data-testid="face-count">
-              {t('editor.faceCount', { count: Object.keys(wall.faces.byId).length })}
-            </span>
-          </div>
-        </aside>
-      </div>
+        </div>
+        <ToolRail />
+        <StatusStrip />
+        <EditorLoading />
+      </main>
     </div>
   )
 }

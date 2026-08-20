@@ -1,46 +1,55 @@
 import { useTranslation } from 'react-i18next'
+import type * as THREE from 'three'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useFaceSection } from '../hooks/useFaceSection'
-import { holdTypeButtonBase, holdTypeButtonStates, sectionLabel } from '../config/wallConfigStyles'
+import { ColorSwatches } from '../../ColorSwatches'
+import { PANEL_SWATCHES } from '../../../config/panelSwatches'
+import {
+  holdTypeButtonBase,
+  holdTypeButtonStates,
+  readoutLine,
+  sectionLabel,
+} from '../../../config/editorControlStyles'
+import { usePanelControls } from '../hooks/usePanelControls'
+import { SelectionPopover } from './SelectionPopover'
+
+interface PanelPopoverProps {
+  anchor: THREE.Vector3
+}
 
 /**
- * Shapes the focused panel: pick a gym angle or step to anything between,
- * split the panel, or give its surface back to the panel below.
+ * The selected panel's controls, at the panel: how steep it is, where it
+ * splits, what it is painted, and whether it goes back into the panel below.
  */
-export function FaceSection() {
+export function PanelPopover({ anchor }: PanelPopoverProps) {
   const { t } = useTranslation()
   const {
     face,
     tilt,
     limits,
     presets,
-    isEditingHold,
+    seamLabelKey,
     cuts,
     canRemove,
     setAngle,
     stepAngle,
+    setColor,
     cut,
     remove,
-  } = useFaceSection()
+  } = usePanelControls()
 
   if (!face) return null
 
-  const editingLabel = isEditingHold ? 'editor.face.editingHold' : 'editor.face.editingFace'
-  /* A panel hinged on its left edge yaws around a vertical seam; one hinged on
-     its bottom tilts. The presets alone did not say which, so the header does */
-  const axisLabel = face.hinge === 'left' ? 'editor.face.axisWrap' : 'editor.face.axisTilt'
-
   return (
-    <section className="space-y-3 border-b-2 border-border pb-6" data-testid="face-section">
-      <h2 className={sectionLabel}>
-        {t('editor.face.editing')}: {t(editingLabel)}
-      </h2>
-      <p className="font-mono text-[11px] uppercase tracking-wider text-accent" data-testid="face-axis">
-        {t(axisLabel)}
-      </p>
+    <SelectionPopover anchor={anchor} label={t('editor.panel.label')} testId="panel-popover">
+      <div className="space-y-1">
+        <h2 className={sectionLabel}>{t('editor.panel.label')}</h2>
+        <p className={readoutLine} data-testid="panel-seam">
+          {t(seamLabelKey)}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-1.5">
         {presets.map((preset) => (
           <button
             key={preset.key}
@@ -58,7 +67,7 @@ export function FaceSection() {
         ))}
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="icon-sm"
@@ -85,7 +94,7 @@ export function FaceSection() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-1.5">
         <button
           onClick={() => cut('across')}
           disabled={!cuts.across.ok}
@@ -114,6 +123,17 @@ export function FaceSection() {
         </button>
       </div>
 
+      <div className="space-y-2">
+        <h3 className={sectionLabel}>{t('editor.colors.panelColor')}</h3>
+        <ColorSwatches
+          swatches={PANEL_SWATCHES}
+          value={face.color}
+          labelPrefix="editor.panelSwatches"
+          testIdPrefix="panel-swatches"
+          onPick={setColor}
+        />
+      </div>
+
       {canRemove && (
         <Button
           variant="outline"
@@ -125,6 +145,6 @@ export function FaceSection() {
           {t('editor.face.remove')}
         </Button>
       )}
-    </section>
+    </SelectionPopover>
   )
 }

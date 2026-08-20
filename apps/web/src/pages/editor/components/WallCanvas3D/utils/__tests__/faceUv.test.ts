@@ -3,9 +3,11 @@ import { createRootFaceTree } from '../faceTree'
 import { cutFaceTree } from '../faceCut'
 import { computeFaceUvTransform } from '../faceUv'
 
+const PANEL = '#E8D5B7'
+
 describe('computeFaceUvTransform', () => {
   it('maps a whole sheet by its size in plywood panels', () => {
-    const tree = createRootFaceTree(244, 122)
+    const tree = createRootFaceTree(244, 122, PANEL)
 
     const uv = computeFaceUvTransform(tree, tree.rootId)
 
@@ -14,7 +16,7 @@ describe('computeFaceUvTransform', () => {
   })
 
   it('picks up the pattern where the face below leaves off', () => {
-    const base = createRootFaceTree(400, 500)
+    const base = createRootFaceTree(400, 500, PANEL)
     const { tree, newFaceId } = cutFaceTree(base, [], base.rootId, 'across', 300)
 
     const lower = computeFaceUvTransform(tree, base.rootId)
@@ -24,7 +26,7 @@ describe('computeFaceUvTransform', () => {
   })
 
   it('does the same across an arete seam', () => {
-    const base = createRootFaceTree(400, 500)
+    const base = createRootFaceTree(400, 500, PANEL)
     const { tree, newFaceId } = cutFaceTree(base, [], base.rootId, 'up', 300)
 
     const left = computeFaceUvTransform(tree, base.rootId)

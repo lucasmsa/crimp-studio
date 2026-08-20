@@ -50,7 +50,7 @@
       "volume": "Volume"
     },
     "colors": {
-      "wallColor": "Wall Color",
+      "panelColor": "Panel Color",
       "holdColor": "Hold Color"
     },
     "modes": {
@@ -66,7 +66,6 @@
       "auto": "Auto"
     },
     "face": {
-      "label": "Face",
       "presets": {
         "slab": "Slab",
         "vertical": "Vertical",
@@ -83,24 +82,14 @@
       "cutAcross": "Cut Across",
       "cutUp": "Cut Up",
       "remove": "Merge Down",
-      "editing": "Editing",
-      "editingFace": "Panel",
-      "editingHold": "Hold",
       "refusal": {
         "too-small": "The panel would be too small to climb",
         "child-in-the-way": "A seam already crosses this way; cut the other panel instead",
         "holds-in-the-way": "Holds sit on the seam. Move them first"
-      },
-      "axisTilt": "Tilting up the wall",
-      "axisWrap": "Wrapping around the corner"
+      }
     },
     "faceCount": "{{count}} panels",
     "faceCount_one": "{{count}} panel",
-    "mode": {
-      "label": "Clicking selects",
-      "holds": "Holds",
-      "shape": "Panels"
-    },
     "swatches": {
       "red": "Red",
       "orange": "Orange",
@@ -119,6 +108,31 @@
       "grey": "Grey",
       "slate": "Slate",
       "charcoal": "Charcoal"
+    },
+    "panel": {
+      "label": "Panel",
+      "seam": {
+        "across": "Bends on the seam across the wall",
+        "up": "Bends on the seam up the wall",
+        "floor": "Bends on the floor line"
+      }
+    },
+    "hold": {
+      "label": "Hold"
+    },
+    "rail": {
+      "label": "Tools",
+      "collapse": "Collapse tools",
+      "expand": "Expand tools",
+      "tools": {
+        "holds": "Place Holds",
+        "shape": "Shape Panels"
+      }
+    },
+    "readout": {
+      "height": "{{value}} m tall",
+      "reach": "{{value}} m reach",
+      "plywood": "{{value}} m2 plywood"
     }
   },
   "about": {
