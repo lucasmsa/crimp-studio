@@ -9,7 +9,7 @@
     "preview": "pnpm --filter @crimp-studio/web preview",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @crimp-studio/web test",
+    "test": "pnpm -r test",
     "ci:flow": "pnpm typecheck && pnpm lint && pnpm test"
   },
   "keywords": [

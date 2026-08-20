@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import type { FaceTree } from './faceTree'
-import { computeFaceSheetOrigin, getFace } from './faceTree'
+import type { FaceTree } from '@crimp-studio/wall-geometry'
+import { computeFaceSheetOrigin, getFace } from '@crimp-studio/wall-geometry'
 import { PANEL_WIDTH_M } from './wallTexture'
 
 const PANEL_WIDTH_CM = PANEL_WIDTH_M * 100

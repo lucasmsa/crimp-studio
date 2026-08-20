@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@crimp-studio/wall-geometry": "workspace:*",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-spring/three": "^10.0.3",
     "@react-spring/web": "^10.0.3",

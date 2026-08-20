@@ -5,9 +5,6 @@ import {
   NUDGE_DISTANCE,
   NUDGE_DISTANCE_SHIFT,
 } from '../constants/editor3d'
-import { getNextRotation } from '../utils/holdActions'
-import { clampHoldToFace } from '../utils/holdBounds'
-import { getFace } from '../utils/faceTree'
 
 /**
  * Handles all keyboard shortcuts for the wall editor:
@@ -17,8 +14,16 @@ import { getFace } from '../utils/faceTree'
  * - WASD/Arrows: nudge selected hold (Shift = larger nudge)
  */
 export function useEditorKeyboard() {
-  const { wall, selectedHoldId, selectedFaceId, markHoldDeleting, updateHold, selectHold, selectFace } =
-    useWallStore()
+  const {
+    wall,
+    selectedHoldId,
+    selectedFaceId,
+    markHoldDeleting,
+    moveHold,
+    rotateHold,
+    selectHold,
+    selectFace,
+  } = useWallStore()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -41,10 +46,7 @@ export function useEditorKeyboard() {
 
       if (KEYBOARD_SHORTCUTS.ROTATE_HOLD.includes(e.key)) {
         e.preventDefault()
-        const hold = wall.holds.find((h) => h.id === selectedHoldId)
-        if (hold) {
-          updateHold(selectedHoldId, { rotation: getNextRotation(hold.rotation) })
-        }
+        rotateHold(selectedHoldId)
         return
       }
 
@@ -61,15 +63,7 @@ export function useEditorKeyboard() {
       else return
 
       e.preventDefault()
-      const face = getFace(wall.faces, hold.faceId)
-      const clamped = clampHoldToFace(
-        hold.u + dx,
-        hold.v + dy,
-        hold.collisionBox,
-        face.width,
-        face.height,
-      )
-      updateHold(selectedHoldId, { u: clamped.u, v: clamped.v })
+      moveHold(selectedHoldId, hold.u + dx, hold.v + dy)
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -78,10 +72,10 @@ export function useEditorKeyboard() {
     selectedHoldId,
     selectedFaceId,
     markHoldDeleting,
-    updateHold,
+    moveHold,
+    rotateHold,
     selectHold,
     selectFace,
     wall.holds,
-    wall.faces,
   ])
 }

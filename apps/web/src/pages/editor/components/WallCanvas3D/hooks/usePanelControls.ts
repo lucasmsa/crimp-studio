@@ -1,7 +1,12 @@
 import { useMemo } from 'react'
 import { useWallStore } from '@/stores/wallStore'
-import { getFace } from '../utils/faceTree'
-import { computeFaceTransforms, getFaceTilt } from '../utils/faceTransform'
+import {
+  computeFaceTransforms,
+  faceAngleIsClear,
+  getFace,
+  getFaceTilt,
+  relativeFaceAngle,
+} from '@crimp-studio/wall-geometry'
 import { canCutFace, findCutPosition, MIN_FACE_SIZE } from '../utils/faceCut'
 import type { CutAxis, CutCheck } from '../utils/faceCut'
 import { getAngleLimits, getFaceAnglePresets, stepFaceAngle } from '../config/faceAngleConfig'
@@ -26,11 +31,15 @@ export function usePanelControls() {
   const face = selectedFaceId ? getFace(wall.faces, selectedFaceId) : null
 
   /* A left-hinged panel yaws around a vertical seam, and yaw has no reading as
-     tilt from vertical, so it shows its own angle instead */
+     tilt from vertical, so it shows its own angle instead. Half degrees, because
+     a bend stopped at contact lands between the whole ones */
   const tilt = useMemo(() => {
     if (!selectedFaceId || !face) return 0
-    if (face.hinge === 'left') return Math.round(face.angle)
-    return Math.round(getFaceTilt(computeFaceTransforms(wall.faces)[selectedFaceId]))
+    const degrees =
+      face.hinge === 'left'
+        ? face.angle
+        : getFaceTilt(computeFaceTransforms(wall.faces)[selectedFaceId])
+    return Math.round(degrees * 2) / 2
   }, [wall.faces, selectedFaceId, face])
 
   /** Where the last tap landed on this panel, or its middle if it has none yet */
@@ -55,13 +64,29 @@ export function usePanelControls() {
   }
 
   const cuts: Record<CutAxis, CutCheck> = { across: check('across'), up: check('up') }
+
   const limits = getAngleLimits(face?.parentId === null)
+
+  /* A preset the wall cannot reach is offered as disabled rather than as a
+     button that quietly does something else (ADR-007) */
+  const presets = getFaceAnglePresets(face?.hinge ?? null).map((preset) => ({
+    ...preset,
+    reachable:
+      Boolean(face) &&
+      preset.angle >= limits.min &&
+      preset.angle <= limits.max &&
+      faceAngleIsClear(
+        wall.faces,
+        wall.holds,
+        face!.id,
+        relativeFaceAngle(wall.faces, face!.id, preset.angle),
+      ),
+  }))
 
   return {
     face,
     tilt,
-    limits,
-    presets: getFaceAnglePresets(face?.hinge ?? null),
+    presets,
     /* One face owns one hinge, so the seam its angle drives is a readout and
        not a choice: the popover says which one is moving */
     seamLabelKey: getSeamLabelKey(face?.hinge ?? null),

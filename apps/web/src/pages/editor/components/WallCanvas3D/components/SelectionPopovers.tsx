@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useWallStore } from '@/stores/wallStore'
-import { computeFaceTransforms } from '../utils/faceTransform'
+import { computeFaceTransforms } from '@crimp-studio/wall-geometry'
 import { facePopoverAnchor, holdPopoverAnchor } from '../utils/popoverAnchor'
 import { PanelPopover } from './PanelPopover'
 import { HoldPopover } from './HoldPopover'

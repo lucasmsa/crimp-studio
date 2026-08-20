@@ -85,7 +85,8 @@
       "refusal": {
         "too-small": "O painel ficaria pequeno demais para escalar",
         "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
-        "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes"
+        "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes",
+        "would-clip": "Isso atravessaria o painel ao lado"
       }
     },
     "faceCount": "{{count}} paineis",

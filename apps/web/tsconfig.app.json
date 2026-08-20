@@ -27,7 +27,8 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@crimp-studio/wall-geometry": ["../../packages/wall-geometry/src/index.ts"]
     }
   },
   "include": ["src"]

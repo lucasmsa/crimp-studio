@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import type { FaceTree } from '../faceTree'
-import { createRootFaceTree } from '../faceTree'
-import { computeFaceTransforms } from '../faceTransform'
+import type { FaceTree } from '@crimp-studio/wall-geometry'
+import { computeFaceTransforms, createRootFaceTree } from '@crimp-studio/wall-geometry'
 import { computeWallProfile } from '../faceProfile'
 
 const PANEL = '#E8D5B7'

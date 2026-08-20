@@ -3,10 +3,8 @@ import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
-import { CM_TO_M } from '../constants/editor3d'
-import { hasCollision } from '../utils/holdCollision'
-import { clampHoldToFace } from '../utils/holdBounds'
-import { getFace } from '../utils/faceTree'
+import { CM_TO_M } from '@crimp-studio/wall-geometry'
+import { getFace } from '@crimp-studio/wall-geometry'
 import { resolveWallTap } from '../utils/wallGesture'
 
 /** A press that moves further or lasts longer than this is a drag, not a tap */
@@ -26,7 +24,7 @@ interface PointerDown {
  * Handles all wall + hold interaction logic:
  * - Tap a face to focus it, tap again inside it to place a hold
  * - Click hold to select
- * - Drag hold to reposition (snaps back on collision when dropped)
+ * - Drag hold to reposition, stopping wherever it no longer fits
  *
  * Taps resolve on pointerup rather than pointerdown so that orbiting the
  * camera from the wall does not drop a hold on the way past.
@@ -42,9 +40,6 @@ export function useWallInteraction() {
   const pointerNDC = useRef(new THREE.Vector2(9999, 9999))
   const isDraggingRef = useRef(false)
   const pointerDownRef = useRef<PointerDown | null>(null)
-
-  /* Pre-drag position — used to snap back if dropped on a collision */
-  const dragStartPos = useRef<{ u: number; v: number } | null>(null)
 
   const { camera, gl } = useThree()
 
@@ -69,14 +64,6 @@ export function useWallInteraction() {
       u: localPoint.x / CM_TO_M + face.width / 2,
       v: localPoint.y / CM_TO_M + face.height / 2,
     }
-  }, [])
-
-  const clampToFace = useCallback((faceId: string, u: number, v: number, holdId?: string) => {
-    const face = getFace(useWallStore.getState().wall.faces, faceId)
-    const box = holdId
-      ? useWallStore.getState().wall.holds.find((h) => h.id === holdId)?.collisionBox
-      : undefined
-    return clampHoldToFace(u, v, box, face.width, face.height)
   }, [])
 
   const setupDragPlane = useCallback((faceId: string) => {
@@ -104,24 +91,11 @@ export function useWallInteraction() {
     }
 
     const onPointerUp = (e: PointerEvent) => {
-      const holdId = draggingHoldIdRef.current
-      const startPos = dragStartPos.current
-
-      /* Snap back if dropped on a collision */
-      if (holdId && startPos) {
-        const { wall: currentWall } = useWallStore.getState()
-        const hold = currentWall.holds.find((h) => h.id === holdId)
-        if (hold && hasCollision(hold, currentWall.holds)) {
-          useWallStore.getState().updateHold(holdId, { u: startPos.u, v: startPos.v })
-        }
-      }
-
       const down = pointerDownRef.current
       if (down && isTap(down, e)) resolveTap(down)
 
       pointerDownRef.current = null
       draggingHoldIdRef.current = null
-      dragStartPos.current = null
       isDraggingRef.current = false
       document.body.style.cursor = 'default'
     }
@@ -149,10 +123,10 @@ export function useWallInteraction() {
 
     if (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)) {
       const coords = worldToFaceCoords(hold.faceId, intersectPoint.current)
-      if (coords) {
-        const clamped = clampToFace(hold.faceId, coords.u, coords.v, holdId)
-        useWallStore.getState().updateHold(holdId, { u: clamped.u, v: clamped.v })
-      }
+      /* moveHold refuses a spot the hold does not fit in, so the hold stops at
+         the last one that did rather than being dragged through a panel and
+         snapped back on release */
+      if (coords) useWallStore.getState().moveHold(holdId, coords.u, coords.v)
     }
   })
 
@@ -199,7 +173,6 @@ export function useWallInteraction() {
     const hold = useWallStore.getState().wall.holds.find((h) => h.id === holdId)
     if (!hold) return
 
-    dragStartPos.current = { u: hold.u, v: hold.v }
     draggingHoldIdRef.current = holdId
     isDraggingRef.current = true
     setupDragPlane(hold.faceId)

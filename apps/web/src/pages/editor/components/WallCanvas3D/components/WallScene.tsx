@@ -5,6 +5,7 @@ import { Wall3D } from './Wall3D'
 import { EditorLights } from './EditorLights'
 import { useEditorCamera } from '../hooks/useEditorCamera'
 import { useEditorKeyboard } from '../hooks/useEditorKeyboard'
+import { useBlockingHoldFlash } from '../hooks/useBlockingHoldFlash'
 import { ORBIT_CONTROLS } from '../constants/editor3d'
 
 export function WallScene() {
@@ -12,6 +13,7 @@ export function WallScene() {
 
   const wallCenter = useEditorCamera()
   useEditorKeyboard()
+  useBlockingHoldFlash()
 
   const handleDragStateChange = useCallback((isDragging: boolean) => {
     setOrbitEnabled(!isDragging)

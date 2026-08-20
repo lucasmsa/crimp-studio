@@ -1,9 +1,7 @@
 import * as THREE from 'three'
 import type { Hold } from '@/stores/wallStore'
-import type { FaceTree } from './faceTree'
-import { getFace } from './faceTree'
-import type { FaceTransforms } from './faceTransform'
-import { faceLocalToWorld } from './faceTransform'
+import type { FaceTransforms, FaceTree } from '@crimp-studio/wall-geometry'
+import { faceLocalToWorld, getFace } from '@crimp-studio/wall-geometry'
 
 /** How far off the surface an anchor floats, in metres, so the popover clears it */
 const ANCHOR_LIFT = 0.12

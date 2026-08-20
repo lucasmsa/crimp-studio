@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { Hold } from '@/stores/wallStore'
-import { createRootFaceTree } from '../faceTree'
+import { computeFaceTransforms, createRootFaceTree } from '@crimp-studio/wall-geometry'
 import { cutFaceTree } from '../faceCut'
-import { computeFaceTransforms } from '../faceTransform'
 import { facePopoverAnchor, holdPopoverAnchor } from '../popoverAnchor'
 
 const PANEL = '#E8D5B7'

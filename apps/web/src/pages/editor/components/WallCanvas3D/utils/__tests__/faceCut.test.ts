@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Hold } from '@/stores/wallStore'
-import { createRootFaceTree, computeSurfaceArea, getFace, listFaces } from '../faceTree'
+import { createRootFaceTree, computeSurfaceArea, getFace, listFaces } from '@crimp-studio/wall-geometry'
 import {
   canCutFace,
   cutFaceTree,

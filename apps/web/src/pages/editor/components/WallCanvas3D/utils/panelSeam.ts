@@ -1,4 +1,4 @@
-import type { HingeEdge } from './faceTree'
+import type { HingeEdge } from '@crimp-studio/wall-geometry'
 
 /**
  * Which seam a panel's angle drives, as an i18n key. A face hinges on exactly

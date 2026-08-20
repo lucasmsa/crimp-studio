@@ -1,8 +1,6 @@
-import { CM_TO_M } from '../constants/editor3d'
-import type { FaceTree } from './faceTree'
-import { computeSurfaceArea, listFaces } from './faceTree'
-import type { FaceTransforms } from './faceTransform'
-import { faceLocalToWorld } from './faceTransform'
+import { CM_TO_M } from '@crimp-studio/wall-geometry'
+import type { FaceTransforms, FaceTree } from '@crimp-studio/wall-geometry'
+import { computeSurfaceArea, faceLocalToWorld, listFaces } from '@crimp-studio/wall-geometry'
 
 export interface WallProfile {
   /** Floor to the highest point, cm */

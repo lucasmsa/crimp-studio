@@ -6,7 +6,7 @@ import type { HoldModelVariant } from '../config/holdModelConfig.generated'
 import { createHoldGeometry } from '../utils/holdGeometry'
 import { holdGeometryConfigs } from '../config/holdGeometryConfig'
 import { getModelScaleFactor } from '../utils/holdModels'
-import { CM_TO_M } from '../constants/editor3d'
+import { CM_TO_M } from '@crimp-studio/wall-geometry'
 
 export function useProceduralHoldGeometry(hold: Hold): THREE.BufferGeometry {
   const holdScale = hold.size * CM_TO_M * holdGeometryConfigs[hold.type].sizeMultiplier

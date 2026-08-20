@@ -1,7 +1,7 @@
 import type { CollisionBox, HoldType } from '@/stores/wallStore'
 import { holdModelVariants, type HoldModelVariant } from '../config/holdModelConfig.generated'
 import { holdGeometryConfigs } from '../config/holdGeometryConfig'
-import { CM_TO_M } from '../constants/editor3d'
+import { CM_TO_M } from '@crimp-studio/wall-geometry'
 
 /**
  * Target on-wall footprint per type, in scene units per (size * sizeMultiplier).
@@ -80,5 +80,6 @@ export function measureModelCollisionBox(
   return {
     halfW: (halfWMeters * cos + halfHMeters * sin) / CM_TO_M,
     halfH: (halfWMeters * sin + halfHMeters * cos) / CM_TO_M,
+    depth: (model.sizeMeters[2] * scaleFactor) / CM_TO_M,
   }
 }

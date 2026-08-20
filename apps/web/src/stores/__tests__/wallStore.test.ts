@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
-import { createRootFaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+import { createRootFaceTree, findWallOverlaps } from '@crimp-studio/wall-geometry'
 
 const PANEL = '#E8D5B7'
 
@@ -22,6 +22,7 @@ function resetStore() {
     selectedHoldType: 'jug',
     selectedVariant: null,
     deletingHoldIds: [],
+    blockingHoldIds: [],
   })
 }
 
@@ -250,6 +251,66 @@ describe('wallStore', () => {
       useWallStore.getState().clearHolds()
 
       expect(useWallStore.getState().selectedHoldId).toBeNull()
+    })
+  })
+
+  describe('the wall never clips', () => {
+    it('stops a bend where the panel would pass through the one below it', () => {
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const upperId = useWallStore.getState().selectedFaceId!
+      useWallStore.getState().setFaceAngle(upperId, 90)
+
+      /* Asking the base to lean out swings the roof above it down into itself */
+      useWallStore.getState().setFaceAngle(rootFaceId(), 60)
+
+      const { wall } = useWallStore.getState()
+      expect(wall.faces.byId[rootFaceId()].angle).toBeLessThan(60)
+      expect(findWallOverlaps(wall.faces, wall.holds)).toHaveLength(0)
+    })
+
+    it('points at the hold that stopped a bend', () => {
+      /* An arete swung past a right angle sweeps back over the face it hinges
+         on, and a hold near that seam is what it runs into */
+      useWallStore.getState().cutFace(rootFaceId(), 'up', 200)
+      const finId = useWallStore.getState().selectedFaceId!
+      place(190, 200)
+      const holdId = useWallStore.getState().wall.holds[0].id
+
+      useWallStore.getState().setFaceAngle(finId, 135)
+
+      expect(useWallStore.getState().blockingHoldIds).toContain(holdId)
+      expect(useWallStore.getState().wall.faces.byId[finId].angle).toBeLessThan(135)
+    })
+
+    it('refuses to move a hold onto another one', () => {
+      place(100, 250)
+      place(200, 250)
+      const [first, second] = useWallStore.getState().wall.holds
+
+      useWallStore.getState().moveHold(second.id, first.u, first.v)
+
+      expect(useWallStore.getState().wall.holds[1].u).toBe(second.u)
+    })
+
+    it('moves a hold that fits', () => {
+      place(100, 250)
+      const hold = useWallStore.getState().wall.holds[0]
+
+      useWallStore.getState().moveHold(hold.id, 200, 300)
+
+      expect(useWallStore.getState().wall.holds[0]).toMatchObject({ u: 200, v: 300 })
+    })
+
+    it('re-measures a hold when it turns, since a turned box covers different plywood', () => {
+      useWallStore.getState().setSelectedHoldType('pinch')
+      place(200, 250)
+      const before = useWallStore.getState().wall.holds[0]
+
+      useWallStore.getState().rotateHold(before.id)
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.rotation).not.toBe(before.rotation)
+      expect(after.collisionBox).not.toEqual(before.collisionBox)
     })
   })
 

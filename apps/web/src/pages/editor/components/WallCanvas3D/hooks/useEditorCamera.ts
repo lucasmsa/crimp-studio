@@ -2,8 +2,9 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
-import { CM_TO_M, CAMERA } from '../constants/editor3d'
-import { computeFaceTransforms } from '../utils/faceTransform'
+import { CAMERA } from '../constants/editor3d'
+import { CM_TO_M } from '@crimp-studio/wall-geometry'
+import { computeFaceTransforms } from '@crimp-studio/wall-geometry'
 import { computeWallProfile } from '../utils/faceProfile'
 
 /** Room to leave around the profile once it is framed */

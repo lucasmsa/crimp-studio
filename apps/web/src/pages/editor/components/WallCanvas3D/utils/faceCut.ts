@@ -1,6 +1,6 @@
 import type { Hold } from '@/stores/wallStore'
-import type { FaceTree, HingeEdge, WallFace } from './faceTree'
-import { getFace } from './faceTree'
+import type { FaceTree, HingeEdge, WallFace } from '@crimp-studio/wall-geometry'
+import { getFace } from '@crimp-studio/wall-geometry'
 import { clampHoldToFace } from './holdBounds'
 
 /** 'across' splits the face into a lower and an upper half, 'up' into a left and a right one */

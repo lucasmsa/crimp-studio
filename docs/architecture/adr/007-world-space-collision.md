@@ -12,8 +12,8 @@ not hinged to. A hold bolted near a seam pokes out of the neighbouring panel. Tw
 on different panels can overlap in world space while their face-local boxes, which only
 compare `u` and `v` on a shared face, report nothing.
 
-The root panel's 60 degree cap is the same problem wearing a workaround: the real limit
-is the floor, and a number picked by eye stands in for it.
+Every angle limit in the editor is a number picked by eye standing in for geometry that
+was never computed: a panel stops where the control says, not where the plywood does.
 
 This is not only an editor polish item. Scan reads a wall's angles off a photograph and
 has to reject a fit no gym could build. Route generation asks whether a hand can reach
@@ -31,17 +31,29 @@ closed form. A hold's box extends its measured face-plane footprint with the mod
 depth. A tapered volume reserves more air than it occupies; a convex hull per GLB is the
 upgrade path if that ever bites.
 
-**Tolerance.** Solids must stay 1cm apart rather than merely not overlap. Exact contact
-z-fights along the touching face and puts float error in charge of which side wins, and
-real plywood has a gap too.
+**Tolerance, per pair.** Two holds must stay 1cm apart: a hand needs room, and the
+measured boxes are coarse enough that touching boxes can mean touching plastic. Anything
+involving plywood is tested for penetration alone, with a millimetre of slack. Building
+this showed why: the panels are one folded sheet, so a panel meets the panel across a
+seam from it and a hold is bolted flush against a surface. Demanding air there made a
+plain flat wall illegal, and exact face contact is indistinguishable from penetration to
+a separating-axis test.
 
-**The floor is a solid.** A panel swings until it reaches the ground and stops there.
-`ROOT_ANGLE_MAX` goes: the floor states the same limit honestly, and it applies to every
-panel rather than only the root.
+**The floor is a solid**, and it stops the panels that do not already stand on it. A
+panel above a horizontal seam swings until it reaches the ground. The root panel and
+anything hinged sideways off it (an arete) rest on the floor by construction, so the
+floor cannot be what stops those.
+
+`ROOT_ANGLE_MAX` stays at 60 for the root panel. The floor cannot state that limit,
+because the root is hinged to it: at 90 the whole wall lies down as a ceiling at floor
+height, which is a product decision about what counts as a wall rather than a geometric
+one.
 
 **Hinged pairs are exempt.** A parent and child share their hinge edge by construction,
 so testing them would report contact at every angle. The existing relative angle limits
-(-45 to 135) stop a hinged pair folding through each other.
+(-45 to 135) keep that exemption cheap: a hinged pair folded to 135 degrees overlaps only
+in a thin wedge at the seam, which is what a real folded sheet does before the edge is
+bevelled.
 
 **Contact by bisection.** Setting an angle rebuilds the tree at a candidate angle and
 tests every non-hinged pair. When the requested angle is illegal, bisecting between the
@@ -86,3 +98,8 @@ still a wall you can save).
   before it is.
 - Holds and panels can no longer be reasoned about separately. A tool that moves either
   one has to ask the same question, which is the point.
+- A panel folded hard onto the panel it hinges from still overlaps it slightly at the
+  seam, because that pair is exempt. Catching that needs the exemption to apply near the
+  shared edge only, which is more geometry than the wedge is worth today.
+- The 2D face-local collision test is gone. `holdCollision.ts` and its tests are deleted
+  rather than kept alongside: two answers to the same question is how they drift.

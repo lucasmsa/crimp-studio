@@ -12,7 +12,7 @@ import { computeHitCenter, computeHitRadius } from '../utils/holdHitArea'
 import { holdGeometryConfigs } from '../config/holdGeometryConfig'
 import { getHoldVisualState } from '../config/holdVisualConfig'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
-import { CM_TO_M, HOLD_EMBED_DEPTH } from '../constants/editor3d'
+import { CM_TO_M, HOLD_EMBED_DEPTH } from '@crimp-studio/wall-geometry'
 import { useHoldHover } from '../hooks/useHoldHover'
 import { useReportCollisionBox } from '../hooks/useReportCollisionBox'
 
@@ -31,7 +31,7 @@ export interface HoldMeshProps {
   geometry: THREE.BufferGeometry
   flatShading: boolean
   isSelected: boolean
-  isColliding?: boolean
+  isBlocking?: boolean
   /** Its panel is not the focused one, so the hold steps back with it */
   isDimmed?: boolean
   /** Plays the pop-off exit animation, then removes the hold from the store */
@@ -50,7 +50,7 @@ export function HoldMesh({
   geometry,
   flatShading,
   isSelected,
-  isColliding,
+  isBlocking,
   isDimmed = false,
   isDeleting = false,
   isDraggingAny,
@@ -74,7 +74,7 @@ export function HoldMesh({
   const visual = getHoldVisualState({
     isSelected,
     isHovered: isHovered && !isDraggingAny.current,
-    isColliding,
+    isBlocking,
   })
 
   useReportCollisionBox(hold, geometry)

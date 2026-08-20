@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { CM_TO_M } from '../constants/editor3d'
+import { CM_TO_M } from './units'
 import type { FaceTree, WallFace } from './faceTree'
 import { getFace, listFaces } from './faceTree'
 
@@ -90,4 +90,19 @@ export function faceNormal(transform: FaceTransform): THREE.Vector3 {
 export function getFaceTilt(transform: FaceTransform): number {
   const up = new THREE.Vector3(0, 1, 0).applyQuaternion(transform.quaternion)
   return THREE.MathUtils.radToDeg(Math.atan2(up.z, up.y))
+}
+
+/**
+ * The angle to store for a face so that it reads as `tiltDeg` from vertical.
+ *
+ * Angles are stored relative to the parent, so bending a lower panel swings
+ * everything above it as one assembly. A left hinge yaws rather than tilts, so
+ * its angle has no absolute reading to convert and passes straight through.
+ */
+export function relativeFaceAngle(tree: FaceTree, faceId: string, tiltDeg: number): number {
+  const face = getFace(tree, faceId)
+  if (face.hinge === 'left' || !face.parentId) return tiltDeg
+
+  const parentTilt = getFaceTilt(computeFaceTransforms(tree)[face.parentId])
+  return tiltDeg - parentTilt
 }

@@ -17,7 +17,7 @@ interface Hold3DProps {
   isSelected: boolean
   /** Its panel is not the focused one, so the hold steps back with it */
   isDimmed?: boolean
-  isColliding?: boolean
+  isBlocking?: boolean
   isDeleting?: boolean
   isDraggingAny: React.RefObject<boolean>
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void

@@ -26,7 +26,6 @@ export function PanelPopover({ anchor }: PanelPopoverProps) {
   const {
     face,
     tilt,
-    limits,
     presets,
     seamLabelKey,
     cuts,
@@ -54,7 +53,8 @@ export function PanelPopover({ anchor }: PanelPopoverProps) {
           <button
             key={preset.key}
             onClick={() => setAngle(preset.angle)}
-            disabled={preset.angle > limits.max || preset.angle < limits.min}
+            disabled={!preset.reachable}
+            title={preset.reachable ? undefined : t('editor.face.refusal.would-clip')}
             className={cn(
               holdTypeButtonBase,
               tilt === preset.angle ? holdTypeButtonStates.selected : holdTypeButtonStates.idle,

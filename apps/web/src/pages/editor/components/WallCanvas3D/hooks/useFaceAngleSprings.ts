@@ -1,9 +1,8 @@
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import type { FaceTree } from '../utils/faceTree'
-import { listFaces } from '../utils/faceTree'
-import { computeFaceTransforms } from '../utils/faceTransform'
+import type { FaceTree } from '@crimp-studio/wall-geometry'
+import { computeFaceTransforms, listFaces } from '@crimp-studio/wall-geometry'
 
 /** Stiff enough to feel like plywood swinging, damped enough not to wobble */
 const STIFFNESS = 90

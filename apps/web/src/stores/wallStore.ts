@@ -1,24 +1,26 @@
 import { create } from 'zustand'
 import { colors } from '@/lib/colors'
-import { hasCollision } from '@/pages/editor/components/WallCanvas3D/utils/holdCollision'
 import {
   getModelVariant,
   pickModelVariant,
 } from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
 import { measureHoldFootprint } from '@/pages/editor/components/WallCanvas3D/utils/holdFootprint'
+import { getNextRotation } from '@/pages/editor/components/WallCanvas3D/utils/holdActions'
 import { clampHoldToFace } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
-import type { FaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
-import { createRootFaceTree, getFace } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
+import type { FaceTree } from '@crimp-studio/wall-geometry'
+import {
+  createRootFaceTree,
+  findLegalFaceAngle,
+  getFace,
+  holdPlacementIsClear,
+  relativeFaceAngle,
+} from '@crimp-studio/wall-geometry'
 import type { CutAxis } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
 import {
   canCutFace,
   cutFaceTree,
   mergeFaceIntoParent,
 } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
-import {
-  computeFaceTransforms,
-  getFaceTilt,
-} from '@/pages/editor/components/WallCanvas3D/utils/faceTransform'
 import {
   clampFaceAngle,
   getAngleLimits,
@@ -29,6 +31,7 @@ export type HoldType = 'jug' | 'crimp' | 'sloper' | 'pinch' | 'pocket' | 'volume
 export interface CollisionBox {
   halfW: number  // half-width in cm (u extent)
   halfH: number  // half-height in cm (v extent)
+  depth: number  // how far the hold stands off the panel, cm
 }
 
 export interface Hold {
@@ -75,10 +78,17 @@ interface WallState {
   selectedVariant: string | null
   /** Holds playing their pop-off exit animation; removed on animation rest */
   deletingHoldIds: string[]
+  /** Holds that stopped the last bend, so the editor can point at them */
+  blockingHoldIds: string[]
 
   /** Places a hold at (u, v) on the given face */
   addHold: (faceId: string, u: number, v: number) => void
+  /** Colour, rotation and measured box. Position goes through moveHold */
   updateHold: (id: string, updates: Partial<Hold>) => void
+  /** Moves a hold, refusing a spot where it would not fit in world space */
+  moveHold: (id: string, u: number, v: number) => void
+  /** Turns a hold, re-measuring its footprint and refusing if it no longer fits */
+  rotateHold: (id: string) => void
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
@@ -88,7 +98,8 @@ interface WallState {
   setFaceCutPoint: (point: { faceId: string; u: number; v: number }) => void
   /** Splits a face in two along the seam; refuses if canCutFace says no */
   cutFace: (faceId: string, axis: CutAxis, at: number) => void
-  /** Takes the absolute tilt from vertical and stores it relative to the parent */
+  /** Takes the absolute tilt from vertical, stores it relative to the parent, and
+      stops the bend where the panel meets whatever is in the way */
   setFaceAngle: (faceId: string, tiltDeg: number) => void
   /** Merges a face back into its parent, undoing its cut */
   removeFace: (faceId: string) => void
@@ -96,6 +107,8 @@ interface WallState {
   setSelectedVariant: (variant: string | null) => void
   /** Paints one panel. Colour lives on the face, so neighbours keep theirs */
   setFaceColor: (faceId: string, color: string) => void
+  /** Stops pointing at the holds that blocked the last bend */
+  clearBlockingHolds: () => void
   clearHolds: () => void
 }
 
@@ -124,6 +137,7 @@ export const useWallStore = create<WallState>((set) => ({
   selectedHoldType: 'jug',
   selectedVariant: null,
   deletingHoldIds: [],
+  blockingHoldIds: [],
 
   addHold: (faceId, u, v) =>
     set((state) => {
@@ -143,9 +157,9 @@ export const useWallStore = create<WallState>((set) => ({
 
       /* Keep the full extents on the face, not just the center point */
       const clamped = clampHoldToFace(u, v, collisionBox, face.width, face.height)
-      const candidate = { faceId, u: clamped.u, v: clamped.v, collisionBox }
+      const candidate = { id, faceId, u: clamped.u, v: clamped.v, collisionBox }
 
-      if (hasCollision(candidate, state.wall.holds)) return state
+      if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, candidate)) return state
 
       return {
         wall: {
@@ -176,6 +190,43 @@ export const useWallStore = create<WallState>((set) => ({
         ),
       },
     })),
+
+  moveHold: (id, u, v) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold) return state
+
+      const face = getFace(state.wall.faces, hold.faceId)
+      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
+      const moved = { ...hold, u: clamped.u, v: clamped.v }
+
+      /* Refusing outright rather than snapping back on release: every frame of a
+         drag is a committed position, so the hold simply stops at the last one
+         that fits instead of passing through a panel on the way */
+      if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, moved)) return state
+
+      return {
+        wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? moved : h)) },
+      }
+    }),
+
+  rotateHold: (id) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold) return state
+
+      const rotation = getNextRotation(hold.rotation)
+      const collisionBox = measureHoldFootprint(hold.type, hold.variant, hold.size, rotation)
+      const face = getFace(state.wall.faces, hold.faceId)
+      const clamped = clampHoldToFace(hold.u, hold.v, collisionBox, face.width, face.height)
+      const turned = { ...hold, rotation, collisionBox, u: clamped.u, v: clamped.v }
+
+      if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, turned)) return state
+
+      return {
+        wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? turned : h)) },
+      }
+    }),
 
   markHoldDeleting: (id) =>
     set((state) => ({
@@ -226,25 +277,28 @@ export const useWallStore = create<WallState>((set) => ({
   setFaceAngle: (faceId, tiltDeg) =>
     set((state) => {
       const face = getFace(state.wall.faces, faceId)
-      const tilt = clampFaceAngle(tiltDeg, getAngleLimits(face.parentId === null))
+      const requested = relativeFaceAngle(
+        state.wall.faces,
+        faceId,
+        clampFaceAngle(tiltDeg, getAngleLimits(face.parentId === null)),
+      )
 
-      /* Stored relative to the parent so bending a lower face swings whatever
-         is above it as one assembly. A left hinge yaws rather than tilts, so
-         its angle has no absolute reading to convert. */
-      const parentTilt =
-        face.hinge === 'bottom' && face.parentId
-          ? getFaceTilt(computeFaceTransforms(state.wall.faces)[face.parentId])
-          : 0
+      /* The panel stops where it meets a panel it is not hinged to, a hold, or
+         the floor, rather than passing through it (ADR-007) */
+      const limit = findLegalFaceAngle({
+        faces: state.wall.faces,
+        holds: state.wall.holds,
+        faceId,
+        from: face.angle,
+        to: requested,
+      })
 
       const faces = {
         rootId: state.wall.faces.rootId,
-        byId: {
-          ...state.wall.faces.byId,
-          [faceId]: { ...face, angle: face.hinge === 'left' ? tilt : tilt - parentTilt },
-        },
+        byId: { ...state.wall.faces.byId, [faceId]: { ...face, angle: limit.angle } },
       }
 
-      return { wall: { ...state.wall, faces } }
+      return { wall: { ...state.wall, faces }, blockingHoldIds: limit.blockingHoldIds }
     }),
 
   removeFace: (faceId) =>
@@ -275,6 +329,10 @@ export const useWallStore = create<WallState>((set) => ({
         },
       },
     })),
+
+  clearBlockingHolds: () => set({ blockingHoldIds: [] }),
+
+  clearBlockingHolds: () => set({ blockingHoldIds: [] }),
 
   clearHolds: () =>
     set((state) => ({

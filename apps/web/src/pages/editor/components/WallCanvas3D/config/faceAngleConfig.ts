@@ -1,4 +1,4 @@
-import type { HingeEdge } from '../utils/faceTree'
+import type { HingeEdge } from '@crimp-studio/wall-geometry'
 
 /**
  * A bottom hinge tilts the panel, so it speaks the gym's vocabulary. A left
@@ -27,14 +27,19 @@ export function getFaceAnglePresets(hinge: HingeEdge | null) {
   return hinge === 'left' ? WRAP_PRESETS : TILT_PRESETS
 }
 
-/** Past these a panel folds back through its neighbour instead of shaping a wall */
+/**
+ * How far a panel may be asked to fold. Where it actually stops is a question
+ * for the geometry layer, which stops it at the panel, hold or floor in the way
+ * (ADR-007); these are the limits of the control itself.
+ */
 export const ANGLE_MIN = -45
 export const ANGLE_MAX = 135
 
 /**
- * The root panel is the one standing on the floor. Taking it to a roof lays the
- * whole wall down as a ceiling at floor height, which is not a wall and reads
- * as broken, so its lean stops well short of horizontal.
+ * The root panel is the one standing on the floor, and it is hinged to it, so
+ * the floor cannot stop it the way it stops the panels above. Taking it to a
+ * roof lays the whole wall down as a ceiling at floor height, which is not a
+ * wall, so its lean stops well short of horizontal.
  */
 export const ROOT_ANGLE_MAX = 60
 

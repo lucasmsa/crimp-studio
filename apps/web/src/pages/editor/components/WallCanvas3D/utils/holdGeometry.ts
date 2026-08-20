@@ -232,7 +232,7 @@ export function createHoldGeometry(type: HoldType, scale: number): THREE.BufferG
 }
 
 /**
- * Generates a hold geometry at the given scale and measures its XY bounding box.
+ * Generates a hold geometry at the given scale and measures its bounding box.
  * Returns collision half-extents in cm. Used by the store at placement time
  * so collision checks work immediately (before the 3D component renders).
  */
@@ -247,9 +247,12 @@ export function measureCollisionBox(type: HoldType, scale: number, rotationDeg =
   const CM_TO_M = 0.01
   const halfW = Math.max(Math.abs(box.min.x), Math.abs(box.max.x)) / CM_TO_M
   const halfH = Math.max(Math.abs(box.min.y), Math.abs(box.max.y)) / CM_TO_M
+  /* Holds are modelled with their base at z=0 and bulge outwards, so the depth
+     is the whole z extent rather than a half extent */
+  const depth = (box.max.z - box.min.z) / CM_TO_M
 
   geo.dispose()
-  return { halfW, halfH }
+  return { halfW, halfH, depth }
 }
 
 /**

@@ -4,12 +4,12 @@ import type { ThreeEvent } from '@react-three/fiber'
 import type { Hold } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
 import { Hold3D } from './Hold3D'
-import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
+import { CM_TO_M, WALL_DEPTH } from '@crimp-studio/wall-geometry'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
 import { getBlurredPlywoodTexture, getPlywoodTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
-import type { WallFace } from '../utils/faceTree'
+import type { WallFace } from '@crimp-studio/wall-geometry'
 import type { FaceUvTransform } from '../utils/faceUv'
 import { applyFaceUvTransform } from '../utils/faceUv'
 
@@ -25,7 +25,7 @@ interface WallFace3DProps {
   uvTransform: FaceUvTransform
   holds: Hold[]
   selectedHoldId: string | null
-  collidingHoldIds: Set<string>
+  blockingHoldIds: string[]
   deletingHoldIds: string[]
   isDraggingAny: React.RefObject<boolean>
   /** Another panel has the focus, so this one steps back */
@@ -53,7 +53,7 @@ export function WallFace3D({
   uvTransform,
   holds,
   selectedHoldId,
-  collidingHoldIds,
+  blockingHoldIds,
   deletingHoldIds,
   isDraggingAny,
   isDimmed,
@@ -105,7 +105,7 @@ export function WallFace3D({
           key={hold.id}
           hold={hold}
           isSelected={hold.id === selectedHoldId}
-          isColliding={collidingHoldIds.has(hold.id)}
+          isBlocking={blockingHoldIds.includes(hold.id)}
           isDeleting={deletingHoldIds.includes(hold.id)}
           isDimmed={isDimmed}
           isDraggingAny={isDraggingAny}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createRootFaceTree } from '../faceTree'
+import { createRootFaceTree } from '@crimp-studio/wall-geometry'
 import { cutFaceTree } from '../faceCut'
 import { computeFaceUvTransform } from '../faceUv'
 

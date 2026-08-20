@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useWallStore } from '@/stores/wallStore'
-import { computeFaceTransforms } from '../../WallCanvas3D/utils/faceTransform'
+import { computeFaceTransforms } from '@crimp-studio/wall-geometry'
 import { computeWallProfile } from '../../WallCanvas3D/utils/faceProfile'
 import { formatWallReadout } from '../utils/formatReadout'
 

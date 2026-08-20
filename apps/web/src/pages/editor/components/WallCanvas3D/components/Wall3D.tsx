@@ -4,11 +4,10 @@ import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { WallFace3D } from './WallFace3D'
 import { SelectionPopovers } from './SelectionPopovers'
-import { WALL_DEPTH, CM_TO_M } from '../constants/editor3d'
+import { CM_TO_M, WALL_DEPTH } from '@crimp-studio/wall-geometry'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
-import { checkCollision } from '../utils/holdCollision'
-import { listFaces } from '../utils/faceTree'
+import { listFaces } from '@crimp-studio/wall-geometry'
 import { computeFaceUvTransform } from '../utils/faceUv'
 
 interface Wall3DProps {
@@ -16,7 +15,7 @@ interface Wall3DProps {
 }
 
 export function Wall3D({ onDragStateChange }: Wall3DProps) {
-  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds } = useWallStore()
+  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds, blockingHoldIds } = useWallStore()
 
   const faces = useMemo(() => listFaces(wall.faces), [wall.faces])
 
@@ -49,21 +48,6 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
     handleHoldPointerDown,
   } = useWallInteraction()
 
-  /* Build set of all hold IDs that overlap with at least one other hold */
-  const collidingHoldIds = useMemo(() => {
-    const ids = new Set<string>()
-    const holds = wall.holds
-    for (let i = 0; i < holds.length; i++) {
-      for (let j = i + 1; j < holds.length; j++) {
-        if (checkCollision(holds[i], holds[j])) {
-          ids.add(holds[i].id)
-          ids.add(holds[j].id)
-        }
-      }
-    }
-    return ids
-  }, [wall.holds])
-
   /* Sync isDragging ref to callback so OrbitControls toggle stays responsive */
   const prevDraggingRef = useRef(false)
   useFrame(() => {
@@ -92,7 +76,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           groupRef={registerFaceGroup(face.id)}
           holds={wall.holds.filter((hold) => hold.faceId === face.id)}
           selectedHoldId={selectedHoldId}
-          collidingHoldIds={collidingHoldIds}
+          blockingHoldIds={blockingHoldIds}
           deletingHoldIds={deletingHoldIds}
           isDraggingAny={isDragging}
           isDimmed={selectedFaceId !== null && face.id !== selectedFaceId}

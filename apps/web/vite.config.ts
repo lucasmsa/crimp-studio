@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@crimp-studio/wall-geometry': path.resolve(__dirname, '../../packages/wall-geometry/src'),
     },
   },
   test: {
