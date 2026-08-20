@@ -85,8 +85,11 @@ interface WallState {
   addHold: (faceId: string, u: number, v: number) => void
   /** Colour, rotation and measured box. Position goes through moveHold */
   updateHold: (id: string, updates: Partial<Hold>) => void
-  /** Moves a hold, refusing a spot where it would not fit in world space */
-  moveHold: (id: string, u: number, v: number) => void
+  /**
+   * Moves a hold, refusing a spot where it would not fit in world space. Passing
+   * a face hands the hold to that panel, which is what dragging across a seam does
+   */
+  moveHold: (id: string, u: number, v: number, faceId?: string) => void
   /** Turns a hold, re-measuring its footprint and refusing if it no longer fits */
   rotateHold: (id: string) => void
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
@@ -191,14 +194,14 @@ export const useWallStore = create<WallState>((set) => ({
       },
     })),
 
-  moveHold: (id, u, v) =>
+  moveHold: (id, u, v, faceId) =>
     set((state) => {
       const hold = state.wall.holds.find((h) => h.id === id)
       if (!hold) return state
 
-      const face = getFace(state.wall.faces, hold.faceId)
+      const face = getFace(state.wall.faces, faceId ?? hold.faceId)
       const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
-      const moved = { ...hold, u: clamped.u, v: clamped.v }
+      const moved = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
 
       /* Refusing outright rather than snapping back on release: every frame of a
          drag is a committed position, so the hold simply stops at the last one

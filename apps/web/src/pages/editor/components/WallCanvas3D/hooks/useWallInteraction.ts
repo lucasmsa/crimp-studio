@@ -108,9 +108,22 @@ export function useWallInteraction() {
     }
   }, [gl.domElement])
 
-  /* Every frame: if dragging, raycast from pointer to drag plane and update hold */
+  /* Every frame while dragging: whichever panel the pointer is over takes the
+     hold, which is how a hold crosses a seam onto its neighbour */
   const raycaster = useRef(new THREE.Raycaster())
   const intersectPoint = useRef(new THREE.Vector3())
+
+  const faceUnderPointer = useCallback((): { faceId: string; point: THREE.Vector3 } | null => {
+    const meshes = [...faceMeshes.current.entries()]
+    const hits = raycaster.current.intersectObjects(
+      meshes.map(([, mesh]) => mesh),
+      false,
+    )
+    if (hits.length === 0) return null
+
+    const entry = meshes.find(([, mesh]) => mesh === hits[0].object)
+    return entry ? { faceId: entry[0], point: hits[0].point } : null
+  }, [])
 
   useFrame(() => {
     const holdId = draggingHoldIdRef.current
@@ -121,13 +134,25 @@ export function useWallInteraction() {
 
     raycaster.current.setFromCamera(pointerNDC.current, camera)
 
-    if (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)) {
-      const coords = worldToFaceCoords(hold.faceId, intersectPoint.current)
-      /* moveHold refuses a spot the hold does not fit in, so the hold stops at
-         the last one that did rather than being dragged through a panel and
-         snapped back on release */
-      if (coords) useWallStore.getState().moveHold(holdId, coords.u, coords.v)
-    }
+    /* Over a panel, the hold goes there. Past the edge of the wall it keeps
+       sliding on the plane of the panel it is already on, so a drag that leaves
+       the wall clamps at the edge instead of stopping dead */
+    const over = faceUnderPointer()
+    const target =
+      over ??
+      (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)
+        ? { faceId: hold.faceId, point: intersectPoint.current }
+        : null)
+    if (!target) return
+
+    const coords = worldToFaceCoords(target.faceId, target.point)
+    /* moveHold refuses a spot the hold does not fit in, so the hold stops at the
+       last one that did rather than being dragged through a panel */
+    if (coords) useWallStore.getState().moveHold(holdId, coords.u, coords.v, target.faceId)
+
+    /* The plane follows the panel the hold is on, so leaving the wall from a
+       bent panel slides along that panel rather than the one it started on */
+    if (over && over.faceId !== hold.faceId) setupDragPlane(over.faceId)
   })
 
   /* Face press — remembered, then resolved on release */

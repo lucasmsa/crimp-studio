@@ -64,7 +64,11 @@ changes, update this doc in the same PR.
   for a moment.
 - Click empty canvas or press Escape: the card and its cord go. Clicks on the card do not
   count as clicking empty canvas.
-- Drag: hold follows pointer via raycast against an invisible wall-aligned plane, clamped to wall bounds. Orbit controls disabled during drag, re-enabled on release.
+- Drag: the hold goes to whichever panel is under the pointer, so dragging across a seam
+  hands it to the neighbour and it re-poses with that panel's angle. Past the edge of the
+  wall it keeps sliding on the plane of the panel it is on, clamped to that panel. Every
+  frame is validated, so a spot it does not fit in is simply not taken (ADR-007). Orbit
+  controls are disabled during a drag and re-enabled on release.
 - Keyboard: R rotates by the configured step, Delete/Backspace removes, Escape deselects,
   WASD/arrows nudge 5cm (20cm with Shift), clamped to bounds. Enter is left alone because
   it activates whatever control the popover has focused.

@@ -301,6 +301,33 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.holds[0]).toMatchObject({ u: 200, v: 300 })
     })
 
+    it('hands a hold to the panel it is dragged onto', () => {
+      place(150, 100)
+      const hold = useWallStore.getState().wall.holds[0]
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const upperId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().moveHold(hold.id, 150, 60, upperId)
+
+      expect(useWallStore.getState().wall.holds[0]).toMatchObject({
+        faceId: upperId,
+        u: 150,
+        v: 60,
+      })
+    })
+
+    it('refuses to hand a hold over onto another hold', () => {
+      place(150, 100)
+      const moving = useWallStore.getState().wall.holds[0]
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const upperId = useWallStore.getState().selectedFaceId!
+      useWallStore.getState().addHold(upperId, 150, 60)
+
+      useWallStore.getState().moveHold(moving.id, 150, 60, upperId)
+
+      expect(useWallStore.getState().wall.holds[0].faceId).toBe(rootFaceId())
+    })
+
     it('re-measures a hold when it turns, since a turned box covers different plywood', () => {
       useWallStore.getState().setSelectedHoldType('pinch')
       place(200, 250)

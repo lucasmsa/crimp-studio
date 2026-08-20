@@ -58,6 +58,10 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [ ] Wall resizing: drag wall edges; clamp or warn when shrinking would orphan holds
 - [x] Wall surface realism (2026-08-12): T-nut grid + plywood seams via procedural canvas texture
 - [x] Triangular volumes (2026-08-12): the volume type IS now a plywood wedge prism; the icosahedron is gone
+- [x] Hold re-parenting across a seam (2026-08-20): a drag reads the panel under the
+  pointer rather than one fixed plane, so a hold crossing a seam changes panel and re-poses
+  with it. Off the wall it keeps sliding on the plane of the panel it is on, so a drag past
+  the edge clamps instead of stopping dead.
 - [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
 - [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Wanted sooner rather than later (2026-08-17): a drawn line says exactly where the cut lands, where the current buttons cut at the last tap and slide off any hold in the way, which is hard to aim. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 
