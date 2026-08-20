@@ -38,13 +38,19 @@ describe('faceSelectionAnchor', () => {
 })
 
 describe('holdSelectionAnchor', () => {
-  it('sits on the hold, off the panel it is bolted to', () => {
+  it('sits at the edge of the hold facing the card, off the panel', () => {
     const tree = createRootFaceTree(400, 500, PANEL)
-    const hold = { id: 'h1', faceId: tree.rootId, u: 120, v: 250 } as Hold
+    const hold = {
+      id: 'h1',
+      faceId: tree.rootId,
+      u: 120,
+      v: 250,
+      collisionBox: { halfW: 15, halfH: 15, depth: 10 },
+    } as Hold
 
     const anchor = holdSelectionAnchor(computeFaceTransforms(tree), hold)
 
-    expect(anchor.x).toBeCloseTo(1.2)
+    expect(anchor.x).toBeCloseTo(1.35)
     expect(anchor.y).toBeCloseTo(2.5)
     expect(anchor.z).toBeGreaterThan(0)
   })

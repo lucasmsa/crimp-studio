@@ -23,7 +23,14 @@ export function faceSelectionAnchor(
   return faceLocalToWorld(transforms[faceId], face.width, face.height / 2, ANCHOR_LIFT)
 }
 
-/** The point on a hold its controls point at, lifted off the panel it is bolted to */
+/** Half a hold's width in cm, until it has reported its measured box */
+const UNMEASURED_HALF_WIDTH = 12
+
+/**
+ * The point on a hold its cord runs to: the middle of the edge facing the card,
+ * off the surface, so the cord stops at the hold rather than crossing it.
+ */
 export function holdSelectionAnchor(transforms: FaceTransforms, hold: Hold): THREE.Vector3 {
-  return faceLocalToWorld(transforms[hold.faceId], hold.u, hold.v, ANCHOR_LIFT)
+  const halfWidth = hold.collisionBox?.halfW ?? UNMEASURED_HALF_WIDTH
+  return faceLocalToWorld(transforms[hold.faceId], hold.u + halfWidth, hold.v, ANCHOR_LIFT)
 }
