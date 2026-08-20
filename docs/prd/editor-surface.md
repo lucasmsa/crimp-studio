@@ -25,16 +25,18 @@ decision with about eight real answers.
 **The canvas owns the screen.** Chrome is a header, a left tool rail, and
 whatever popover the current selection calls for.
 
-**Selection summons its own controls.** A popover anchors to the thing selected,
-in the canvas, near it:
+**Selection summons its own controls.** One card, parked in the canvas's top right
+corner, with a cord hanging from it to the thing selected:
 
 - **Panel**: angle presets and stepper, which seam the angle drives, cut across,
   cut up, colour, merge down.
 - **Hold**: type, model variant, colour, rotate, delete.
 
-The popover follows the thing while it animates, never covers it, and flips to
-the other side when it would run off screen. Escape or a click on empty canvas
-dismisses it, which is the same gesture that clears the selection today.
+The card stays where it is and the cord does the following, sagging and swinging
+as the wall moves. Anchoring the card to its subject was tried first and put the
+controls over the wall they were editing, which is the one thing the canvas is
+for. Escape or a click on empty canvas dismisses it, which is the same gesture
+that clears the selection today.
 
 **The rail replaces the mode picker.** A vertical strip of tools on the left:
 place holds, shape panels, and later generate. It collapses to icons and remembers

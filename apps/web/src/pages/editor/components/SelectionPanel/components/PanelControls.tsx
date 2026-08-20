@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import type * as THREE from 'three'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ColorSwatches } from '../../ColorSwatches'
@@ -11,17 +10,17 @@ import {
   sectionLabel,
 } from '../../../config/editorControlStyles'
 import { usePanelControls } from '../hooks/usePanelControls'
-import { SelectionPopover } from './SelectionPopover'
+import { SelectionCard } from './SelectionCard'
 
-interface PanelPopoverProps {
-  anchor: THREE.Vector3
+interface PanelControlsProps {
+  cardRef: React.RefObject<HTMLDivElement | null>
 }
 
 /**
- * The selected panel's controls, at the panel: how steep it is, where it
- * splits, what it is painted, and whether it goes back into the panel below.
+ * The selected panel's controls: how steep it is, where it splits, what it is
+ * painted, and whether it goes back into the panel below.
  */
-export function PanelPopover({ anchor }: PanelPopoverProps) {
+export function PanelControls({ cardRef }: PanelControlsProps) {
   const { t } = useTranslation()
   const {
     face,
@@ -40,7 +39,7 @@ export function PanelPopover({ anchor }: PanelPopoverProps) {
   if (!face) return null
 
   return (
-    <SelectionPopover anchor={anchor} label={t('editor.panel.label')} testId="panel-popover">
+    <SelectionCard label={t('editor.panel.label')} testId="panel-popover" cardRef={cardRef}>
       <div className="space-y-1">
         <h2 className={sectionLabel}>{t('editor.panel.label')}</h2>
         <p className={readoutLine} data-testid="panel-seam">
@@ -145,6 +144,6 @@ export function PanelPopover({ anchor }: PanelPopoverProps) {
           {t('editor.face.remove')}
         </Button>
       )}
-    </SelectionPopover>
+    </SelectionCard>
   )
 }

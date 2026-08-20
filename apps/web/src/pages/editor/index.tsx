@@ -5,10 +5,11 @@ import { WallCanvas3D } from './components/WallCanvas3D'
 import { EditorLoading } from './components/EditorLoading'
 import { ToolRail } from './components/ToolRail'
 import { StatusStrip } from './components/StatusStrip'
+import { SelectionPanel } from './components/SelectionPanel'
 
 /**
  * The wall gets the screen. Chrome is the header, the tool rail, the status
- * strip, and whatever popover the current selection calls for.
+ * strip, and the card the current selection hangs from.
  */
 export function EditorPage() {
   const { t } = useTranslation()
@@ -44,6 +45,7 @@ export function EditorPage() {
           <WallCanvas3D />
         </div>
         <ToolRail />
+        <SelectionPanel />
         <StatusStrip />
         <EditorLoading />
       </main>

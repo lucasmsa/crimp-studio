@@ -3,12 +3,12 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { WallFace3D } from './WallFace3D'
-import { SelectionPopovers } from './SelectionPopovers'
-import { CM_TO_M, WALL_DEPTH } from '@crimp-studio/wall-geometry'
+import { SelectionAnchorProbe } from './SelectionAnchorProbe'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
 import { listFaces } from '@crimp-studio/wall-geometry'
 import { computeFaceUvTransform } from '../utils/faceUv'
+import { wallCenteringOffset } from '../utils/wallCentering'
 
 interface Wall3DProps {
   onDragStateChange: (isDragging: boolean) => void
@@ -57,17 +57,13 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
     }
   })
 
-  /* Wall space puts the root face's bottom-left corner at the origin; this
-     offset re-centers the whole profile on screen until the camera frames it
-     from the computed profile instead */
-  const centeringOffset: [number, number, number] = [
-    (-wall.width * CM_TO_M) / 2,
-    (-wall.height * CM_TO_M) / 2,
-    WALL_DEPTH / 2,
-  ]
+  const centering = useMemo(
+    () => wallCenteringOffset(wall.width, wall.height),
+    [wall.width, wall.height],
+  )
 
   return (
-    <group position={centeringOffset}>
+    <group position={centering}>
       {faces.map((face) => (
         <WallFace3D
           key={face.id}
@@ -88,7 +84,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
         />
       ))}
 
-      <SelectionPopovers />
+      <SelectionAnchorProbe />
     </group>
   )
 }

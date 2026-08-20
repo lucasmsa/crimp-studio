@@ -7,10 +7,10 @@ import {
   getFaceTilt,
   relativeFaceAngle,
 } from '@crimp-studio/wall-geometry'
-import { canCutFace, findCutPosition, MIN_FACE_SIZE } from '../utils/faceCut'
-import type { CutAxis, CutCheck } from '../utils/faceCut'
-import { getAngleLimits, getFaceAnglePresets, stepFaceAngle } from '../config/faceAngleConfig'
-import { getSeamLabelKey } from '../utils/panelSeam'
+import { canCutFace, findCutPosition, MIN_FACE_SIZE } from '../../WallCanvas3D/utils/faceCut'
+import type { CutAxis, CutCheck } from '../../WallCanvas3D/utils/faceCut'
+import { getAngleLimits, getFaceAnglePresets, stepFaceAngle } from '../../WallCanvas3D/config/faceAngleConfig'
+import { getSeamLabelKey } from '../../WallCanvas3D/utils/panelSeam'
 
 /**
  * Everything the panel popover needs about the selected panel: its angle in the

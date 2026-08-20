@@ -45,21 +45,25 @@ changes, update this doc in the same PR.
   settings sit under it, so hold type and model appear with the holds tool.
 - Status strip: hold count, panel count, and the profile readout (height, reach, plywood).
   The readout comes from the settled tree, not the animating one.
-- Selection popovers are drei `Html` without `transform`, so they stay upright whatever
-  the panel is doing. They anchor on the settled face transform rather than the animated
-  one, sit beside their subject, flip sides near the canvas edge, and ride up or down to
-  stay on screen. Focus moves into an open popover and Tab cycles within it.
+- The selection's controls sit in a card parked in the canvas's top right corner, with a
+  cord hanging from it to whatever is selected. A card that follows its subject ends up
+  over the wall it is editing; the cord keeps them connected instead. It is a verlet rope
+  simulated in the DOM (`SelectionPanel/utils/rope.ts`), pinned at the card and at the
+  subject's projected point, so it sags, lags and swings as the wall moves or the camera
+  turns. Focus moves into an open card and Tab cycles within it.
 
 ## Interactions
 
 - Click wall (holds tool): place hold of selected type at click position. Positions stored
   in cm from the panel's bottom-left corner.
-- Click wall (panels tool): select the panel and open its popover: angle presets, a degree
-  stepper, cut across, cut up, panel colour, merge down.
+- Click wall (panels tool): select the panel and fill the card: angle presets, a degree
+  stepper, cut across, cut up, panel colour, merge down. A preset the wall cannot reach is
+  disabled, and the stepper stops where the plywood does (ADR-007).
 - Click hold: select (single selection). Selected hold gets emissive glow, slight scale-up,
-  and its popover.
-- Click empty canvas or press Escape: everything closes. Clicks on a popover do not count
-  as clicking empty canvas.
+  and the card shows its colour, rotate and delete. A hold that stopped a bend flashes red
+  for a moment.
+- Click empty canvas or press Escape: the card and its cord go. Clicks on the card do not
+  count as clicking empty canvas.
 - Drag: hold follows pointer via raycast against an invisible wall-aligned plane, clamped to wall bounds. Orbit controls disabled during drag, re-enabled on release.
 - Keyboard: R rotates by the configured step, Delete/Backspace removes, Escape deselects,
   WASD/arrows nudge 5cm (20cm with Shift), clamped to bounds. Enter is left alone because

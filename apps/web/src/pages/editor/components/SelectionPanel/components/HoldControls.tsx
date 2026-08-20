@@ -1,16 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import type * as THREE from 'three'
 import type { Hold } from '@/stores/wallStore'
 import { Button } from '@/components/ui/button'
 import { ColorSwatches } from '../../ColorSwatches'
 import { HOLD_SWATCHES } from '../../../config/holdSwatches'
 import { sectionLabel } from '../../../config/editorControlStyles'
 import { useHoldControls } from '../hooks/useHoldControls'
-import { SelectionPopover } from './SelectionPopover'
+import { SelectionCard } from './SelectionCard'
 
-interface HoldPopoverProps {
+interface HoldControlsProps {
   hold: Hold
-  anchor: THREE.Vector3
+  cardRef: React.RefObject<HTMLDivElement | null>
 }
 
 /**
@@ -18,12 +17,12 @@ interface HoldPopoverProps {
  * that is already on the wall. Type and model belong to the next placement, so
  * they stay in the rail rather than being repeated here.
  */
-export function HoldPopover({ hold, anchor }: HoldPopoverProps) {
+export function HoldControls({ hold, cardRef }: HoldControlsProps) {
   const { t } = useTranslation()
   const { color, setColor, rotate, remove } = useHoldControls(hold)
 
   return (
-    <SelectionPopover anchor={anchor} label={t('editor.hold.label')} testId="hold-popover">
+    <SelectionCard label={t('editor.hold.label')} testId="hold-popover" cardRef={cardRef}>
       <h2 className={sectionLabel}>{t('editor.colors.holdColor')}</h2>
       <ColorSwatches
         swatches={HOLD_SWATCHES}
@@ -41,6 +40,6 @@ export function HoldPopover({ hold, anchor }: HoldPopoverProps) {
           {t('editor.actions.delete')}
         </Button>
       </div>
-    </SelectionPopover>
+    </SelectionCard>
   )
 }
