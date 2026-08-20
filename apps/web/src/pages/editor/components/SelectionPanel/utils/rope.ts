@@ -19,9 +19,11 @@ export interface RopeSettings {
 }
 
 export const ROPE: RopeSettings = {
-  points: 12,
+  points: 16,
   gravity: 900,
-  slack: 1.18,
+  /* Loose enough to swing down below the card before it climbs to the wall,
+     which is what makes it read as a cord hanging rather than a wire drawn */
+  slack: 1.5,
   damping: 0.94,
   passes: 6,
 }

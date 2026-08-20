@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createRope, ropePath, stepRope } from '../rope'
+import { createRope, ROPE, ropePath, stepRope } from '../rope'
 
 const CARD = { x: 900, y: 100 }
 const THING = { x: 300, y: 400 }
@@ -49,6 +49,7 @@ describe('stepRope', () => {
   it('never stretches past its slack', () => {
     const rope = settle()
     const span = Math.hypot(THING.x - CARD.x, THING.y - CARD.y)
+    const { slack } = ROPE
     const length = rope
       .slice(1)
       .reduce(
@@ -56,7 +57,7 @@ describe('stepRope', () => {
         0,
       )
 
-    expect(length).toBeLessThan(span * 1.25)
+    expect(length).toBeLessThan(span * (slack + 0.06))
   })
 })
 
