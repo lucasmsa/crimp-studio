@@ -43,7 +43,7 @@ export function SelectionPanel() {
         <use
           href="#selection-rope"
           fill="none"
-          stroke={colors.secondary}
+          stroke={colors.dark.text}
           strokeWidth={3.5}
           strokeLinecap="round"
         />
