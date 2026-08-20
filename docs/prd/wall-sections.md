@@ -58,13 +58,27 @@ span a bend, and the invariant keeps every downstream calculation on one plane.
 - **Cutting through a hold is blocked**, and the holds in the way are highlighted.
   Same rule for dragging a seam across a hold.
 - **Dragging a hold across a seam re-parents it live**: it hops to the face under the
-  cursor, its tilt springs to that face's angle, and on drop it clamps clear of the
-  seam.
+  cursor on crossing the seam line rather than on proximity, its tilt springs to that
+  face's angle, and it stays clear of the seam throughout the drag rather than only on
+  drop, since every frame is validated (ADR-007).
 - **Shrinking the surface past a hold clamps the hold** onto what remains, animated,
   the same way edge clamping already works. Nothing is removed silently.
-- **Collision becomes a 3D test.** Each hold's measured box becomes an oriented box
-  in world space, so holds on opposite sides of a bend can collide. The store's
-  placement check, the drag preview, and the future generator's fitness all read it.
+- **Nothing may overlap, ever** (ADR-007). Panels and holds are oriented boxes in one
+  world space, kept 1cm apart rather than merely non-overlapping. The floor is a solid
+  too, which retires the root panel's arbitrary 60 degree cap. Hinged pairs are exempt,
+  since they share their seam by construction.
+- **A bend stops at contact.** Setting an angle bisects to within half a degree of the
+  real limit and commits that, so a panel stops where the plywood meets whatever is in
+  the way. A preset that would clip is disabled rather than doing something else, and
+  the stepper stops moving at the limit.
+- **Holds count in the clamp, and say so.** A hold near a seam stops a bend earlier than
+  bare plywood would, so the hold that stopped it flashes. This is the same idiom as a
+  refused cut pointing at the holds in the way.
+- **The invariant is enforced at the store boundary**, not per consumer: angle, place,
+  each frame of a drag, cut and merge all ask first, so no invalid wall reaches the
+  renderer, a save file or the generator.
+- **The geometry lives in `packages/wall-geometry`**, with no React and no store import,
+  because scan and route generation query the same solids.
 - **Camera eases toward a selected face's normal** only when the face is more than
   ~35 degrees oblique. It keeps the current side-of-the-wall bias, never interrupts
   an orbit in progress, and eases back to the whole profile on deselect.
@@ -75,13 +89,19 @@ span a bend, and the invariant keeps every downstream calculation on one plane.
 
 ### In
 - Face tree with hinge-per-face and axis-aligned cuts, up to 4 sections on the profile
-- Face selection in 3D plus sidebar angle editing (presets, stepper, cut, remove)
+- Face selection in 3D plus angle editing (presets, stepper, cut, merge), now in the
+  panel popover rather than a sidebar (`docs/prd/editor-surface.md`)
 - Face-local hold coordinates, live re-parenting on drag, clamping on shrink
-- Oriented-box 3D collision
+- World-space oriented-box collision for panels, holds and the floor, in its own package
+- Bends that stop at contact, and the hold that stopped one flashing
 - Focus and refit camera behavior, sprung transitions
 
 ### Out
-- Blade-mode diagonal cuts (backlogged; the data model already supports them)
+- Reachability and generation queries over the solids: shapes and legality land, the
+  questions route generation will ask do not
+- Scan angle fitting, which consumes this geometry later
+- Blade-mode diagonal cuts (backlogged; the data model already supports them, and they
+  need a convex hull alongside the box)
 - Per-vertex bulges and dishes: faces stay flat planes
 - Saving and loading walls: Save and Load remain placeholders
 - Route generation on bent walls (ADR-002, phase 2)
@@ -94,7 +114,12 @@ span a bend, and the invariant keeps every downstream calculation on one plane.
   u,v, re-posed and re-tilted.
 - No hold ever straddles a seam, in any sequence of cutting, dragging, angling and
   shrinking.
-- Two holds that overlap in world space across a seam are reported as colliding.
+- No two solids overlap in any sequence of those operations: not two panels, not two
+  holds across a seam, not a hold and a panel it is not bolted to, not a panel and the
+  floor. This is a property test, not an example test.
+- A panel bent toward another panel stops within half a degree of contact, and the
+  readout shows the angle it actually stopped at.
+- A bend stopped by a hold flashes that hold.
 - A roof face can be selected and set on without manual orbiting.
 
 ## Risks
@@ -107,7 +132,13 @@ span a bend, and the invariant keeps every downstream calculation on one plane.
   `hasCollision` signature so callers do not change.
 - Re-parenting during a drag is the fiddliest interaction here, and it fires every
   frame while the pointer sits near a seam. Mitigation: re-parent on crossing the
-  seam line, not on proximity, and clamp only on drop.
+  seam line, not on proximity.
+- Per-frame validation during a drag sets a budget. Roughly 10 panels and 30 holds is a
+  few hundred axis tests per frame, which is fine; a 200-hold wall needs broad-phase
+  culling first. Mitigation: measure at that size before promising it.
+- A bend stopping for a reason off screen (a panel behind, a hold on the far side) reads
+  as the control being broken. Mitigation: the flashing hold covers one case, and the
+  popover may have to name the others.
 
 ## Open questions
 

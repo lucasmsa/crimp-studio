@@ -42,10 +42,11 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [x] Wall sections increment 1-2 (2026-08-17): face tree, cutting, angles, sprung bending, panel picker. Round of fixes after first real use: panels never cast shadows (only holds did), so an overhang left the wall below it lit and holds glowed inside their own shadow; the shadow map was spread over a 14m frustum, which speckled holds with acne and gave shadow edges a staircase; clicks obeyed click history rather than the mode picker; the base panel could be laid flat as a ceiling at floor height; a vertical seam offered roof and overhang, which mean nothing sideways.
 
 - [x] Editor surface rework (2026-08-19): the sidebar is gone. Panel and hold popovers (drei `Html`, upright whatever the panel does, anchored on the settled transform so they hold still through a bend), a collapsible tool rail carrying the armed tool's settings, a status strip with counts and the height/reach/plywood readout, `wallColor` moved onto each face so panels paint one at a time and a cut keeps the paint. Three things found by using it: the 3D canvas had been 150px tall since the editor was built (R3F asks for `height: 100%`, the flex-grown box gave it nothing to resolve against, and the matching background hid it), a click on a popover control also read as a click on empty canvas and closed the popover, and the status chips were muted text on scene blue at under 2:1. "Bend on: across / up" landed as a readout, not a picker: a face hinges on one edge, so there was never a choice to offer.
-- [ ] Panels and holds must never clip: a panel folded far enough passes through a
-  panel it is not hinged to, and a hold on one panel pokes through the next one.
-  Needs the 3D oriented-box collision from `docs/prd/wall-sections.md` (increment 4)
-  plus an angle limit that stops a bend at the point of contact rather than after it.
+- [ ] Panels and holds must never clip. Shaped 2026-08-20 in ADR-007 and folded into
+  `docs/prd/wall-sections.md`: oriented boxes for panels, holds and the floor in
+  `packages/wall-geometry`, kept 1cm apart, bends bisecting to contact, holds counting in
+  the clamp and flashing when they stop one, hold re-parenting across a seam, all checked
+  at the store boundary. The wall becomes the physical model scan and generation query.
 - [ ] Copy a real wall's angles from a photo, with an angle input as the manual path
   (noted 2026-08-18). Feeds the Scan pillar: measure the profile off an image rather
   than dialling each panel by hand.
