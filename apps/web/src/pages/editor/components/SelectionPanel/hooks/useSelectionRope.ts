@@ -43,10 +43,10 @@ export function useSelectionRope(
 
       const cardBox = card.getBoundingClientRect()
       const overlayBox = overlay.getBoundingClientRect()
-      /* Leaves from the bottom-right corner of the card, the way a cord hangs off
-         the thing it is plugged into */
+      /* Off the bottom edge of the card, over on its right: it hangs from the
+         card rather than from the edge of the editor */
       const from = {
-        x: cardBox.right - overlayBox.left - 14,
+        x: cardBox.left - overlayBox.left + cardBox.width * 0.75,
         y: cardBox.bottom - overlayBox.top,
       }
       const to = { x: selectionAnchor.x, y: selectionAnchor.y }
