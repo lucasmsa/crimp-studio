@@ -10,12 +10,12 @@ const anchorOf = (tree: ReturnType<typeof createRootFaceTree>, faceId: string) =
   faceSelectionAnchor(tree, computeFaceTransforms(tree), faceId)
 
 describe('faceSelectionAnchor', () => {
-  it('sits at the middle of the panel, off its surface', () => {
+  it('sits at the middle of the right border, off the surface', () => {
     const tree = createRootFaceTree(400, 500, PANEL)
 
     const anchor = anchorOf(tree, tree.rootId)
 
-    expect(anchor.x).toBeCloseTo(2)
+    expect(anchor.x).toBeCloseTo(4)
     expect(anchor.y).toBeCloseTo(2.5)
     expect(anchor.z).toBeGreaterThan(0)
   })

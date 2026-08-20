@@ -7,10 +7,11 @@ import { faceLocalToWorld, getFace } from '@crimp-studio/wall-geometry'
 const ANCHOR_LIFT = 0.12
 
 /**
- * The point on a panel that its controls point at: the middle of the panel,
- * lifted off the surface.
+ * The point on a panel that its cord runs to: the middle of its right edge,
+ * lifted off the surface. The card is parked on the right, so the cord meets the
+ * panel at the border facing it rather than reaching across its face.
  *
- * The transforms passed in are the settled ones, so the line holds its aim while
+ * The transforms passed in are the settled ones, so the cord holds its aim while
  * the bend animates rather than whipping around with the panel.
  */
 export function faceSelectionAnchor(
@@ -19,7 +20,7 @@ export function faceSelectionAnchor(
   faceId: string,
 ): THREE.Vector3 {
   const face = getFace(tree, faceId)
-  return faceLocalToWorld(transforms[faceId], face.width / 2, face.height / 2, ANCHOR_LIFT)
+  return faceLocalToWorld(transforms[faceId], face.width, face.height / 2, ANCHOR_LIFT)
 }
 
 /** The point on a hold its controls point at, lifted off the panel it is bolted to */
