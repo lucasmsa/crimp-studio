@@ -6,8 +6,8 @@ const CM2_PER_M2 = 10_000
 export interface WallReadout {
   /** Floor to the highest point, metres */
   height: string
-  /** How far the wall juts out from its base, metres */
-  reach: string
+  /** Floor space the profile occupies, metres */
+  depth: string
   /** Plywood across every panel, square metres */
   plywood: string
 }
@@ -19,7 +19,7 @@ export interface WallReadout {
 export function formatWallReadout(profile: WallProfile): WallReadout {
   return {
     height: (profile.heightCm / CM_PER_M).toFixed(2),
-    reach: (profile.reachCm / CM_PER_M).toFixed(2),
+    depth: (profile.depthCm / CM_PER_M).toFixed(2),
     plywood: (profile.surfaceAreaCm2 / CM2_PER_M2).toFixed(1),
   }
 }

@@ -3,6 +3,11 @@ import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { placePopover } from '../utils/popoverPlacement'
 
+/* The camera eases into a new framing whenever the wall changes shape, which
+   walks an anchor across the screen a fraction of a pixel at a time. Moving the
+   popover only once it is this far out keeps it still through the small stuff. */
+const DEADZONE_PX = 12
+
 /**
  * Keeps a popover beside its anchor and inside the canvas.
  *
@@ -22,6 +27,7 @@ export function usePopoverPlacement(
   const viewport = useThree((state) => state.size)
   const projected = useRef(new THREE.Vector3())
   const popover = useRef({ width: 0, height: 0 })
+  const written = useRef({ x: 0, y: 0, settled: false })
 
   /* A popover is portalled into the canvas overlay, so it is not in the
      document on the pass where this effect first runs and measures nothing.
@@ -53,6 +59,10 @@ export function usePopoverPlacement(
       popover: popover.current,
     })
 
+    const drift = Math.hypot(placement.x - written.current.x, placement.y - written.current.y)
+    if (written.current.settled && drift < DEADZONE_PX) return
+
+    written.current = { x: placement.x, y: placement.y, settled: true }
     element.style.transform = `translate(${placement.x}px, ${placement.y}px)`
     element.dataset.side = placement.side
   })

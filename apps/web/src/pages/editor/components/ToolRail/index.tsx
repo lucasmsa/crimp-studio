@@ -31,7 +31,11 @@ export function ToolRail() {
           onClick={toggleCollapsed}
           aria-label={t(collapsed ? 'editor.rail.expand' : 'editor.rail.collapse')}
           aria-expanded={!collapsed}
-          className="ml-auto cursor-pointer px-1 font-mono text-sm text-muted-foreground hover:text-foreground"
+          className={cn(
+            holdTypeButtonBase,
+            holdTypeButtonStates.idle,
+            'ml-auto h-7 w-7 px-0 text-sm leading-none',
+          )}
           data-testid="rail-toggle"
         >
           {collapsed ? '»' : '«'}

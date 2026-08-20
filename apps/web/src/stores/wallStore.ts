@@ -79,10 +79,6 @@ interface WallState {
   /** Places a hold at (u, v) on the given face */
   addHold: (faceId: string, u: number, v: number) => void
   updateHold: (id: string, updates: Partial<Hold>) => void
-  /** Retypes a placed hold, re-picking its model and re-measuring its footprint */
-  setHoldType: (id: string, type: HoldType) => void
-  /** Swaps a placed hold's model, re-measuring its footprint */
-  setHoldVariant: (id: string, variant: string) => void
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
@@ -104,36 +100,6 @@ interface WallState {
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9)
-
-/**
- * Puts a new type or model on a placed hold. A different shape is a different
- * footprint, so the box is re-measured and the hold pulled back onto its panel;
- * a change that would land the new footprint on a neighbour is refused rather
- * than allowed to overlap.
- */
-function reshapeHold(
-  state: WallState,
-  id: string,
-  type: HoldType,
-  variant: string | undefined,
-): Partial<WallState> | WallState {
-  const hold = state.wall.holds.find((h) => h.id === id)
-  if (!hold) return state
-
-  const collisionBox = measureHoldFootprint(type, variant, hold.size)
-  const face = getFace(state.wall.faces, hold.faceId)
-  const clamped = clampHoldToFace(hold.u, hold.v, collisionBox, face.width, face.height)
-  const reshaped: Hold = { ...hold, type, variant, collisionBox, u: clamped.u, v: clamped.v }
-
-  if (hasCollision(reshaped, state.wall.holds)) return state
-
-  return {
-    wall: {
-      ...state.wall,
-      holds: state.wall.holds.map((h) => (h.id === id ? reshaped : h)),
-    },
-  }
-}
 
 const WALL_WIDTH = 400
 const WALL_HEIGHT = 500
@@ -210,15 +176,6 @@ export const useWallStore = create<WallState>((set) => ({
         ),
       },
     })),
-
-  setHoldType: (id, type) =>
-    set((state) => reshapeHold(state, id, type, pickModelVariant(id, type))),
-
-  setHoldVariant: (id, variant) =>
-    set((state) => {
-      const hold = state.wall.holds.find((h) => h.id === id)
-      return hold ? reshapeHold(state, id, hold.type, variant) : state
-    }),
 
   markHoldDeleting: (id) =>
     set((state) => ({

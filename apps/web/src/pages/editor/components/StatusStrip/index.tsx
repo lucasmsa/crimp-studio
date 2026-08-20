@@ -21,8 +21,8 @@ export function StatusStrip() {
       <span className={countChip} data-testid="readout-height">
         {t('editor.readout.height', { value: readout.height })}
       </span>
-      <span className={countChip} data-testid="readout-reach">
-        {t('editor.readout.reach', { value: readout.reach })}
+      <span className={countChip} data-testid="readout-depth">
+        {t('editor.readout.depth', { value: readout.depth })}
       </span>
       <span className={countChip} data-testid="readout-plywood">
         {t('editor.readout.plywood', { value: readout.plywood })}

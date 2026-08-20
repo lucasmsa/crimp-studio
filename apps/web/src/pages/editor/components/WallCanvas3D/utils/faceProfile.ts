@@ -7,8 +7,9 @@ import { faceLocalToWorld } from './faceTransform'
 export interface WallProfile {
   /** Floor to the highest point, cm */
   heightCm: number
-  /** How far the wall juts out from its base, cm */
-  reachCm: number
+  /** Floor space the profile occupies, cm. Panels can fold either way from the
+      base, so this is the whole depth span and not the forward reach alone */
+  depthCm: number
   /** Plywood across every face, cm^2 */
   surfaceAreaCm2: number
 }
@@ -21,6 +22,7 @@ export interface WallProfile {
 export function computeWallProfile(tree: FaceTree, transforms: FaceTransforms): WallProfile {
   let maxY = 0
   let maxZ = 0
+  let minZ = 0
 
   for (const face of listFaces(tree)) {
     const transform = transforms[face.id]
@@ -35,12 +37,13 @@ export function computeWallProfile(tree: FaceTree, transforms: FaceTransforms): 
       const world = faceLocalToWorld(transform, u, v)
       maxY = Math.max(maxY, world.y)
       maxZ = Math.max(maxZ, world.z)
+      minZ = Math.min(minZ, world.z)
     }
   }
 
   return {
     heightCm: maxY / CM_TO_M,
-    reachCm: maxZ / CM_TO_M,
+    depthCm: (maxZ - minZ) / CM_TO_M,
     surfaceAreaCm2: computeSurfaceArea(tree),
   }
 }

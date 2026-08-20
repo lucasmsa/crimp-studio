@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
 import { createRootFaceTree } from '@/pages/editor/components/WallCanvas3D/utils/faceTree'
-import {
-  getModelVariant,
-  getModelVariants,
-} from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
 
 const PANEL = '#E8D5B7'
 
@@ -254,58 +250,6 @@ describe('wallStore', () => {
       useWallStore.getState().clearHolds()
 
       expect(useWallStore.getState().selectedHoldId).toBeNull()
-    })
-  })
-
-  describe('setHoldType', () => {
-    it('retypes the hold and gives it a model of the new type', () => {
-      place(150, 250)
-      const before = useWallStore.getState().wall.holds[0]
-
-      useWallStore.getState().setHoldType(before.id, 'volume')
-
-      const after = useWallStore.getState().wall.holds[0]
-      expect(after.type).toBe('volume')
-      expect(getModelVariant('volume', after.variant)).not.toBeNull()
-    })
-
-    /* Pinch to pocket, because every pinch model measures the same and so does
-       every pocket one: the footprint grows whichever variant gets picked */
-    it('re-measures the footprint, since a different shape covers different plywood', () => {
-      useWallStore.getState().setSelectedHoldType('pinch')
-      place(150, 250)
-      const before = useWallStore.getState().wall.holds[0]
-
-      useWallStore.getState().setHoldType(before.id, 'pocket')
-
-      const after = useWallStore.getState().wall.holds[0]
-      expect(after.collisionBox!.halfW).toBeGreaterThan(before.collisionBox!.halfW)
-    })
-
-    it('refuses a type whose bigger footprint would land on a neighbour', () => {
-      useWallStore.getState().setSelectedHoldType('pinch')
-      place(100, 250)
-      const first = useWallStore.getState().wall.holds[0]
-      place(100 + first.collisionBox!.halfW * 2 + 1, 250)
-
-      useWallStore.getState().setHoldType(first.id, 'pocket')
-
-      expect(useWallStore.getState().wall.holds[0].type).toBe('pinch')
-    })
-  })
-
-  describe('setHoldVariant', () => {
-    it('swaps the model and keeps the type', () => {
-      useWallStore.getState().setSelectedHoldType('crimp')
-      place(150, 250)
-      const before = useWallStore.getState().wall.holds[0]
-      const other = getModelVariants('crimp').find((v) => v.variant !== before.variant)!
-
-      useWallStore.getState().setHoldVariant(before.id, other.variant)
-
-      const after = useWallStore.getState().wall.holds[0]
-      expect(after.variant).toBe(other.variant)
-      expect(after.type).toBe('crimp')
     })
   })
 

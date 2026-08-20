@@ -131,7 +131,7 @@
     },
     "readout": {
       "height": "{{value}} m de alto",
-      "reach": "{{value}} m de avance",
+      "depth": "{{value}} m de fondo",
       "plywood": "{{value}} m2 de triplay"
     }
   },

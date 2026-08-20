@@ -131,7 +131,7 @@
     },
     "readout": {
       "height": "{{value}} m de altura",
-      "reach": "{{value}} m de avanco",
+      "depth": "{{value}} m de profundidade",
       "plywood": "{{value}} m2 de compensado"
     }
   },

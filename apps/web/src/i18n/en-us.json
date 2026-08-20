@@ -131,7 +131,7 @@
     },
     "readout": {
       "height": "{{value}} m tall",
-      "reach": "{{value}} m reach",
+      "depth": "{{value}} m deep",
       "plywood": "{{value}} m2 plywood"
     }
   },

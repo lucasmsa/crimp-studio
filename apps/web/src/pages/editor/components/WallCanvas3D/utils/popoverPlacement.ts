@@ -1,8 +1,9 @@
 /** Which side of its anchor a popover sits on */
 export type PopoverSide = 'right' | 'left'
 
-/** Breathing room between the anchor and the popover, in pixels */
-const GAP_PX = 14
+/** Breathing room between the anchor and the popover, in pixels. Wide enough
+    that a panel swinging into place does not slide under the controls */
+const GAP_PX = 40
 /** How close to the canvas edge the popover may come, in pixels */
 const MARGIN_PX = 12
 
