@@ -110,8 +110,27 @@ rather than settled: it is one browser pass, not a decision.
   which is grey. The rig's fill and key came down to match (0.62/2.0 to
   0.45/1.1).
 
-What is still not right: a flat wall reads a shade darker than the room behind it,
-so it looks like a grey panel in a white room rather than a white panel. Getting
-past that means either lighting the wall separately from the backdrop or dropping
-the backdrop's brightness, and both deserve a look with fresh eyes before either
-is chosen.
+### Settled, 2026-08-21: the wall is the brightest thing in frame
+
+Both halves, as the amendment guessed. A flat panel now renders #E3E1DE against a
+room running #BBC0C5 to #9CA3AA, so the wall reads as the white surface and the
+room as the space around it.
+
+Measuring it first is what made the fix small. Painting the panel pure red came
+back flat red with no white in it, which says the front face gets essentially
+nothing from the key: it is raked off the panel normal so that holds cast shadows
+across the wall instead of under themselves. So the fill is the wall's light, and
+raising it (0.45 to 1.7, the response being compressive) is what paints the wall.
+The cel ramp is not the lever it looked like: moving its floor from 165 to 205
+changed the wall by two values, because the front face is not shaded by the ramp.
+
+The room's light theme comes down to meet it (#FCFCFB to #D9DCDF at the top,
+#AEB4BA to #99A1A8 at the floor), which is what keeps the separation at the top
+edge where the wall meets the brightest part of the backdrop.
+
+The cost, as expected: a panel's angle no longer reads from its own shading, since
+a fill that bright flattens the bands across the whole wall. What still says
+"overhang" is the cast shadow, the seam's ink line, and perspective. A hold's own
+shading and its contact shadow survive (a cast shadow lands 28 values below the
+panel it falls on). The focus dim still separates panels, checked on a two-panel
+wall at 30 degrees.

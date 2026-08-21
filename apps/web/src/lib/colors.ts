@@ -65,7 +65,7 @@ export const colors = {
        gradient and the fade an unfocused panel takes read from here */
     room: {
       dark: { top: '#23506E', bottom: '#102532' },
-      light: { top: '#FCFCFB', bottom: '#AEB4BA' },
+      light: { top: '#D9DCDF', bottom: '#99A1A8' },
     },
     outline: '#14242F', // ink outline hull for cel-shaded meshes
   },

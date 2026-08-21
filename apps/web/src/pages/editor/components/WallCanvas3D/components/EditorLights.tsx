@@ -8,9 +8,13 @@ import { SCENE_STYLE } from '../config/sceneStyleConfig'
 function ToonLights() {
   return (
     <>
-      {/* Enough fill that a painted panel reads as painted rather than grey. A
-         white wall under a dim rig is a grey wall, and gyms paint white */}
-      <ambientLight intensity={0.45} />
+      {/* This is what paints the wall. The key is raked well off the panel
+         normal for the sake of hold shadows, so the front of the wall gets
+         almost nothing from it and lands on whatever the fill gives: measured
+         with a pure red panel, the front face came back flat red with no white
+         in it at all. At 0.45 a #F6F4F0 panel rendered #AAA9A6, darker than the
+         room behind it. The response is compressive, so this is high */}
+      <ambientLight intensity={1.7} />
 
       {/* Hard key from above-right, raked well off the wall normal. A hold's
          shadow lands (x/z, y/z) per unit of its height, so a frontal key parks
