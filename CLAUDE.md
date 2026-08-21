@@ -316,7 +316,7 @@ What becomes easier or more difficult because of this change?
 **Light Mode**
 | Role | Hex | Name |
 |------|-----|------|
-| Background | `#F2EDE7` | paper |
+| Background | `#EEF0F1` | gym-grey |
 | Surface | `#FFFFFF` | cloud |
 | Border | `#D2C1B6` | chalk-beige |
 | Text Primary | `#171717` | graphite |
@@ -333,7 +333,7 @@ What becomes easier or more difficult because of this change?
 **Contrast rules (ADR-005 amended, WCAG AA, ratios computed not eyeballed):**
 - Primary flips per theme: chalk-beige fill + ink text on dark (11.35:1), deep-water fill + white text on light (11.07:1).
 - Success and error fills take ink foregrounds, not white (white on send-green is 2.28:1).
-- Muted text: `#A8BCCB` on deep-water (5.90:1), `#5C6B78` on paper (4.71:1).
+- Muted text: `#A8BCCB` on deep-water (5.90:1), `#5C6B78` on gym-grey (4.96:1).
 
 ### Typography
 - **Poster/Stamps:** Anton (condensed, uppercase, hard offset shadows)

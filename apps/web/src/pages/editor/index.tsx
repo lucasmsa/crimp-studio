@@ -6,6 +6,7 @@ import { EditorLoading } from './components/EditorLoading'
 import { ToolRail } from './components/ToolRail'
 import { StatusStrip } from './components/StatusStrip'
 import { SelectionPanel } from './components/SelectionPanel'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 /**
  * The wall gets the screen. Chrome is the header, the tool rail, the status
@@ -25,6 +26,7 @@ export function EditorPage() {
           <span className="font-medium">{t('editor.title')}</span>
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button variant="outline" size="sm">
             {t('editor.actions.load')}
           </Button>

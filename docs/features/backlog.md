@@ -52,6 +52,11 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
   than dialling each panel by hand.
 - [ ] Import a texture for the wall (noted 2026-08-20), so a wall can wear the finish
   the gym actually has instead of the procedural plywood.
+- [x] Theme switch (2026-08-21): the store existed and nothing could reach it, so the
+  app only ever followed the system. One control in the editor header steps system to
+  light to dark, and App reads the store so a stored choice applies on every page. The
+  light theme's page background moved to the gym grey the canvas uses, so the app and the
+  wall are the same room.
 - [ ] Paint all panels / paint all holds at once (after the per-panel colour lands)
 - [ ] Custom colour picker behind a "custom" swatch, for the colour the curated sets do not have
 - [ ] Hold resizing: drag border handles to scale, live preview

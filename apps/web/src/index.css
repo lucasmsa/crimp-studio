@@ -75,7 +75,7 @@ body {
 .light, [data-theme="light"] {
   color-scheme: light;
 
-  --background: #F2EDE7;
+  --background: #EEF0F1;
   --foreground: #171717;
   --card: #FFFFFF;
   --card-foreground: #171717;
@@ -116,7 +116,7 @@ body {
   :root:not(.dark):not([data-theme="dark"]) {
     color-scheme: light;
 
-    --background: #F2EDE7;
+    --background: #EEF0F1;
     --foreground: #171717;
     --card: #FFFFFF;
     --card-foreground: #171717;

@@ -3,8 +3,13 @@ import { LandingPage } from './pages/landing'
 import { AboutPage } from './pages/about'
 import { EditorPage } from './pages/editor'
 import { ScanPage } from './pages/scan'
+import { useThemeStore } from './stores/theme'
 
 function App() {
+  /* Read once so the stored choice is applied on any page, not only the ones
+     that happen to show the toggle */
+  useThemeStore((state) => state.theme)
+
   return (
     <BrowserRouter>
       <Routes>

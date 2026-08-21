@@ -2,7 +2,13 @@
   "common": {
     "appName": "Crimp Studio",
     "version": "v0.0.1",
-    "backHome": "Volver al Inicio"
+    "backHome": "Volver al Inicio",
+    "theme": {
+      "label": "Tema: {{theme}}",
+      "system": "sistema",
+      "light": "claro",
+      "dark": "oscuro"
+    }
   },
   "landing": {
     "hero": {

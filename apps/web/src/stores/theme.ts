@@ -1,20 +1,31 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-type Theme = 'light' | 'dark' | 'system'
+export type Theme = 'light' | 'dark' | 'system'
+
+/** System first, so the app opens as the machine asks and a choice is deliberate */
+const THEME_ORDER: Theme[] = ['system', 'light', 'dark']
 
 interface ThemeState {
   theme: Theme
   setTheme: (theme: Theme) => void
+  /** Steps to the next theme, which is what a single control offers */
+  cycleTheme: () => void
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'system',
       setTheme: (theme) => {
         set({ theme })
         applyTheme(theme)
+      },
+      cycleTheme: () => {
+        const next =
+          THEME_ORDER[(THEME_ORDER.indexOf(get().theme) + 1) % THEME_ORDER.length]
+        set({ theme: next })
+        applyTheme(next)
       },
     }),
     {
