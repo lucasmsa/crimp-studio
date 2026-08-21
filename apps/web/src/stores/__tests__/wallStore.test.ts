@@ -33,6 +33,33 @@ function place(u: number, v: number) {
   useWallStore.getState().addHold(rootFaceId(), u, v)
 }
 
+/**
+ * Holds on the root face with one box each, in placement order. A placed hold
+ * takes whichever GLB variant its generated id hashes to, so its footprint
+ * differs run to run; a test that measures a gap states the box instead.
+ */
+function seedHolds(...positions: Array<{ u: number; v: number }>) {
+  useWallStore.setState((state) => ({
+    wall: {
+      ...state.wall,
+      holds: positions.map(({ u, v }, index) => ({
+        id: `hold_${index}`,
+        type: 'jug' as const,
+        faceId: state.wall.faces.rootId,
+        size: 10,
+        u,
+        v,
+        collisionBox: { halfW: 20, halfH: 20, depth: 10 },
+      })),
+    },
+  }))
+}
+
+const holdsNow = () => useWallStore.getState().wall.holds
+
+const wallOverlaps = () =>
+  findWallOverlaps(useWallStore.getState().wall.faces, useWallStore.getState().wall.holds)
+
 describe('wallStore', () => {
   beforeEach(() => {
     resetStore()
@@ -283,32 +310,32 @@ describe('wallStore', () => {
     })
 
     it('stops a hold short of the one it is dragged onto', () => {
-      place(100, 250)
-      place(200, 250)
-      const [first, second] = useWallStore.getState().wall.holds
+      seedHolds({ u: 100, v: 250 }, { u: 200, v: 250 })
+      const [first, second] = holdsNow()
 
       useWallStore.getState().moveHold(second.id, first.u, first.v)
 
-      const moved = useWallStore.getState().wall.holds[1]
-      expect(moved.u).toBeGreaterThan(first.u)
-      expect(moved.u).toBeLessThan(second.u)
-      expect(findWallOverlaps(useWallStore.getState().wall.faces, useWallStore.getState().wall.holds)).toHaveLength(0)
+      /* 20cm half-boxes and a centimetre of air: 41cm apart is the nearest it gets */
+      const moved = holdsNow()[1]
+      expect(moved.u).toBeGreaterThan(141)
+      expect(moved.u).toBeLessThan(141.5)
+      expect(wallOverlaps()).toHaveLength(0)
     })
 
     it('slides a hold along its neighbour instead of freezing it', () => {
-      place(230, 250)
-      place(100, 250)
-      const mover = useWallStore.getState().wall.holds[1]
+      seedHolds({ u: 100, v: 250 }, { u: 200, v: 250 })
+      const [mover] = holdsNow()
 
-      /* Dragged up and across into the neighbour. The column beside it is taken,
-         so the hold gives up the sideways travel and keeps the climb */
+      /* Dragged up and across into the neighbour. It cannot have the column, and
+         40cm of climb is not enough to clear the box either, so it takes the
+         climb it was asked for and gives up the rest of the sideways travel */
       useWallStore.getState().moveHold(mover.id, 200, 290)
 
-      const moved = useWallStore.getState().wall.holds[1]
+      const moved = holdsNow()[0]
       expect(moved.v).toBe(290)
-      expect(moved.u).toBeGreaterThan(mover.u)
-      expect(moved.u).toBeLessThan(200)
-      expect(findWallOverlaps(useWallStore.getState().wall.faces, useWallStore.getState().wall.holds)).toHaveLength(0)
+      expect(moved.u).toBeGreaterThan(158.5)
+      expect(moved.u).toBeLessThan(159)
+      expect(wallOverlaps()).toHaveLength(0)
     })
 
     it('moves a hold that fits', () => {
