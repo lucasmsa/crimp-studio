@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Satoshi and Clash Display come from here rather than an @import in
+         index.css: Tailwind inlines itself ahead of that import, which puts it
+         past the top of the stylesheet and postcss drops it. One link each,
+         because fontshare answers a two-family query with the first family only -->
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" />
     <title>web</title>
   </head>
   <body>

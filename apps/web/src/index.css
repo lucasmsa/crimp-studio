@@ -1,12 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=clash-display@500,600,700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 /* Fonts */
-/* Satoshi loads via the fontshare @import above (a @font-face src pointing at
-   a CSS URL fails to decode) */
+/* Satoshi and Clash Display load from the stylesheet link in index.html; only
+   the self-hosted faces belong here */
 
 @font-face {
   font-family: 'Anton';
