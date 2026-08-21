@@ -20,12 +20,15 @@ export interface RopeSettings {
 
 export const ROPE: RopeSettings = {
   points: 16,
-  gravity: 900,
+  /* Pixels, not metres: a cord spanning a few hundred of them needs thousands of
+     units of pull to fall at a speed that reads as weight. At a tenth of this it
+     drifted, which looked like slow motion rather than like a hanging cord */
+  gravity: 3400,
   /* Loose enough to swing down below the card before it climbs to the wall,
      which is what makes it read as a cord hanging rather than a wire drawn */
   slack: 1.5,
-  damping: 0.94,
-  passes: 6,
+  damping: 0.9,
+  passes: 8,
 }
 
 export function createRope(

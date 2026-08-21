@@ -37,14 +37,14 @@ export function SelectionPanel() {
           href="#selection-rope"
           fill="none"
           stroke={colors.scene.outline}
-          strokeWidth={7}
+          strokeWidth={5}
           strokeLinecap="round"
         />
         <use
           href="#selection-rope"
           fill="none"
           stroke={colors.dark.text}
-          strokeWidth={3.5}
+          strokeWidth={2.25}
           strokeLinecap="round"
         />
       </svg>
