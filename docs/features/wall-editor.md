@@ -67,8 +67,9 @@ changes, update this doc in the same PR.
 - Drag: the hold goes to whichever panel is under the pointer, so dragging across a seam
   hands it to the neighbour and it re-poses with that panel's angle. Past the edge of the
   wall it keeps sliding on the plane of the panel it is on, clamped to that panel. Every
-  frame is validated, so a spot it does not fit in is simply not taken (ADR-007). Orbit
-  controls are disabled during a drag and re-enabled on release.
+  frame is validated: a spot the hold does not fit in takes it as far toward the pointer
+  as it goes and slides it along whatever stopped it (ADR-007). Orbit controls are
+  disabled during a drag and re-enabled on release.
 - Keyboard: R rotates by the configured step, Delete/Backspace removes, Escape deselects,
   WASD/arrows nudge 5cm (20cm with Shift), clamped to bounds. Enter is left alone because
   it activates whatever control the popover has focused.
@@ -77,19 +78,25 @@ changes, update this doc in the same PR.
 
 ## Hold collision
 
-- AABB overlap checks in `utils/holdCollision.ts` (pure functions: `checkCollision`, `findCollisions`, `hasCollision`).
-- Each hold stores a `collisionBox` (half-extents in cm) measured from its actual geometry:
-  synchronously at placement via `measureCollisionBox`, then refined by `Hold3D` from the
-  mounted mesh. Fallback box is 15x15cm half-extents until measured.
-- Placement into an occupied space is rejected silently. Dragging onto another hold shows
-  red semi-transparent feedback and snaps back to the pre-drag position on release if still
-  colliding. Nudging into a collision is blocked.
-- Collision state is exposed in the store so the route generator can penalize overlaps later.
+- Panels, holds and the floor are oriented boxes in one world space, tested by separating
+  axis in `packages/wall-geometry` (ADR-007). Two holds keep 1cm apart; anything involving
+  plywood is tested for penetration alone.
+- Each hold stores a `collisionBox` (half-extents plus depth, in cm) measured from its
+  actual geometry: synchronously at placement via `measureHoldFootprint`, then refined by
+  `Hold3D` from the mounted mesh. Fallback box is 15x15x10cm until measured.
+- Placement into an occupied space is rejected silently, and so is a rotation whose turned
+  box no longer fits.
+- A drag or a nudge that does not fit resolves one axis at a time, bisecting each to
+  contact, and takes whichever order lands nearer the pointer. Crossing a seam stays
+  all-or-nothing, since `u` and `v` mean different plywood on each panel.
+- Nothing illegal reaches the store, so the renderer, save files and the route generator
+  read a wall that can be built.
 
 ## Test coverage
 
-- Store actions, collision utils, geometry factories, hold action utils, the face tree
-  (transforms, cuts, profile, UVs), popover anchoring and placement, and the status
-  readout formatting have unit tests (`__tests__/` folders next to the code).
+- Store actions, geometry factories, hold action utils, popover anchoring and placement,
+  and the status readout formatting have unit tests (`__tests__/` folders next to the
+  code). The face tree, its transforms and every legality query are tested in
+  `packages/wall-geometry`.
 - E2E flows exercised via Playwright MCP: place, select, delete, keyboard shortcuts, drag.
 - Conventions in CLAUDE.md apply: every store action, hook, and utility gets tests before a feature is done.

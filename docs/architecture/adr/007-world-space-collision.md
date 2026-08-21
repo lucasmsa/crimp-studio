@@ -95,7 +95,8 @@ still a wall you can save).
   than two, and the fallback box for an unmeasured hold needs one too.
 - Per-frame testing during a drag sets a budget: roughly 10 panels and 30 holds is a few
   hundred axis tests per frame, fine, and a 200-hold wall will need broad-phase culling
-  before it is.
+  before it is. A blocked frame costs about fifty of those tests rather than one, which
+  is why the transforms and the other solids are built once per move instead of per test.
 - Holds and panels can no longer be reasoned about separately. A tool that moves either
   one has to ask the same question, which is the point.
 - A panel folded hard onto the panel it hinges from still overlaps it slightly at the
@@ -103,3 +104,28 @@ still a wall you can save).
   shared edge only, which is more geometry than the wedge is worth today.
 - The 2D face-local collision test is gone. `holdCollision.ts` and its tests are deleted
   rather than kept alongside: two answers to the same question is how they drift.
+
+## Amendment, 2026-08-21: a blocked drag slides
+
+Refusing a frame outright was the wrong half of the invariant. Nothing clipped, but a
+hold dragged against its neighbour stopped dead and stayed there for the rest of the
+gesture: every later frame asked for a spot inside the neighbour and was refused too, so
+the hold sat still while the pointer walked away from it. The wall was correct and the
+drag felt broken.
+
+A move now resolves one axis at a time. Each axis bisects between where the hold is and
+where it is asked to go, which brings it to within a couple of millimetres of contact
+instead of leaving it at whatever the last frame happened to fit at. Both orders are
+tried, because they answer different questions: across-then-up keeps the sideways travel
+and gives up the climb, up-then-across does the opposite. Whichever lands nearer the
+pointer wins, so a hold pushed up under a neighbour stops under it rather than stepping
+aside, and a hold dragged past one travels around it.
+
+Crossing a seam stays all-or-nothing. `u` and `v` measure different plywood on each
+panel, so there is no axis to slide along between two of them: the hold either lands on
+the panel under the pointer or stays where it is.
+
+The 1cm gap between two holds is unchanged, and it is now the only thing visible at the
+stop: the hold comes to rest a centimetre short of touching. That is the tolerance doing
+what it was written for, not the drag failing, and it is a number to judge on a real wall
+rather than a bug to fix.

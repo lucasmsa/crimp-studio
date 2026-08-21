@@ -282,14 +282,33 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.faces.byId[finId].angle).toBeLessThan(135)
     })
 
-    it('refuses to move a hold onto another one', () => {
+    it('stops a hold short of the one it is dragged onto', () => {
       place(100, 250)
       place(200, 250)
       const [first, second] = useWallStore.getState().wall.holds
 
       useWallStore.getState().moveHold(second.id, first.u, first.v)
 
-      expect(useWallStore.getState().wall.holds[1].u).toBe(second.u)
+      const moved = useWallStore.getState().wall.holds[1]
+      expect(moved.u).toBeGreaterThan(first.u)
+      expect(moved.u).toBeLessThan(second.u)
+      expect(findWallOverlaps(useWallStore.getState().wall.faces, useWallStore.getState().wall.holds)).toHaveLength(0)
+    })
+
+    it('slides a hold along its neighbour instead of freezing it', () => {
+      place(230, 250)
+      place(100, 250)
+      const mover = useWallStore.getState().wall.holds[1]
+
+      /* Dragged up and across into the neighbour. The column beside it is taken,
+         so the hold gives up the sideways travel and keeps the climb */
+      useWallStore.getState().moveHold(mover.id, 200, 290)
+
+      const moved = useWallStore.getState().wall.holds[1]
+      expect(moved.v).toBe(290)
+      expect(moved.u).toBeGreaterThan(mover.u)
+      expect(moved.u).toBeLessThan(200)
+      expect(findWallOverlaps(useWallStore.getState().wall.faces, useWallStore.getState().wall.holds)).toHaveLength(0)
     })
 
     it('moves a hold that fits', () => {

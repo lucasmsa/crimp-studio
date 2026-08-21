@@ -146,8 +146,8 @@ export function useWallInteraction() {
     if (!target) return
 
     const coords = worldToFaceCoords(target.faceId, target.point)
-    /* moveHold refuses a spot the hold does not fit in, so the hold stops at the
-       last one that did rather than being dragged through a panel */
+    /* moveHold takes the hold as far toward the pointer as it fits, sliding it
+       along whatever is in the way rather than dragging it through */
     if (coords) useWallStore.getState().moveHold(holdId, coords.u, coords.v, target.faceId)
 
     /* The plane follows the panel the hold is on, so leaving the wall from a

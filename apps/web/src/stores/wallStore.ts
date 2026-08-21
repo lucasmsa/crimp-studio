@@ -11,6 +11,7 @@ import type { FaceTree } from '@crimp-studio/wall-geometry'
 import {
   createRootFaceTree,
   findLegalFaceAngle,
+  findLegalHoldMove,
   getFace,
   holdPlacementIsClear,
   relativeFaceAngle,
@@ -201,12 +202,22 @@ export const useWallStore = create<WallState>((set) => ({
 
       const face = getFace(state.wall.faces, faceId ?? hold.faceId)
       const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
-      const moved = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
+      const to = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
 
-      /* Refusing outright rather than snapping back on release: every frame of a
-         drag is a committed position, so the hold simply stops at the last one
-         that fits instead of passing through a panel on the way */
-      if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, moved)) return state
+      /* Never snapping back on release: every frame of a drag is a committed
+         position, so a hold that cannot have the spot under the pointer goes as
+         far toward it as it fits and slides along whatever stopped it */
+      const reached = findLegalHoldMove({
+        faces: state.wall.faces,
+        holds: state.wall.holds,
+        from: hold,
+        to,
+      })
+      if (reached.faceId === hold.faceId && reached.u === hold.u && reached.v === hold.v) {
+        return state
+      }
+
+      const moved = { ...hold, ...reached }
 
       return {
         wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? moved : h)) },

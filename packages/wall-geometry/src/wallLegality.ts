@@ -15,6 +15,9 @@ export const BUILD_GAP = 0.01
 /** How close the search gets to the true contact angle, in degrees */
 export const ANGLE_PRECISION = 0.5
 
+/** How close a blocked move gets to the true point of contact, in cm */
+export const MOVE_PRECISION = 0.2
+
 /**
  * Slack for plywood, in metres. Panels cut from one sheet meet exactly along
  * their seams, and exact face contact is indistinguishable from penetration to
@@ -172,18 +175,137 @@ export function holdPlacementIsClear(
   holds: HoldPlacement[],
   candidate: HoldPlacement,
 ): boolean {
-  const others = holds.filter((hold) => hold.id !== candidate.id)
+  const fits = fitTest(faces, holds, candidate.id)
+  return fits(candidate)
+}
+
+/** Where a hold is, in the frame of the panel it is bolted to */
+export interface HoldPosition {
+  faceId: string
+  u: number
+  v: number
+}
+
+interface MoveSearch {
+  faces: FaceTree
+  holds: HoldPlacement[]
+  /** Where the hold sits now, which is legal */
+  from: HoldPlacement
+  /** Where it is being asked to go, already inside the bounds of its face */
+  to: HoldPlacement
+}
+
+/**
+ * The position a hold can actually reach on its way to the one asked for.
+ *
+ * A drag commits every frame, so a hold that cannot have the spot under the
+ * pointer has to do something better than stop where it last fitted: it goes as
+ * far as it can and slides along whatever is in the way. Resolving one axis at a
+ * time is what produces the slide, and the two orders answer different questions:
+ * across first keeps the sideways travel and gives up the climb, up first does
+ * the opposite. Whichever lands nearer the pointer wins, so a hold pushed up
+ * under a neighbour stops under it rather than stepping aside.
+ *
+ * `from` is assumed legal, which the caller guarantees by only ever committing
+ * positions that came out of here.
+ */
+export function findLegalHoldMove({ faces, holds, from, to }: MoveSearch): HoldPosition {
+  const fits = fitTest(faces, holds, from.id)
+  if (fits(to)) return positionOf(to)
+
+  /* u and v measure different plywood on each panel, so there is nothing to
+     slide along across a seam: the hold either lands on the new panel or stays */
+  if (to.faceId !== from.faceId) return positionOf(from)
+
+  const acrossFirst = slide(fits, from, to, ['u', 'v'])
+  const upFirst = slide(fits, from, to, ['v', 'u'])
+
+  return distanceTo(to, acrossFirst) <= distanceTo(to, upFirst) ? acrossFirst : upFirst
+}
+
+/**
+ * Whether a candidate position for one hold clears everything else on the wall.
+ *
+ * The transforms and the other solids are built once and reused, since a single
+ * blocked move asks this a few dozen times while it bisects.
+ */
+function fitTest(
+  faces: FaceTree,
+  holds: HoldPlacement[],
+  movingId: string,
+): (candidate: HoldPlacement) => boolean {
   const transforms = computeFaceTransforms(faces)
-  const transform = transforms[candidate.faceId]
-  if (!transform) return false
-
-  const solid = holdSolid(candidate, transform)
-
-  return collectWallSolids(faces, others, transforms).every(
-    (other) =>
-      pairIsExempt(faces, solid, other) ||
-      !obbsIntersect(solid.obb, other.obb, gapFor(solid, other)),
+  const obstacles = collectWallSolids(
+    faces,
+    holds.filter((hold) => hold.id !== movingId),
+    transforms,
   )
+
+  return (candidate) => {
+    const transform = transforms[candidate.faceId]
+    if (!transform) return false
+
+    const solid = holdSolid(candidate, transform)
+
+    return obstacles.every(
+      (other) =>
+        pairIsExempt(faces, solid, other) ||
+        !obbsIntersect(solid.obb, other.obb, gapFor(solid, other)),
+    )
+  }
+}
+
+type MoveAxis = 'u' | 'v'
+
+/** One axis then the other, each going as far as the wall lets it */
+function slide(
+  fits: (candidate: HoldPlacement) => boolean,
+  from: HoldPlacement,
+  to: HoldPlacement,
+  order: readonly [MoveAxis, MoveAxis],
+): HoldPosition {
+  let at = from
+
+  for (const axis of order) {
+    at = { ...at, [axis]: reachAlong(fits, at, axis, to[axis]) }
+  }
+
+  return positionOf(at)
+}
+
+/**
+ * How far along one axis a hold gets before something stops it.
+ *
+ * Bisecting between where it is and where it is going lands within a couple of
+ * millimetres of contact in a dozen tests, whatever is in the way, which is why
+ * this is not a closed-form distance per pair of boxes.
+ */
+function reachAlong(
+  fits: (candidate: HoldPlacement) => boolean,
+  at: HoldPlacement,
+  axis: MoveAxis,
+  target: number,
+): number {
+  const fitsAt = (value: number) => fits({ ...at, [axis]: value })
+  if (fitsAt(target)) return target
+
+  let legal = at[axis]
+  let blocked = target
+  while (Math.abs(blocked - legal) > MOVE_PRECISION) {
+    const midpoint = (legal + blocked) / 2
+    if (fitsAt(midpoint)) legal = midpoint
+    else blocked = midpoint
+  }
+
+  return legal
+}
+
+function distanceTo(to: HoldPlacement, reached: HoldPosition): number {
+  return Math.hypot(to.u - reached.u, to.v - reached.v)
+}
+
+function positionOf({ faceId, u, v }: HoldPlacement): HoldPosition {
+  return { faceId, u, v }
 }
 
 /** The tree as it would be with one face at a different angle */

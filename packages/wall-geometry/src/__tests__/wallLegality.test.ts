@@ -2,7 +2,13 @@ import { describe, it, expect } from 'vitest'
 import type { FaceTree, HingeEdge } from '../faceTree'
 import { createRootFaceTree, getFace } from '../faceTree'
 import type { HoldPlacement } from '../wallSolids'
-import { findLegalFaceAngle, findWallOverlaps, holdPlacementIsClear, wallIsClear } from '../wallLegality'
+import {
+  findLegalFaceAngle,
+  findLegalHoldMove,
+  findWallOverlaps,
+  holdPlacementIsClear,
+  wallIsClear,
+} from '../wallLegality'
 
 const PANEL = '#E8D5B7'
 
@@ -232,6 +238,101 @@ describe('holdPlacementIsClear', () => {
     const { tree } = finWall(135)
 
     expect(holdPlacementIsClear(tree, [], hold(tree.rootId, 388, 200))).toBe(false)
+  })
+})
+
+describe('findLegalHoldMove', () => {
+  const flat = () => createRootFaceTree(400, 500, PANEL)
+
+  it('goes straight to a spot with nothing in it', () => {
+    const tree = flat()
+    const moving = hold(tree.rootId, 100, 250, 'moving')
+
+    const move = findLegalHoldMove({
+      faces: tree,
+      holds: [moving],
+      from: moving,
+      to: { ...moving, u: 200, v: 300 },
+    })
+
+    expect(move).toEqual({ faceId: tree.rootId, u: 200, v: 300 })
+  })
+
+  it('brings a hold up against what stopped it rather than leaving it behind', () => {
+    const tree = flat()
+    const moving = hold(tree.rootId, 100, 250, 'moving')
+    const blocker = hold(tree.rootId, 200, 250, 'blocker')
+
+    /* Boxes 24cm across with a centimetre of air between them: the nearest the
+       moving hold gets is 25cm short of the blocker's centre */
+    const move = findLegalHoldMove({
+      faces: tree,
+      holds: [moving, blocker],
+      from: moving,
+      to: { ...moving, u: 200, v: 250 },
+    })
+
+    expect(move.u).toBeGreaterThan(174.5)
+    expect(move.u).toBeLessThan(175)
+    expect(move.v).toBe(250)
+    expect(holdPlacementIsClear(tree, [blocker], { ...moving, ...move })).toBe(true)
+  })
+
+  it('slides along a neighbour instead of stopping dead against it', () => {
+    const tree = flat()
+    const moving = hold(tree.rootId, 100, 250, 'moving')
+    const blocker = hold(tree.rootId, 200, 250, 'blocker')
+
+    /* Asking for the blocker's own column, higher up: the hold cannot have the
+       column, but nothing stops it climbing */
+    const move = findLegalHoldMove({
+      faces: tree,
+      holds: [moving, blocker],
+      from: moving,
+      to: { ...moving, u: 200, v: 270 },
+    })
+
+    expect(move.v).toBe(270)
+    expect(move.u).toBeGreaterThan(100)
+    expect(holdPlacementIsClear(tree, [blocker], { ...moving, ...move })).toBe(true)
+  })
+
+  it('takes the axis that ends up nearest, so a hold driven up under a neighbour stops under it', () => {
+    const tree = flat()
+    const moving = hold(tree.rootId, 100, 100, 'moving')
+    const blocker = hold(tree.rootId, 200, 250, 'blocker')
+
+    /* Coming from below and to the side. Giving up the sideways travel would
+       park the hold beside the blocker; giving up the climb parks it underneath,
+       which is where the pointer is */
+    const move = findLegalHoldMove({
+      faces: tree,
+      holds: [moving, blocker],
+      from: moving,
+      to: { ...moving, u: 200, v: 240 },
+    })
+
+    expect(move.u).toBe(200)
+    expect(move.v).toBeGreaterThan(224.5)
+    expect(move.v).toBeLessThan(225)
+  })
+
+  it('leaves a hold where it is when the panel it is asked for cannot take it', () => {
+    const base = createRootFaceTree(400, 300, PANEL)
+    const upper = hinge(base, base.rootId, 'bottom', { width: 400, height: 200 })
+    const moving = hold(base.rootId, 100, 250, 'moving')
+    const sitting = hold(upper.id, 100, 100, 'sitting')
+
+    /* u and v mean different plywood on each panel, so there is no sliding
+       across a seam: the hold either lands on the new panel or stays put */
+    const move = findLegalHoldMove({
+      faces: upper.tree,
+      holds: [moving, sitting],
+      from: moving,
+      to: { ...moving, faceId: upper.id, u: 100, v: 100 },
+    })
+
+    expect(move).toEqual({ faceId: base.rootId, u: 100, v: 250 })
   })
 })
 
