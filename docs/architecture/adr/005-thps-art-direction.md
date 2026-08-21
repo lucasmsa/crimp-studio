@@ -87,3 +87,28 @@ texture, THPS 3/4 chrome elements.
   blocked on the future points shaping.
 - The /scan teaser stops being a special case and becomes the reference
   implementation for the rest of the app.
+
+## Amendment, 2026-08-20: the gym look
+
+Tried at the request that the editor read like a real gym rather than a blue void,
+and that the plywood tone show up beyond the wall. Recorded here to be judged
+rather than settled: it is one browser pass, not a decision.
+
+- **The scene backdrop is white to grey**, top to bottom, in place of the
+  deep-water blue. The wall keeps its silhouette against it through the ink
+  outline rather than through a contrasting backdrop.
+- **Panels start painted**, a warm white (#F6F4F0), rather than raw plywood. Most
+  gyms paint every panel; plywood stays a swatch away.
+- **Sand is a token** (`--sand`, the plywood tone, ink text on it at 13.9:1) and
+  the editor's selected chip uses it, so the chrome is warm where the wall is.
+- **Tone mapping is off** and the cel ramp's floor is raised (95 to 165 of 255).
+  Both follow from painting the panels white: the filmic curve rolls the top of
+  the range off, and on the old ramp a lit white wall landed in the middle band,
+  which is grey. The rig's fill and key came down to match (0.62/2.0 to
+  0.45/1.1).
+
+What is still not right: a flat wall reads a shade darker than the room behind it,
+so it looks like a grey panel in a white room rather than a white panel. Getting
+past that means either lighting the wall separately from the backdrop or dropping
+the backdrop's brightness, and both deserve a look with fresh eyes before either
+is chosen.

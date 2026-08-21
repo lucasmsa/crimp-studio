@@ -50,7 +50,9 @@ export const colors = {
 
   // Wall editor canvas
   wall: {
-    surface: '#E8D5B7', // Plywood; reads warm against the deep-water chrome
+    /* Panels start painted rather than raw: most gyms paint every panel, and
+       plywood stays a swatch away */
+    surface: '#F6F4F0',
     /* Scene lighting stays decoupled from brand tokens: the wall must look
        physically real regardless of art direction (ADR-005) */
     warmLight: '#FFDAB3',
@@ -58,9 +60,11 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
-    /* The viewport matches the page: plywood on deep-water blue is 8:1, so
-       the wall reads as an object without a separate backdrop tone */
-    viewport: '#1B3C53',
+    /* A gym is white walls fading to grey floor, not a blue void. The wall keeps
+       its silhouette against it through the ink outline rather than through a
+       contrasting backdrop */
+    viewportTop: '#FCFCFB',
+    viewportBottom: '#AEB4BA',
     outline: '#14242F', // ink outline hull for cel-shaded meshes
   },
 } as const

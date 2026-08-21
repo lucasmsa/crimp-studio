@@ -14,7 +14,7 @@ export interface PanelSwatch {
 export const PANEL_SWATCHES: PanelSwatch[] = [
   { key: 'plywood', hex: '#E8D5B7' },
   { key: 'birch', hex: '#CFC5B4' },
-  { key: 'bone', hex: '#EDE9E0' },
+  { key: 'bone', hex: '#F6F4F0' },
   { key: 'grey', hex: '#8A8F94' },
   { key: 'slate', hex: '#5A6B78' },
   { key: 'charcoal', hex: '#3A3F45' },

@@ -14,7 +14,8 @@ export const toonConfig = {
   /** Wall outline rim in world units (meters); corner-normal displacement
       lands at ~0.58x of this per axis, so it runs thicker than hold strokes */
   wallOutline: 0.05,
-  /** Cel band luminances, dark to light. Three hard bands with wide separation:
-      with four close bands + high ambient the steps washed out at many angles */
-  gradientSteps: [95, 170, 255],
+  /** Cel band luminances, dark to light. The floor sits high because the panels
+      are painted white now: on a low ramp the lit face of a white wall lands in
+      the middle band and reads grey, which is not what a gym looks like */
+  gradientSteps: [165, 215, 255],
 } as const

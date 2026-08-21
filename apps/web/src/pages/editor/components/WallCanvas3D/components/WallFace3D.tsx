@@ -95,7 +95,7 @@ export function WallFace3D({
      panel is seen edge-on, which is exactly where focus matters most */
   const surfaceColor = useMemo(() => {
     const color = new THREE.Color(face.color)
-    return isDimmed ? color.lerp(new THREE.Color(colors.scene.viewport), DIM_AMOUNT) : color
+    return isDimmed ? color.lerp(new THREE.Color(colors.scene.viewportBottom), DIM_AMOUNT) : color
   }, [face.color, isDimmed])
 
   return (

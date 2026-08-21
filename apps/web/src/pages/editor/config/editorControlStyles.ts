@@ -5,8 +5,8 @@ export const holdTypeButtonBase =
   'font-heading text-xs font-semibold uppercase tracking-wide cursor-pointer transition-all'
 
 export const holdTypeButtonStates = {
-  /** Pressed-down sticker: sits where the shadow was */
-  selected: 'bg-primary text-primary-foreground translate-x-0.5 translate-y-0.5 shadow-none',
+  /** Pressed-down sticker: sits where the shadow was, in the wall's own tone */
+  selected: 'bg-sand text-sand-foreground translate-x-0.5 translate-y-0.5 shadow-none',
   idle:
     'bg-card text-foreground shadow-[3px_3px_0_0_var(--color-foreground)] ' +
     'hover:-translate-y-0.5 hover:shadow-[3px_4px_0_0_var(--color-foreground)]',

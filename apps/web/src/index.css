@@ -56,6 +56,11 @@ body {
   --border: #6B8EAB;
   --input: #6B8EAB;
   --ring: #87CEFA;
+  /* Sand: the plywood tone off the wall itself, brought into the chrome so the
+     editor is warm where the wall is. Same value in both themes, always with ink
+     text on it (13.9:1) */
+  --sand: #E8D5B7;
+  --sand-foreground: #171717;
   --sidebar: #234C6A;
   --sidebar-foreground: #F7F3E8;
   --sidebar-primary: #87CEFA;
@@ -91,6 +96,11 @@ body {
   --border: #9A948B;
   --input: #9A948B;
   --ring: #0B6FB4;
+  /* Sand: the plywood tone off the wall itself, brought into the chrome so the
+     editor is warm where the wall is. Same value in both themes, always with ink
+     text on it (13.9:1) */
+  --sand: #E8D5B7;
+  --sand-foreground: #171717;
   --sidebar: #FFFFFF;
   --sidebar-foreground: #171717;
   --sidebar-primary: #1B3C53;
@@ -127,6 +137,11 @@ body {
     --border: #9A948B;
     --input: #9A948B;
     --ring: #0B6FB4;
+  /* Sand: the plywood tone off the wall itself, brought into the chrome so the
+     editor is warm where the wall is. Same value in both themes, always with ink
+     text on it (13.9:1) */
+  --sand: #E8D5B7;
+  --sand-foreground: #171717;
     --sidebar: #FFFFFF;
     --sidebar-foreground: #171717;
     --sidebar-primary: #1B3C53;
@@ -187,6 +202,8 @@ body {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-sand: var(--sand);
+  --color-sand-foreground: var(--sand-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

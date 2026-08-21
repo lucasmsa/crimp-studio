@@ -8,9 +8,9 @@ import { SCENE_STYLE } from '../config/sceneStyleConfig'
 function ToonLights() {
   return (
     <>
-      {/* Enough fill that a shadowed panel still reads as plywood rather than a
-         hole in the wall, but not so much that the cel bands wash out */}
-      <ambientLight intensity={0.62} />
+      {/* Enough fill that a painted panel reads as painted rather than grey. A
+         white wall under a dim rig is a grey wall, and gyms paint white */}
+      <ambientLight intensity={0.45} />
 
       {/* Hard key from above-right, raked well off the wall normal. A hold's
          shadow lands (x/z, y/z) per unit of its height, so a frontal key parks
@@ -25,7 +25,7 @@ function ToonLights() {
          acne; too narrow and a bent panel's shadow is clipped off mid-wall. */}
       <directionalLight
         position={[8, 12, 5]}
-        intensity={2.0}
+        intensity={1.1}
         shadow-intensity={0.72}
         castShadow
         shadow-mapSize-width={8192}

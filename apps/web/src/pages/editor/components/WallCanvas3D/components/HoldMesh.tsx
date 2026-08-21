@@ -65,7 +65,7 @@ export function HoldMesh({
   const holdColor = useMemo(
     () =>
       isDimmed
-        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.scene.viewport), DIM_AMOUNT)
+        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.scene.viewportBottom), DIM_AMOUNT)
         : new THREE.Color(baseColor),
     [baseColor, isDimmed],
   )
