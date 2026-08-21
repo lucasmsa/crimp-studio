@@ -335,8 +335,6 @@ export const useWallStore = create<WallState>((set) => ({
 
   clearBlockingHolds: () => set({ blockingHoldIds: [] }),
 
-  clearBlockingHolds: () => set({ blockingHoldIds: [] }),
-
   clearHolds: () =>
     set((state) => ({
       wall: { ...state.wall, holds: [] },

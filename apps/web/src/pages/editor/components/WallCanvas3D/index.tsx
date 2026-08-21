@@ -2,19 +2,18 @@ import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { WallScene } from './components/WallScene'
-import { colors } from '@/lib/colors'
 import { CAMERA } from './constants/editor3d'
 import { useCanvasDeselect } from './hooks/useCanvasDeselect'
+import { useSceneRoom } from './hooks/useSceneRoom'
 
 export function WallCanvas3D() {
   const handleMissed = useCanvasDeselect()
+  const room = useSceneRoom()
 
   return (
     <div
-      className="relative h-full w-full rounded-lg border-2 border-border overflow-hidden"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, ${colors.scene.viewportTop}, ${colors.scene.viewportBottom})`,
-      }}
+      className="relative h-full w-full overflow-hidden rounded-lg border-2 border-border"
+      style={{ backgroundImage: `linear-gradient(to bottom, ${room.top}, ${room.bottom})` }}
     >
       <Canvas
         camera={{

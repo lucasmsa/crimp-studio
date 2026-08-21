@@ -94,9 +94,12 @@ Tried at the request that the editor read like a real gym rather than a blue voi
 and that the plywood tone show up beyond the wall. Recorded here to be judged
 rather than settled: it is one browser pass, not a decision.
 
-- **The scene backdrop is white to grey**, top to bottom, in place of the
-  deep-water blue. The wall keeps its silhouette against it through the ink
-  outline rather than through a contrasting backdrop.
+- **The scene backdrop is a room per theme**, a gradient top to bottom: deep
+  water in the dark theme, a gym's white wall fading to its floor in the light
+  one. The wall keeps its silhouette against either through the ink outline
+  rather than through a contrasting backdrop. Both ends live in `colors.ts`
+  keyed by theme, because the scene has no stylesheet to read a token from, and
+  the fade an unfocused panel takes reads from the same pair.
 - **Panels start painted**, a warm white (#F6F4F0), rather than raw plywood. Most
   gyms paint every panel; plywood stays a swatch away.
 - **Sand is a token** (`--sand`, the plywood tone, ink text on it at 13.9:1) and

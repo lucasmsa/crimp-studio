@@ -5,6 +5,7 @@ import { animated, useSpring } from '@react-spring/three'
 import type { Hold } from '@/stores/wallStore'
 import { useWallStore } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
+import { useSceneRoom } from '../hooks/useSceneRoom'
 import { createGripTexture } from '../utils/holdGeometry'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
@@ -57,6 +58,7 @@ export function HoldMesh({
   onPointerDown,
 }: HoldMeshProps) {
   const { isHovered, onPointerEnter, onPointerLeave } = useHoldHover(isDraggingAny)
+  const room = useSceneRoom()
   const removeHold = useWallStore((s) => s.removeHold)
 
   const baseColor = hold.color ?? colors.holds[hold.type]
@@ -65,9 +67,9 @@ export function HoldMesh({
   const holdColor = useMemo(
     () =>
       isDimmed
-        ? new THREE.Color(baseColor).lerp(new THREE.Color(colors.scene.viewportBottom), DIM_AMOUNT)
+        ? new THREE.Color(baseColor).lerp(new THREE.Color(room.bottom), DIM_AMOUNT)
         : new THREE.Color(baseColor),
-    [baseColor, isDimmed],
+    [baseColor, isDimmed, room.bottom],
   )
   const config = holdGeometryConfigs[hold.type]
   /* Suppress hover effect while any hold is being dragged */

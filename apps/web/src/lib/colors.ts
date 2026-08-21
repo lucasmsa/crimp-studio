@@ -60,11 +60,13 @@ export const colors = {
 
   // 3D scene (toon spike)
   scene: {
-    /* A gym is white walls fading to grey floor, not a blue void. The wall keeps
-       its silhouette against it through the ink outline rather than through a
-       contrasting backdrop */
-    viewportTop: '#FCFCFB',
-    viewportBottom: '#AEB4BA',
+    /* The room the wall stands in, per theme: deep water in the dark one, a
+       gym's white wall fading to its floor in the light one. Both the canvas
+       gradient and the fade an unfocused panel takes read from here */
+    room: {
+      dark: { top: '#23506E', bottom: '#102532' },
+      light: { top: '#FCFCFB', bottom: '#AEB4BA' },
+    },
     outline: '#14242F', // ink outline hull for cel-shaded meshes
   },
 } as const

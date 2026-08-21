@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import type { Hold } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
+import { useSceneRoom } from '../hooks/useSceneRoom'
 import { Hold3D } from './Hold3D'
 import { CM_TO_M, WALL_DEPTH } from '@crimp-studio/wall-geometry'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
@@ -64,6 +65,7 @@ export function WallFace3D({
   onPointerLeave,
   onHoldPointerDown,
 }: WallFace3DProps) {
+  const room = useSceneRoom()
   const widthM = face.width * CM_TO_M
   const heightM = face.height * CM_TO_M
 
@@ -95,8 +97,8 @@ export function WallFace3D({
      panel is seen edge-on, which is exactly where focus matters most */
   const surfaceColor = useMemo(() => {
     const color = new THREE.Color(face.color)
-    return isDimmed ? color.lerp(new THREE.Color(colors.scene.viewportBottom), DIM_AMOUNT) : color
-  }, [face.color, isDimmed])
+    return isDimmed ? color.lerp(new THREE.Color(room.bottom), DIM_AMOUNT) : color
+  }, [face.color, isDimmed, room.bottom])
 
   return (
     <group ref={groupRef}>
