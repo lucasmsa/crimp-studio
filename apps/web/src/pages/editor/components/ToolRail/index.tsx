@@ -79,15 +79,17 @@ export function ToolRail() {
       {!collapsed && editorMode === 'holds' && <PlacementOptions />}
 
       {!collapsed && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={clearHolds}
-          data-testid="clear-holds"
-        >
-          {t('editor.actions.clear')}
-        </Button>
+        <div className="border-t-2 border-border pt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={clearHolds}
+            data-testid="clear-holds"
+          >
+            {t('editor.actions.clear')}
+          </Button>
+        </div>
       )}
     </div>
   )
