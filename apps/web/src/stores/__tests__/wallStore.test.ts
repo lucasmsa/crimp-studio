@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
 import { createRootFaceTree, findWallOverlaps } from '@crimp-studio/wall-geometry'
+import {
+  measureHoldFootprint,
+  measureWorstCaseFootprint,
+} from '@/pages/editor/components/WallCanvas3D/utils/holdFootprint'
+import { getModelVariants } from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
 
 const PANEL = '#E8D5B7'
 
@@ -20,7 +25,7 @@ function resetStore() {
     selectedHoldId: null,
     selectedFaceId: null,
     selectedHoldType: 'jug',
-    selectedVariant: null,
+    variantByType: {},
     deletingHoldIds: [],
     blockingHoldIds: [],
   })
@@ -116,7 +121,7 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.holds[0].variant).toBe('vol_rail_long')
     })
 
-    it('falls back to auto pick when the selected variant is invalid for the type', () => {
+    it('falls back to a random model when the armed one is invalid for the type', () => {
       useWallStore.getState().setSelectedHoldType('jug')
       useWallStore.getState().setSelectedVariant('vol_rail_long')
       place(100, 200)
@@ -150,13 +155,15 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.holds).toHaveLength(0)
     })
 
-    it('resets the selected variant when the hold type changes', () => {
+    it('remembers a model per type, so switching type and back keeps the pick', () => {
       useWallStore.getState().setSelectedHoldType('volume')
       useWallStore.getState().setSelectedVariant('vol_box')
 
       useWallStore.getState().setSelectedHoldType('crimp')
+      expect(useWallStore.getState().variantByType.crimp).toBeUndefined()
 
-      expect(useWallStore.getState().selectedVariant).toBeNull()
+      useWallStore.getState().setSelectedHoldType('volume')
+      expect(useWallStore.getState().variantByType.volume).toBe('vol_box')
     })
 
     it('sets a collision box from the model dimensions at placement', () => {
@@ -182,6 +189,94 @@ describe('wallStore', () => {
       place(300, 300)
 
       expect(useWallStore.getState().wall.holds).toHaveLength(2)
+    })
+  })
+
+  describe('changing a hold that is already on the wall', () => {
+    /* The widest jug model, so a retype is a real change in footprint rather
+       than whichever model an id happens to hash to */
+    const WIDE_JUG = 'ch3_xs'
+
+    function armJugModel() {
+      useWallStore.getState().setSelectedHoldType('jug')
+      useWallStore.getState().setSelectedVariant(WIDE_JUG)
+      useWallStore.getState().setSelectedHoldType('crimp')
+    }
+
+    it('retypes a hold and re-measures it for its new shape', () => {
+      armJugModel()
+      place(150, 250)
+      const before = useWallStore.getState().wall.holds[0]
+
+      useWallStore.getState().setHoldType(before.id, 'jug')
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.type).toBe('jug')
+      expect(after.variant).toBe(WIDE_JUG)
+      expect(after.collisionBox).toEqual(measureHoldFootprint('jug', WIDE_JUG, after.size))
+    })
+
+    it('refuses a type the wall has no room for', () => {
+      armJugModel()
+      const crimp = measureWorstCaseFootprint('crimp', 10)
+      const jug = measureHoldFootprint('jug', WIDE_JUG, 10)
+      /* Far enough apart for two crimps, nowhere near enough for a jug */
+      const gap = crimp.halfW * 2 + 2
+      expect(gap).toBeLessThan(crimp.halfW + jug.halfW)
+
+      place(150, 250)
+      place(150 + gap, 250)
+      const [moving] = useWallStore.getState().wall.holds
+
+      useWallStore.getState().setHoldType(moving.id, 'jug')
+
+      expect(useWallStore.getState().wall.holds[0].type).toBe('crimp')
+      expect(wallOverlaps()).toHaveLength(0)
+    })
+
+    it('gives a hold another model of its own type', () => {
+      place(150, 250)
+      const hold = useWallStore.getState().wall.holds[0]
+      const other = getModelVariants('jug').find((model) => model.variant !== hold.variant)!
+
+      useWallStore.getState().setHoldVariant(hold.id, other.variant)
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.variant).toBe(other.variant)
+      expect(after.collisionBox).toEqual(measureHoldFootprint('jug', other.variant, after.size))
+    })
+
+    it('rolls a hold onto a model it was not already wearing', () => {
+      place(150, 250)
+      const before = useWallStore.getState().wall.holds[0]
+
+      useWallStore.getState().rollHoldVariant(before.id)
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.variant).not.toBe(before.variant)
+      expect(getModelVariants('jug').map((model) => model.variant)).toContain(after.variant)
+    })
+
+    it('arms random after a roll, since the click asked to be surprised', () => {
+      place(150, 250)
+      const hold = useWallStore.getState().wall.holds[0]
+      useWallStore.getState().setSelectedVariant(hold.variant!)
+
+      useWallStore.getState().rollHoldVariant(hold.id)
+
+      expect(useWallStore.getState().variantByType.jug).toBeNull()
+    })
+
+    it('arms what a hold is when it is selected, so letting go leaves the rail there', () => {
+      useWallStore.getState().setSelectedHoldType('volume')
+      place(150, 250)
+      const volume = useWallStore.getState().wall.holds[0]
+      useWallStore.getState().setSelectedHoldType('crimp')
+
+      useWallStore.getState().selectHold(volume.id)
+
+      expect(useWallStore.getState().selectedHoldType).toBe('volume')
+      expect(useWallStore.getState().variantByType.volume).toBe(volume.variant)
     })
   })
 

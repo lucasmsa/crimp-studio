@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 import { ColorSwatches } from '../../ColorSwatches'
 import { PANEL_SWATCHES } from '../../../config/panelSwatches'
 import {
+  controlState,
   holdTypeButtonBase,
-  holdTypeButtonStates,
   readoutLine,
   sectionLabel,
 } from '../../../config/editorControlStyles'
@@ -56,8 +56,7 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
             title={preset.reachable ? undefined : t('editor.face.refusal.would-clip')}
             className={cn(
               holdTypeButtonBase,
-              tilt === preset.angle ? holdTypeButtonStates.selected : holdTypeButtonStates.idle,
-              'disabled:pointer-events-none disabled:opacity-40',
+              controlState({ selected: tilt === preset.angle, unavailable: !preset.reachable }),
             )}
             data-testid={`face-angle-${preset.key}`}
           >
@@ -98,11 +97,7 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
           onClick={() => cut('across')}
           disabled={!cuts.across.ok}
           title={cuts.across.ok ? undefined : t(`editor.face.refusal.${cuts.across.reason}`)}
-          className={cn(
-            holdTypeButtonBase,
-            holdTypeButtonStates.idle,
-            'disabled:pointer-events-none disabled:opacity-40',
-          )}
+          className={cn(holdTypeButtonBase, controlState({ unavailable: !cuts.across.ok }))}
           data-testid="face-cut-across"
         >
           {t('editor.face.cutAcross')}
@@ -111,11 +106,7 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
           onClick={() => cut('up')}
           disabled={!cuts.up.ok}
           title={cuts.up.ok ? undefined : t(`editor.face.refusal.${cuts.up.reason}`)}
-          className={cn(
-            holdTypeButtonBase,
-            holdTypeButtonStates.idle,
-            'disabled:pointer-events-none disabled:opacity-40',
-          )}
+          className={cn(holdTypeButtonBase, controlState({ unavailable: !cuts.up.ok }))}
           data-testid="face-cut-up"
         >
           {t('editor.face.cutUp')}

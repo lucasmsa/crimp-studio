@@ -1,5 +1,5 @@
 import type { CollisionBox, HoldType } from '@/stores/wallStore'
-import { getModelVariant, measureModelCollisionBox } from './holdModels'
+import { getModelVariant, getModelVariants, measureModelCollisionBox } from './holdModels'
 import { measureCollisionBox } from './holdGeometry'
 import { holdGeometryConfigs } from '../config/holdGeometryConfig'
 import { CM_TO_M } from '@crimp-studio/wall-geometry'
@@ -24,4 +24,29 @@ export function measureHoldFootprint(
         size * CM_TO_M * holdGeometryConfigs[type].sizeMultiplier,
         rotationDeg,
       )
+}
+
+/**
+ * The box that contains every model of a type, extent by extent.
+ *
+ * Not any one model: models of a type are scaled to a common target footprint
+ * but keep their own aspect and depth, so the widest is rarely the tallest. A
+ * type offered only when this box fits is a type whose every model fits, which
+ * is what lets a random roll land anywhere without being refused (ADR-008).
+ */
+export function measureWorstCaseFootprint(
+  type: HoldType,
+  size: number,
+  rotationDeg = 0,
+): CollisionBox {
+  const boxes = getModelVariants(type).map((model) =>
+    measureHoldFootprint(type, model.variant, size, rotationDeg),
+  )
+  if (boxes.length === 0) return measureHoldFootprint(type, undefined, size, rotationDeg)
+
+  return {
+    halfW: Math.max(...boxes.map((box) => box.halfW)),
+    halfH: Math.max(...boxes.map((box) => box.halfH)),
+    depth: Math.max(...boxes.map((box) => box.depth)),
+  }
 }

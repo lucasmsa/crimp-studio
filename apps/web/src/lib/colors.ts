@@ -39,13 +39,17 @@ export const colors = {
   },
 
   // Hold types - for wall editor
+  /* What a hold is painted before anyone paints it. Every one of these is a
+     value from HOLD_SWATCHES, so an unpainted hold always lights up a swatch and
+     the rail's legend dot matches what is on the wall (ADR-008). The test in
+     lib/__tests__/colors.test.ts is what keeps the two in step */
   holds: {
-    jug: '#22C55E',
-    crimp: '#EF4444',
-    sloper: '#3B82F6',
-    pinch: '#F59E0B',
-    pocket: '#8B5CF6',
-    volume: '#6B7280',
+    jug: '#25E712',    // green
+    crimp: '#C1121C',  // red
+    sloper: '#2874B2', // blue
+    pinch: '#E75B12',  // orange
+    pocket: '#904684', // purple
+    volume: '#7D7F7D', // grey
   },
 
   // Wall editor canvas

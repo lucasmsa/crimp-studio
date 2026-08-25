@@ -69,7 +69,7 @@
     "holdCount": "{{count}} presas",
     "model": {
       "label": "Modelo",
-      "auto": "Auto"
+      "random": "Aleatorio"
     },
     "face": {
       "presets": {
@@ -106,6 +106,7 @@
       "purple": "Morado",
       "pink": "Rosa",
       "black": "Negro",
+      "grey": "Gris",
       "white": "Blanco"
     },
     "panelSwatches": {
@@ -125,7 +126,8 @@
       }
     },
     "hold": {
-      "label": "Presa"
+      "label": "Presa",
+      "wontFit": "No hay espacio para eso donde está esta presa"
     },
     "rail": {
       "label": "Herramientas",

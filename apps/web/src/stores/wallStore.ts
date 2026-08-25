@@ -2,9 +2,11 @@ import { create } from 'zustand'
 import { colors } from '@/lib/colors'
 import {
   getModelVariant,
+  getModelVariants,
   pickModelVariant,
 } from '@/pages/editor/components/WallCanvas3D/utils/holdModels'
 import { measureHoldFootprint } from '@/pages/editor/components/WallCanvas3D/utils/holdFootprint'
+import { refitHold } from '@/pages/editor/components/WallCanvas3D/utils/holdRefit'
 import { getNextRotation } from '@/pages/editor/components/WallCanvas3D/utils/holdActions'
 import { clampHoldToFace } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
 import type { FaceTree } from '@crimp-studio/wall-geometry'
@@ -75,8 +77,12 @@ interface WallState {
   /** Where the pointer last landed on a face, so a cut splits there */
   faceCutPoint: { faceId: string; u: number; v: number } | null
   selectedHoldType: HoldType
-  /** Model variant for the next placement; null = deterministic auto pick */
-  selectedVariant: string | null
+  /**
+   * The model armed for each type, so switching type and back restores the pick
+   * rather than resetting it. A type with no entry, or null, is on random: its
+   * holds take the model their id hashes to (ADR-008)
+   */
+  variantByType: Partial<Record<HoldType, string | null>>
   /** Holds playing their pop-off exit animation; removed on animation rest */
   deletingHoldIds: string[]
   /** Holds that stopped the last bend, so the editor can point at them */
@@ -108,7 +114,14 @@ interface WallState {
   /** Merges a face back into its parent, undoing its cut */
   removeFace: (faceId: string) => void
   setSelectedHoldType: (type: HoldType) => void
+  /** Arms a model for the current type; null puts that type back on random */
   setSelectedVariant: (variant: string | null) => void
+  /** Retypes a hold, re-measuring it and refusing if the new shape does not fit */
+  setHoldType: (id: string, type: HoldType) => void
+  /** Gives a hold another model of its own type, refusing if it does not fit */
+  setHoldVariant: (id: string, variant: string) => void
+  /** Rolls a hold onto a different model of its type that fits where it sits */
+  rollHoldVariant: (id: string) => void
   /** Paints one panel. Colour lives on the face, so neighbours keep theirs */
   setFaceColor: (faceId: string, color: string) => void
   /** Stops pointing at the holds that blocked the last bend */
@@ -117,6 +130,43 @@ interface WallState {
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9)
+
+/**
+ * The model a hold of this type gets. The armed pick when there is one, and
+ * otherwise the model the hold's own id hashes to, which is what spreads models
+ * across placements while a type is on random.
+ */
+function armedVariant(
+  variantByType: Partial<Record<HoldType, string | null>>,
+  type: HoldType,
+  holdId: string,
+): string | undefined {
+  const armed = variantByType[type]
+  return armed && getModelVariant(type, armed) ? armed : pickModelVariant(holdId, type)
+}
+
+/** The hold as it would be with a different type or model, re-measured and
+    pulled back onto its face if the new box would hang off an edge */
+function refitAs(
+  state: WallState,
+  hold: Hold,
+  changes: { type?: HoldType; variant?: string },
+): Hold {
+  const type = changes.type ?? hold.type
+  const variant = changes.variant ?? hold.variant
+  const collisionBox = measureHoldFootprint(type, variant, hold.size, hold.rotation)
+
+  return refitHold(state.wall.faces, hold, collisionBox, { type, variant })
+}
+
+/** Puts a changed hold back on the wall, or leaves the wall alone if it does not fit */
+function commitHold(state: WallState, next: Hold): Partial<WallState> {
+  if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, next)) return state
+
+  return {
+    wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === next.id ? next : h)) },
+  }
+}
 
 const WALL_WIDTH = 400
 const WALL_HEIGHT = 500
@@ -139,7 +189,7 @@ export const useWallStore = create<WallState>((set) => ({
   selectedFaceId: null,
   faceCutPoint: null,
   selectedHoldType: 'jug',
-  selectedVariant: null,
+  variantByType: {},
   deletingHoldIds: [],
   blockingHoldIds: [],
 
@@ -150,13 +200,7 @@ export const useWallStore = create<WallState>((set) => ({
       const id = createId()
       const face = getFace(state.wall.faces, faceId)
 
-      /* Explicit pick from the sidebar wins; anything invalid for the type
-         falls back to the deterministic auto pick */
-      const pickedVariant =
-        state.selectedVariant && getModelVariant(type, state.selectedVariant)
-          ? state.selectedVariant
-          : pickModelVariant(id, type)
-      const variant = pickedVariant
+      const variant = armedVariant(state.variantByType, type, id)
       const collisionBox = measureHoldFootprint(type, variant, size)
 
       /* Keep the full extents on the face, not just the center point */
@@ -260,14 +304,24 @@ export const useWallStore = create<WallState>((set) => ({
       selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
     })),
 
-  /* Selecting one thing lets go of the other, so the sidebar is never
-     showing controls for something you are not looking at. Deselecting a hold
-     leaves the panel focus alone. */
+  /* Selecting one thing lets go of the other, so the card is never showing
+     controls for something you are not looking at. Deselecting a hold leaves the
+     panel focus alone.
+     Selecting also arms what the hold is: the rail reads as the current hold
+     type whether or not anything is selected, so letting go of a hold leaves the
+     rail where the hold left it rather than jumping back (ADR-008) */
   selectHold: (id) =>
-    set((state) => ({
-      selectedHoldId: id,
-      selectedFaceId: id ? null : state.selectedFaceId,
-    })),
+    set((state) => {
+      const hold = id ? state.wall.holds.find((h) => h.id === id) : null
+      if (!hold) return { selectedHoldId: id, selectedFaceId: id ? null : state.selectedFaceId }
+
+      return {
+        selectedHoldId: id,
+        selectedFaceId: null,
+        selectedHoldType: hold.type,
+        variantByType: { ...state.variantByType, [hold.type]: hold.variant ?? null },
+      }
+    }),
 
   setEditorMode: (mode) => set({ editorMode: mode, selectedHoldId: null }),
 
@@ -326,9 +380,52 @@ export const useWallStore = create<WallState>((set) => ({
       }
     }),
 
-  setSelectedHoldType: (type) => set({ selectedHoldType: type, selectedVariant: null }),
+  setSelectedHoldType: (type) => set({ selectedHoldType: type }),
 
-  setSelectedVariant: (variant) => set({ selectedVariant: variant }),
+  setSelectedVariant: (variant) =>
+    set((state) => ({
+      variantByType: { ...state.variantByType, [state.selectedHoldType]: variant },
+    })),
+
+  setHoldType: (id, type) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold || hold.type === type) return state
+
+      const variant = armedVariant(state.variantByType, type, hold.id)
+      return commitHold(state, refitAs(state, hold, { type, variant }))
+    }),
+
+  setHoldVariant: (id, variant) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold || hold.variant === variant) return state
+
+      return commitHold(state, refitAs(state, hold, { variant }))
+    }),
+
+  /* Rolling arms random rather than the model it landed on: the click said
+     "surprise me", and the next hold placed should be surprised too (ADR-008) */
+  rollHoldVariant: (id) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold) return state
+
+      /* Only models that fit where the hold sits, so a roll is never a click
+         that quietly does nothing (ADR-008) */
+      const reachable = getModelVariants(hold.type)
+        .filter((model) => model.variant !== hold.variant)
+        .map((model) => refitAs(state, hold, { variant: model.variant }))
+        .filter((candidate) =>
+          holdPlacementIsClear(state.wall.faces, state.wall.holds, candidate),
+        )
+      if (reachable.length === 0) return state
+
+      return {
+        ...commitHold(state, reachable[Math.floor(Math.random() * reachable.length)]),
+        variantByType: { ...state.variantByType, [hold.type]: null },
+      }
+    }),
 
   setFaceColor: (faceId, color) =>
     set((state) => ({

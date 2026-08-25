@@ -10,7 +10,20 @@ export const holdTypeButtonStates = {
   idle:
     'bg-card text-foreground shadow-[3px_3px_0_0_var(--color-foreground)] ' +
     'hover:-translate-y-0.5 hover:shadow-[3px_4px_0_0_var(--color-foreground)]',
+  /**
+   * A change the wall cannot take. Flat, faded, and cursor-not-allowed, but it
+   * keeps its pointer events: `pointer-events-none` takes the cursor and the
+   * title tooltip with it, and the reason is the point (ADR-008)
+   */
+  unavailable: 'bg-card text-foreground opacity-40 shadow-none cursor-not-allowed',
 } as const
+
+/** Which of the three a button is in. Disabled wins: an unavailable control does
+    not also read as the current one */
+export function controlState(state: { selected?: boolean; unavailable?: boolean }): string {
+  if (state.unavailable) return holdTypeButtonStates.unavailable
+  return state.selected ? holdTypeButtonStates.selected : holdTypeButtonStates.idle
+}
 
 /**
  * Readout chips in the status strip. They sit on the scene rather than on the

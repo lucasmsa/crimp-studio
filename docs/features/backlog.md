@@ -71,6 +71,12 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
   as far toward it as it fits and slides along whatever stopped it, instead of stopping
   dead for the rest of the gesture. One axis at a time, each bisected to contact, both
   orders tried. Amendment on ADR-007.
+- [x] The rail edits the selection (2026-08-25): selecting a hold highlights its type
+  and model in the rail, and clicking a different one changes that hold and arms the next
+  placement from one click. A change the wall has no room for is greyed out with a
+  not-allowed cursor and a reason. AUTO becomes RANDOM, last in the row, and rolls a
+  selected hold onto another model. Hold colour defaults join the gym swatch set, so an
+  unpainted hold lights up its swatch. ADR-008.
 - [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
 - [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Wanted sooner rather than later (2026-08-17): a drawn line says exactly where the cut lands, where the current buttons cut at the last tap and slide off any hold in the way, which is hard to aim. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 

@@ -69,7 +69,7 @@
     "holdCount": "{{count}} holds",
     "model": {
       "label": "Model",
-      "auto": "Auto"
+      "random": "Random"
     },
     "face": {
       "presets": {
@@ -106,6 +106,7 @@
       "purple": "Purple",
       "pink": "Pink",
       "black": "Black",
+      "grey": "Grey",
       "white": "White"
     },
     "panelSwatches": {
@@ -125,7 +126,8 @@
       }
     },
     "hold": {
-      "label": "Hold"
+      "label": "Hold",
+      "wontFit": "There is no room for that where this hold sits"
     },
     "rail": {
       "label": "Tools",

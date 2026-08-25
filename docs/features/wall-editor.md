@@ -21,19 +21,36 @@ changes, update this doc in the same PR.
 ## Hold system
 
 - Six types: `jug`, `crimp`, `sloper`, `pinch`, `pocket`, `volume` (`HoldType` in `packages/shared/src/types.ts`).
-- Five types render GLB models from the BHToolset packs (see `tools/holds/`), preloaded
-  at editor mount, with deterministic variant picks per hold id. `volume` is procedural:
-  a plywood wedge (triangular prism, flat-shaded) built in `utils/holdGeometry.ts`.
-  Procedural geometries for the other types remain as dev fallback. Per-type
-  `sizeMultiplier` and z-offset live in `config/holdGeometryConfig.ts`.
+- All six types render GLB models from the BHToolset packs (see `tools/holds/`), preloaded
+  at editor mount, listed in `config/holdModelConfig.generated.ts`: crimp 6, volume 6, and
+  four each for jug, pinch, pocket and sloper. A hold with no model recorded falls back to
+  the procedural geometry in `utils/holdGeometry.ts`. Per-type `sizeMultiplier` and
+  z-offset live in `config/holdGeometryConfig.ts`.
 - Render style is switchable via `SCENE_STYLE` in `config/sceneStyleConfig.ts`:
   'toon' (default; cel bands + inverted-hull ink outlines) or 'standard' (PBR rig).
   The wall carries a procedural T-nut grid + plywood seam texture in both styles.
 - Material: `MeshStandardMaterial`, roughness 0.9, metalness 0.1, flat shading.
-- Each type has a default color in `colors.ts`; a per-hold `color` field overrides it.
-- The tool rail exposes the six types and the model variants for the next placement.
-  A placed hold's type, model and colour are changed from its own popover, which
-  re-measures the footprint and refuses a change that would land on a neighbour.
+- Each type has a default colour in `colors.ts`, and every one of them is a value from
+  `HOLD_SWATCHES`, so an unpainted hold always lights up a swatch in the card and the
+  rail's legend dot matches the wall. A per-hold `color` overrides it, which is set only
+  when a swatch is actually picked: an unpainted hold follows its type, so retyping a jug
+  to a crimp turns it red, and a painted one keeps its paint (ADR-008).
+- The rail's type and model rows are both the brush and the selection's inspector
+  (ADR-008). With nothing selected they arm the next placement. Selecting a hold
+  highlights its actual type and model, and clicking a different one changes that hold
+  and arms it for the next placement from the same click. Selecting also arms what the
+  hold is, so letting go of it leaves the rail where the hold left it.
+- A type or model the wall has no room for is greyed out rather than refused after the
+  click, with a not-allowed cursor and a tooltip saying why. A type is tested against the
+  box that contains every model of it (`measureWorstCaseFootprint`), so whichever model
+  it lands on will fit.
+- `RANDOM` sits last in the model row, on its own full-width line. With nothing selected
+  it arms random placement, which spreads models by hold id. With a hold selected it is a
+  verb: each click rolls that hold onto a different model of its type that fits where it
+  sits, never the one it already wears, and never highlights, since the row shows the
+  model the hold actually is. Rolling arms random for the next placement.
+- Each type remembers its own model for the session (`variantByType` in the store), so
+  switching type and back restores the pick. Not persisted across reloads.
 
 ## Editor chrome
 
@@ -42,7 +59,8 @@ changes, update this doc in the same PR.
   `docs/prd/editor-surface.md`).
 - Tool rail: place holds or shape panels, which is what a click on the wall aims at.
   It collapses to icons and remembers that across sessions. The armed tool's own
-  settings sit under it, so hold type and model appear with the holds tool.
+  settings sit under it, so hold type and model appear with the holds tool, where they
+  double as the selected hold's controls.
 - Status strip: hold count, panel count, and the profile readout (height, reach, plywood).
   The readout comes from the settled tree, not the animating one.
 - The selection's controls sit in a card parked in the canvas's top right corner, with a
@@ -89,6 +107,9 @@ changes, update this doc in the same PR.
 - A drag or a nudge that does not fit resolves one axis at a time, bisecting each to
   contact, and takes whichever order lands nearer the pointer. Crossing a seam stays
   all-or-nothing, since `u` and `v` mean different plywood on each panel.
+- Changing a hold's type or model re-measures its box and pulls it back onto its face if
+  the new box would hang off an edge (`utils/holdRefit.ts`), then refuses the change
+  outright if it would land on a neighbour.
 - Nothing illegal reaches the store, so the renderer, save files and the route generator
   read a wall that can be built.
 
