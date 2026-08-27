@@ -42,11 +42,12 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [x] Wall sections increment 1-2 (2026-08-17): face tree, cutting, angles, sprung bending, panel picker. Round of fixes after first real use: panels never cast shadows (only holds did), so an overhang left the wall below it lit and holds glowed inside their own shadow; the shadow map was spread over a 14m frustum, which speckled holds with acne and gave shadow edges a staircase; clicks obeyed click history rather than the mode picker; the base panel could be laid flat as a ceiling at floor height; a vertical seam offered roof and overhang, which mean nothing sideways.
 
 - [x] Editor surface rework (2026-08-19): the sidebar is gone. Panel and hold popovers (drei `Html`, upright whatever the panel does, anchored on the settled transform so they hold still through a bend), a collapsible tool rail carrying the armed tool's settings, a status strip with counts and the height/reach/plywood readout, `wallColor` moved onto each face so panels paint one at a time and a cut keeps the paint. Three things found by using it: the 3D canvas had been 150px tall since the editor was built (R3F asks for `height: 100%`, the flex-grown box gave it nothing to resolve against, and the matching background hid it), a click on a popover control also read as a click on empty canvas and closed the popover, and the status chips were muted text on scene blue at under 2:1. "Bend on: across / up" landed as a readout, not a picker: a face hinges on one edge, so there was never a choice to offer.
-- [ ] Panels and holds must never clip. Shaped 2026-08-20 in ADR-007 and folded into
-  `docs/prd/wall-sections.md`: oriented boxes for panels, holds and the floor in
-  `packages/wall-geometry`, kept 1cm apart, bends bisecting to contact, holds counting in
-  the clamp and flashing when they stop one, hold re-parenting across a seam, all checked
-  at the store boundary. The wall becomes the physical model scan and generation query.
+- [x] Panels and holds must never clip (2026-08-21). Shaped 2026-08-20 in ADR-007 and
+  folded into `docs/prd/wall-sections.md`: oriented boxes for panels, holds and the floor
+  in `packages/wall-geometry`, kept 1cm apart, bends bisecting to contact, holds counting
+  in the clamp and flashing when they stop one, hold re-parenting across a seam, all
+  checked at the store boundary. The wall is now the physical model scan and generation
+  query. A blocked drag slides along what stopped it rather than freezing.
 - [ ] Copy a real wall's angles from a photo, with an angle input as the manual path
   (noted 2026-08-18). Feeds the Scan pillar: measure the profile off an image rather
   than dialling each panel by hand.
@@ -80,7 +81,7 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
 - [x] Camera focus on a selected panel (2026-08-27): selecting a panel too edge-on to work
   on turns the camera toward it, far enough to work and no further, so a roof can be
   bolted without orbiting by hand. Numbers and limits in `docs/prd/wall-sections.md`.
-- [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
+- [x] Wall sections (2026-08-27): the wall is a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds are face-local and stay bolted through every angle change, collision is 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Every success criterion in that PRD is met, camera focus included. The last big piece of the wall-and-route-creation pillar.
 - [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Wanted sooner rather than later (2026-08-17): a drawn line says exactly where the cut lands, where the current buttons cut at the last tap and slide off any hold in the way, which is hard to aim. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 
 ### Problem generation
