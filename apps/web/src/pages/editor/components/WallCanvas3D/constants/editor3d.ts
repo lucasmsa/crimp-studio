@@ -5,6 +5,13 @@ export const CAMERA = {
   INITIAL_DISTANCE: 6,
 } as const
 
+/**
+ * Fraction of the remaining distance the camera covers per second, shared by
+ * everything that moves it: slow enough to read as the camera following the
+ * wall rather than cutting to a new shot.
+ */
+export const CAMERA_EASE = 1.6
+
 export const ORBIT_CONTROLS = {
   MIN_POLAR_ANGLE: Math.PI / 6,       // 30°
   MAX_POLAR_ANGLE: (Math.PI * 2) / 3, // 120°

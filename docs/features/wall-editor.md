@@ -93,6 +93,13 @@ changes, update this doc in the same PR.
   it activates whatever control the popover has focused.
 - Placement animates scale 0 to 1 with a spring; hover scales up with a spring and shows pointer cursor. Hover scale is suppressed while any hold is being dragged.
 - Camera: orbit constrained to polar 30 to 120 degrees, azimuth +-45 degrees, zoom 2m to 15m.
+- Two things move the camera, and they own different halves of the shot. The framing
+  (`useEditorCamera`) sets the orbit target and how far back the camera sits, refitting
+  when the profile changes shape. The swing (`useSelectionSwing`) sets which direction it
+  sits in: selecting a panel more than 35 degrees off square turns the camera toward it,
+  as far as it takes and no further, stopping at the orbit limits for a roof or an arete.
+  A pointer down on the canvas cancels the swing for good, and deselecting hands back the
+  direction the camera had before it. It fires on selection, not on bending.
 
 ## Hold collision
 

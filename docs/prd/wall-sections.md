@@ -122,6 +122,29 @@ span a bend, and the invariant keeps every downstream calculation on one plane.
 - A bend stopped by a hold flashes that hold.
 - A roof face can be selected and set on without manual orbiting.
 
+### Landed, 2026-08-27: camera focus
+
+Met, with the numbers the implementation settled on. Selecting a panel more than
+**35 degrees** off square turns the camera toward it, and only as far as it has to, so a
+mild overhang barely moves and a roof swings a long way. It turns at the same rate as the
+framing refit (**1.6** of the remaining angle per second) and stops within 0.005 radians.
+
+Only the direction the camera sits in moves. Distance and the orbit target stay with the
+profile framing, so the two cannot undo each other: bending a selected panel can pull the
+camera back to keep the wall in frame while the swing brings it round.
+
+Square on to a roof would mean lying under it looking straight up, and square on to an
+arete would mean standing beside the wall. Neither is inside the orbit limits, so both
+stop at the edge of them: a roof lands at the 120 degree polar limit, which is 30 degrees
+below horizontal looking up, and an arete at the 45 degree azimuth limit. That is enough
+to bolt holds to either.
+
+What it does not do: it fires on selecting a panel, not on bending one. Selecting a
+vertical panel and bending it to a roof leaves the camera above it, and getting under it
+means deselecting and selecting again. Re-aiming on every angle step was considered and
+turned down, since it turns the shot into something you ride rather than something you
+set.
+
 ## Risks
 
 - Hinge math compounding: a face's world transform is its parent chain applied in

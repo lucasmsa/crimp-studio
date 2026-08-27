@@ -77,6 +77,9 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
   not-allowed cursor and a reason. AUTO becomes RANDOM, last in the row, and rolls a
   selected hold onto another model. Hold colour defaults join the gym swatch set, so an
   unpainted hold lights up its swatch. ADR-008.
+- [x] Camera focus on a selected panel (2026-08-27): selecting a panel too edge-on to work
+  on turns the camera toward it, far enough to work and no further, so a roof can be
+  bolted without orbiting by hand. Numbers and limits in `docs/prd/wall-sections.md`.
 - [ ] Wall sections: the wall becomes a tree of hinged flat faces (slab, vertical, overhang, roof, plus aretes across the width), holds go face-local and stay bolted through every angle change, collision goes 3D. Shaped 2026-08-14: PRD `docs/prd/wall-sections.md`, model in ADR-006. Last big piece of the wall-and-route-creation pillar.
 - [ ] Blade-mode cuts: draw the seam anywhere instead of picking across or up. Wanted sooner rather than later (2026-08-17): a drawn line says exactly where the cut lands, where the current buttons cut at the last tap and slide off any hold in the way, which is hard to aim. Same face tree (ADR-006), new input only. Cuts must not cross each other, or the vertex where they meet cannot stay watertight.
 

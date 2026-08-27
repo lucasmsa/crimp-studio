@@ -2,16 +2,14 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
-import { CAMERA } from '../constants/editor3d'
+import { CAMERA, CAMERA_EASE } from '../constants/editor3d'
 import { CM_TO_M } from '@crimp-studio/wall-geometry'
 import { computeFaceTransforms } from '@crimp-studio/wall-geometry'
 import { computeWallProfile } from '../utils/faceProfile'
+import { useSelectionSwing } from './useSelectionSwing'
 
 /** Room to leave around the profile once it is framed */
 const FIT_MARGIN = 1.15
-/** Fraction of the remaining distance covered per frame. Slow enough to read
-    as the camera following the wall rather than cutting to a new shot */
-const EASE = 1.6
 /** Close enough to stop chasing and hand the camera back */
 const SETTLED = 0.01
 
@@ -23,6 +21,19 @@ const TARGET_SLACK = 0.6
 const SHAPE_STEP_CM = 5
 
 /**
+ * Everything that moves the editor's camera, and the orbit target it hands to
+ * OrbitControls. The two movers own different halves of the shot: framing sets
+ * the target and how far back the camera sits, the swing sets which direction it
+ * sits in, so neither can undo the other.
+ */
+export function useEditorCamera(): THREE.Vector3 {
+  const target = useProfileFraming()
+  useSelectionSwing(target)
+
+  return target
+}
+
+/**
  * Frames the whole profile and follows it when it changes shape. Bending trades
  * height for depth, so the framing comes from the profile's real extents rather
  * than the plywood size; framing on the sheet size walks a roof out of view.
@@ -30,7 +41,7 @@ const SHAPE_STEP_CM = 5
  * The refit only runs while the wall is actually changing shape. Chasing every
  * frame would fight the user's own orbit and zoom.
  */
-export function useEditorCamera(): THREE.Vector3 {
+function useProfileFraming(): THREE.Vector3 {
   const { camera } = useThree()
   const wall = useWallStore((state) => state.wall)
 
@@ -66,7 +77,7 @@ export function useEditorCamera(): THREE.Vector3 {
     }
     if (!refitting.current) return
 
-    const ease = Math.min(1, delta * EASE)
+    const ease = Math.min(1, delta * CAMERA_EASE)
     target.lerp(center, ease)
 
     const offset = camera.position.clone().sub(target)
