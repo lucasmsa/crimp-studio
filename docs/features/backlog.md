@@ -58,6 +58,11 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
   light to dark, and App reads the store so a stored choice applies on every page. The
   light theme's page background moved to the gym grey the canvas uses, so the app and the
   wall are the same room.
+- [x] Save and load walls (2026-08-28): the two header buttons were dead and a wall died on
+  refresh. Walls now live in the browser as a named library, the wall being edited is
+  written continuously and restored on the next visit, and the card lists each wall with a
+  drawing of its own profile. ADR-009. Supabase later swaps the storage adapter, not the
+  document.
 - [ ] Paint all panels / paint all holds at once (after the per-panel colour lands)
 - [ ] Custom colour picker behind a "custom" swatch, for the colour the curated sets do not have
 - [ ] Hold resizing: drag border handles to scale, live preview

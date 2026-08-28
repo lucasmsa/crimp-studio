@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,9 @@ import { ToolRail } from './components/ToolRail'
 import { StatusStrip } from './components/StatusStrip'
 import { SelectionPanel } from './components/SelectionPanel'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { WallLibrary } from './components/WallLibrary'
+import type { LibraryMode } from './components/WallLibrary/config/libraryMode'
+import { useWallPersistence } from './hooks/useWallPersistence'
 
 /**
  * The wall gets the screen. Chrome is the header, the tool rail, the status
@@ -14,6 +18,9 @@ import { ThemeToggle } from '@/components/ThemeToggle'
  */
 export function EditorPage() {
   const { t } = useTranslation()
+  const [library, setLibrary] = useState<LibraryMode | null>(null)
+
+  useWallPersistence()
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -27,10 +34,10 @@ export function EditorPage() {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setLibrary('load')} data-testid="open-load">
             {t('editor.actions.load')}
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setLibrary('save')} data-testid="open-save">
             {t('editor.actions.save')}
           </Button>
           <Button size="sm">
@@ -51,6 +58,8 @@ export function EditorPage() {
         <StatusStrip />
         <EditorLoading />
       </main>
+
+      <WallLibrary mode={library} onClose={() => setLibrary(null)} />
     </div>
   )
 }

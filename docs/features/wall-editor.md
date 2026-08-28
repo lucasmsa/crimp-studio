@@ -120,6 +120,33 @@ changes, update this doc in the same PR.
 - Nothing illegal reaches the store, so the renderer, save files and the route generator
   read a wall that can be built.
 
+## Saving and loading
+
+- Walls live in this browser's `localStorage`, one key per wall plus one for the wall being
+  worked on (`lib/walls/browserWallStorage.ts`). The `WallStorage` interface in front of it
+  is async so a server can go behind it without the callers changing (ADR-009).
+- The wall being edited is written 400ms after it stops changing and restored on the next
+  visit, so a reload costs nothing. Nothing is written until that read comes back, or the
+  empty wall the editor starts with would land on top of the saved one.
+- SAVE WALL and LOAD WALL open the same card: a Radix dialog restyled to the poster
+  chrome. SAVE writes into an existing slot or a new named one, LOAD opens one, and both
+  list every wall with its name, when it was saved, its panel and hold counts, a delete
+  behind a confirm, and a drawing of the wall.
+- The drawing is the wall's own side profile, generated from the face tree when the row
+  renders, with holds as dots along it (`WallLibrary/utils/wallSilhouette.ts`). Nothing is
+  captured or stored. Aretes do not show, since a side view cannot see one.
+- A save carries a version and what was chosen. Collision boxes are not saved: they are
+  measured from the model, so they are measured again on load and a rescaled model does
+  not leave a wall carrying stale geometry.
+- A save that does not parse or does not have the shape of a wall is refused with the
+  reason, and the wall on screen is untouched. A broken entry is skipped in the list and
+  left in storage rather than swept up.
+- A saved wall whose holds overlap loads as it was saved, and the offenders flash red
+  through the same `blockingHoldIds` a blocked bend uses. Refusing would strand a wall
+  built under older rules; dropping the holds would delete work silently.
+- Replacing the wall on screen (loading another, or New Wall) warns first when it has
+  changes the library does not have, and offers to save it first.
+
 ## Test coverage
 
 - Store actions, geometry factories, hold action utils, popover anchoring and placement,

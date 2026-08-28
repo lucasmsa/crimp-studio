@@ -67,6 +67,7 @@
       "title": "Carregando parede"
     },
     "holdCount": "{{count}} agarras",
+    "holdCount_one": "{{count}} agarra",
     "model": {
       "label": "Modelo",
       "random": "Aleatório"
@@ -142,6 +143,42 @@
       "height": "{{value}} m de altura",
       "depth": "{{value}} m de profundidade",
       "plywood": "{{value}} m2 de compensado"
+    },
+    "library": {
+      "saveTitle": "Salvar Parede",
+      "loadTitle": "Suas Paredes",
+      "subtitle": "Salvas neste navegador",
+      "unsaved": "Esta parede tem alterações não salvas",
+      "nameLabel": "Nome",
+      "saveNew": "Salvar como nova",
+      "newWall": "Nova parede",
+      "overwrite": "Substituir",
+      "open": "Abrir",
+      "emptySave": "Nada salvo ainda. Dê um nome a esta parede e salve.",
+      "emptyLoad": "Nada salvo ainda.",
+      "delete": "Excluir",
+      "deleteSure": "Excluir?",
+      "deleteConfirm": "Sim",
+      "deleteCancel": "Não",
+      "whenNow": "agora",
+      "whenMinutes": "há {{count}} min",
+      "whenHours": "há {{count}} h",
+      "whenDays": "há {{count}} d",
+      "whenUnknown": "data desconhecida",
+      "confirm": {
+        "title": "A parede na tela tem alterações não salvas.",
+        "saveFirst": "Salvar primeiro",
+        "anyway": "Ir assim mesmo",
+        "cancel": "Ficar aqui"
+      },
+      "problem": {
+        "unreadable": "Não dá para ler esse save. Ele continua lá, intacto.",
+        "not-a-wall": "Esse save não é uma parede que este editor conhece.",
+        "future-version": "Essa parede foi salva por uma versão mais nova do editor.",
+        "missing": "Essa parede não está mais aqui.",
+        "full": "Não há mais espaço neste navegador. Exclua uma parede e tente de novo.",
+        "unavailable": "Este navegador não deixa o editor salvar."
+      }
     }
   },
   "about": {

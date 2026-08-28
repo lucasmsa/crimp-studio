@@ -13,6 +13,7 @@ import type { FaceTree } from '@crimp-studio/wall-geometry'
 import {
   createRootFaceTree,
   findLegalFaceAngle,
+  findWallOverlaps,
   findLegalHoldMove,
   getFace,
   holdPlacementIsClear,
@@ -127,6 +128,8 @@ interface WallState {
   /** Stops pointing at the holds that blocked the last bend */
   clearBlockingHolds: () => void
   clearHolds: () => void
+  /** Puts a whole wall in place of the current one, as loading a saved one does */
+  replaceWall: (wall: Wall) => void
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9)
@@ -143,6 +146,18 @@ function armedVariant(
 ): string | undefined {
   const armed = variantByType[type]
   return armed && getModelVariant(type, armed) ? armed : pickModelVariant(holdId, type)
+}
+
+/** Every hold named in a list of overlapping pairs */
+function holdsInOverlaps(overlaps: ReturnType<typeof findWallOverlaps>): string[] {
+  const ids = new Set<string>()
+
+  for (const { a, b } of overlaps) {
+    if (a.kind === 'hold' && a.id) ids.add(a.id)
+    if (b.kind === 'hold' && b.id) ids.add(b.id)
+  }
+
+  return [...ids]
 }
 
 /** The hold as it would be with a different type or model, re-measured and
@@ -171,17 +186,20 @@ function commitHold(state: WallState, next: Hold): Partial<WallState> {
 const WALL_WIDTH = 400
 const WALL_HEIGHT = 500
 
-const defaultWall: Wall = {
-  id: createId(),
-  name: 'My Wall',
-  width: WALL_WIDTH,
-  height: WALL_HEIGHT,
-  faces: createRootFaceTree(WALL_WIDTH, WALL_HEIGHT, colors.wall.surface),
-  holds: [],
+/** A fresh sheet of plywood, which is what the editor opens on and what New Wall gives */
+export function createDefaultWall(): Wall {
+  return {
+    id: createId(),
+    name: 'My Wall',
+    width: WALL_WIDTH,
+    height: WALL_HEIGHT,
+    faces: createRootFaceTree(WALL_WIDTH, WALL_HEIGHT, colors.wall.surface),
+    holds: [],
+  }
 }
 
 export const useWallStore = create<WallState>((set) => ({
-  wall: defaultWall,
+  wall: createDefaultWall(),
   editorMode: 'holds',
   selectedHoldId: null,
   /* The wall opens with nothing selected: controls come to a selection, so an
@@ -442,6 +460,19 @@ export const useWallStore = create<WallState>((set) => ({
     })),
 
   clearBlockingHolds: () => set({ blockingHoldIds: [] }),
+
+  /* A loaded wall can clip itself: the rules it was built under may not be the
+     rules in force now. It comes back as it was saved and the holds that clip
+     are pointed at, rather than being refused or quietly dropped (ADR-009) */
+  replaceWall: (wall) =>
+    set({
+      wall,
+      selectedHoldId: null,
+      selectedFaceId: null,
+      faceCutPoint: null,
+      deletingHoldIds: [],
+      blockingHoldIds: holdsInOverlaps(findWallOverlaps(wall.faces, wall.holds)),
+    }),
 
   clearHolds: () =>
     set((state) => ({

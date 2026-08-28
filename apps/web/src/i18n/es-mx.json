@@ -67,6 +67,7 @@
       "title": "Cargando muro"
     },
     "holdCount": "{{count}} presas",
+    "holdCount_one": "{{count}} presa",
     "model": {
       "label": "Modelo",
       "random": "Aleatorio"
@@ -142,6 +143,42 @@
       "height": "{{value}} m de alto",
       "depth": "{{value}} m de fondo",
       "plywood": "{{value}} m2 de triplay"
+    },
+    "library": {
+      "saveTitle": "Guardar Muro",
+      "loadTitle": "Tus Muros",
+      "subtitle": "Guardados en este navegador",
+      "unsaved": "Este muro tiene cambios sin guardar",
+      "nameLabel": "Nombre",
+      "saveNew": "Guardar como nuevo",
+      "newWall": "Muro nuevo",
+      "overwrite": "Sobrescribir",
+      "open": "Abrir",
+      "emptySave": "Nada guardado todavía. Nombra este muro y guárdalo.",
+      "emptyLoad": "Nada guardado todavía.",
+      "delete": "Eliminar",
+      "deleteSure": "¿Eliminar?",
+      "deleteConfirm": "Sí",
+      "deleteCancel": "No",
+      "whenNow": "ahora",
+      "whenMinutes": "hace {{count}} min",
+      "whenHours": "hace {{count}} h",
+      "whenDays": "hace {{count}} d",
+      "whenUnknown": "fecha desconocida",
+      "confirm": {
+        "title": "El muro en pantalla tiene cambios sin guardar.",
+        "saveFirst": "Guardarlo primero",
+        "anyway": "Continuar de todos modos",
+        "cancel": "Quedarme aquí"
+      },
+      "problem": {
+        "unreadable": "Ese guardado no se puede leer. Sigue ahí, intacto.",
+        "not-a-wall": "Ese guardado no es un muro que este editor conozca.",
+        "future-version": "Ese muro se guardó con una versión más nueva del editor.",
+        "missing": "Ese muro ya no está aquí.",
+        "full": "Este navegador ya no tiene espacio. Elimina un muro e intenta de nuevo.",
+        "unavailable": "Este navegador no deja que el editor guarde."
+      }
     }
   },
   "about": {

@@ -67,6 +67,7 @@
       "title": "Loading wall"
     },
     "holdCount": "{{count}} holds",
+    "holdCount_one": "{{count}} hold",
     "model": {
       "label": "Model",
       "random": "Random"
@@ -142,6 +143,42 @@
       "height": "{{value}} m tall",
       "depth": "{{value}} m deep",
       "plywood": "{{value}} m2 plywood"
+    },
+    "library": {
+      "saveTitle": "Save Wall",
+      "loadTitle": "Your Walls",
+      "subtitle": "Saved in this browser",
+      "unsaved": "This wall has changes that are not saved",
+      "nameLabel": "Name",
+      "saveNew": "Save as new",
+      "newWall": "New wall",
+      "overwrite": "Overwrite",
+      "open": "Open",
+      "emptySave": "Nothing saved yet. Name this wall and save it.",
+      "emptyLoad": "Nothing saved yet.",
+      "delete": "Delete",
+      "deleteSure": "Delete it?",
+      "deleteConfirm": "Yes",
+      "deleteCancel": "No",
+      "whenNow": "just now",
+      "whenMinutes": "{{count}} min ago",
+      "whenHours": "{{count}} h ago",
+      "whenDays": "{{count}} d ago",
+      "whenUnknown": "date unknown",
+      "confirm": {
+        "title": "The wall on screen has changes that are not saved.",
+        "saveFirst": "Save it first",
+        "anyway": "Go anyway",
+        "cancel": "Stay here"
+      },
+      "problem": {
+        "unreadable": "That save cannot be read. It is still there, unchanged.",
+        "not-a-wall": "That save is not a wall this editor knows.",
+        "future-version": "That wall was saved by a newer version of the editor.",
+        "missing": "That wall is no longer here.",
+        "full": "This browser has no room left. Delete a wall and try again.",
+        "unavailable": "This browser will not let the editor save."
+      }
     }
   },
   "about": {
