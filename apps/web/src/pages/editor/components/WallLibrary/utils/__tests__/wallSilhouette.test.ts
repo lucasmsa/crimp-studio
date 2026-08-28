@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest'
 import type { FaceTree, HingeEdge } from '@crimp-studio/wall-geometry'
 import { createRootFaceTree, getFace } from '@crimp-studio/wall-geometry'
 import type { SavedHold } from '@/lib/walls'
-import { silhouettePath, wallSilhouette } from '../wallSilhouette'
+import { panelPoints, wallSilhouette } from '../wallSilhouette'
 
 const PANEL = '#E8D5B7'
+const holdColor = (hold: SavedHold) => hold.color ?? '#25E712'
 
 function hinge(
   tree: FaceTree,
@@ -29,82 +30,103 @@ function hinge(
   }
 }
 
-const hold = (faceId: string, u: number, v: number): SavedHold => ({
+const hold = (faceId: string, u: number, v: number, color?: string): SavedHold => ({
   id: `hold_${u}_${v}`,
   type: 'jug',
   faceId,
   u,
   v,
   size: 10,
+  color,
 })
 
+const draw = (faces: FaceTree, holds: SavedHold[] = []) =>
+  wallSilhouette(faces, holds, holdColor, '#F6F4F0')
+
 describe('wallSilhouette', () => {
-  it('draws a flat wall as a line from the floor up', () => {
+  it('draws a flat wall as a surface rather than a line', () => {
     const flat = createRootFaceTree(300, 400, PANEL)
 
-    const { profile } = wallSilhouette(flat, [])
+    const { panels } = draw(flat)
 
-    expect(profile).toHaveLength(2)
-    expect(profile[0].y).toBeGreaterThan(profile[1].y)
-    expect(profile[0].x).toBeCloseTo(profile[1].x, 6)
+    expect(panels).toHaveLength(1)
+    expect(panels[0].corners).toHaveLength(4)
+    const xs = panels[0].corners.map((corner) => corner.x)
+    const ys = panels[0].corners.map((corner) => corner.y)
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(300, 0)
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(400, 0)
   })
 
-  it('turns a corner where the wall does', () => {
+  it('gives every panel its own quad', () => {
     const base = createRootFaceTree(300, 200, PANEL)
     const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
 
-    const { profile } = wallSilhouette(roof.tree, [])
+    const { panels } = draw(roof.tree)
 
-    expect(profile).toHaveLength(3)
-    /* The roof runs out in depth from the top of the vertical section rather
-       than continuing up it */
-    expect(profile[2].x - profile[1].x).toBeCloseTo(200, 0)
-    expect(profile[2].y).toBeCloseTo(profile[1].y, 0)
+    expect(panels).toHaveLength(2)
   })
 
-  it('leaves an arete out, since a side view cannot show one', () => {
+  it('pushes a roof back and across, so it reads as a roof', () => {
+    const base = createRootFaceTree(300, 200, PANEL)
+    const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
+
+    const { panels } = draw(roof.tree)
+    const upper = panels.find((panel) => panel.id === roof.id)!
+    const lower = panels.find((panel) => panel.id === base.rootId)!
+
+    expect(upper.depth).toBeGreaterThan(lower.depth)
+    expect(Math.max(...upper.corners.map((c) => c.x))).toBeGreaterThan(
+      Math.max(...lower.corners.map((c) => c.x)),
+    )
+  })
+
+  it('draws the far panels first, so nearer ones sit over them', () => {
+    const base = createRootFaceTree(300, 200, PANEL)
+    const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
+
+    const { panels } = draw(roof.tree)
+
+    expect(panels[0].depth).toBeGreaterThanOrEqual(panels[1].depth)
+  })
+
+  it('shows an arete, which a flat side view could not', () => {
     const base = createRootFaceTree(300, 400, PANEL)
     const arete = hinge(base, base.rootId, 'left', { width: 100, height: 400 }, 90)
 
-    const withArete = wallSilhouette(arete.tree, [])
-    const without = wallSilhouette(base, [])
-
-    expect(withArete.profile).toEqual(without.profile)
+    expect(draw(arete.tree).panels).toHaveLength(2)
   })
 
-  it('puts each hold where it sits on the wall', () => {
+  it('puts each hold where it sits, in the colour it is painted', () => {
     const flat = createRootFaceTree(300, 400, PANEL)
 
-    const { holds } = wallSilhouette(flat, [hold(flat.rootId, 150, 100), hold(flat.rootId, 150, 300)])
+    const { holds } = draw(flat, [
+      hold(flat.rootId, 100, 100, '#C1121C'),
+      hold(flat.rootId, 200, 300),
+    ])
 
     expect(holds).toHaveLength(2)
-    expect(holds[0].y).toBeGreaterThan(holds[1].y)
+    expect(holds[0].color).toBe('#C1121C')
+    expect(holds[0].at.x).toBeLessThan(holds[1].at.x)
+    expect(holds[0].at.y).toBeGreaterThan(holds[1].at.y)
   })
 
   it('skips a hold whose panel is not in the tree', () => {
     const flat = createRootFaceTree(300, 400, PANEL)
 
-    const { holds } = wallSilhouette(flat, [hold('face_gone', 150, 100)])
-
-    expect(holds).toHaveLength(0)
+    expect(draw(flat, [hold('face_gone', 150, 100)]).holds).toHaveLength(0)
   })
 
-  it('gives a flat wall a box wide enough to draw in', () => {
+  it('fits the drawing into a box worth drawing in', () => {
     const flat = createRootFaceTree(300, 400, PANEL)
 
-    const [, , width, height] = wallSilhouette(flat, []).viewBox.split(' ').map(Number)
+    const [, , width, height] = draw(flat).viewBox.split(' ').map(Number)
 
-    expect(width).toBeGreaterThan(0)
-    expect(height).toBeGreaterThan(0)
+    expect(width / height).toBeCloseTo(1.4, 1)
   })
 })
 
-describe('silhouettePath', () => {
-  it('writes a move and a line per point after it', () => {
-    expect(silhouettePath([{ x: 0, y: 0 }, { x: 10, y: -20 }])).toBe('M 0 0 L 10 -20')
-  })
-
-  it('draws nothing when there is nothing', () => {
-    expect(silhouettePath([])).toBe('')
+describe('panelPoints', () => {
+  it('writes a corner per point', () => {
+    expect(panelPoints([{ x: 0, y: 0 }, { x: 10, y: -20 }])).toBe('0,0 10,-20')
   })
 })

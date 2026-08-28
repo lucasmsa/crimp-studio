@@ -132,9 +132,11 @@ changes, update this doc in the same PR.
   chrome. SAVE writes into an existing slot or a new named one, LOAD opens one, and both
   list every wall with its name, when it was saved, its panel and hold counts, a delete
   behind a confirm, and a drawing of the wall.
-- The drawing is the wall's own side profile, generated from the face tree when the row
-  renders, with holds as dots along it (`WallLibrary/utils/wallSilhouette.ts`). Nothing is
-  captured or stored. Aretes do not show, since a side view cannot see one.
+- The drawing is the wall itself, three quarters on, generated from the face tree when the
+  row renders (`WallLibrary/utils/wallSilhouette.ts`): every panel as a quad, far ones
+  first, with holds as dots in the colours they are painted, over the same room grey the
+  scene uses. Nothing is captured or stored. Straight from the side was tried first and
+  cut: a flat wall, which is most of them, came out as a line.
 - A save carries a version and what was chosen. Collision boxes are not saved: they are
   measured from the model, so they are measured again on load and a rescaled model does
   not leave a wall carrying stale geometry.

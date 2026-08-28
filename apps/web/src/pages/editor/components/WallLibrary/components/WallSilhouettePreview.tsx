@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { FaceTree } from '@crimp-studio/wall-geometry'
 import type { SavedHold } from '@/lib/walls'
 import { colors } from '@/lib/colors'
-import { silhouettePath, wallSilhouette } from '../utils/wallSilhouette'
+import { panelPoints, wallSilhouette } from '../utils/wallSilhouette'
 
 interface WallSilhouettePreviewProps {
   faces: FaceTree
@@ -11,31 +11,57 @@ interface WallSilhouettePreviewProps {
 
 /** Hold dot radius, as a share of the drawing's long side */
 const DOT_SHARE = 0.035
-/** Profile stroke width, likewise */
-const STROKE_SHARE = 0.022
+/** Panel outline width, likewise */
+const STROKE_SHARE = 0.012
 
-/** The wall's side profile, with its holds, drawn small enough for a list row */
+const holdColor = (hold: SavedHold) => hold.color ?? colors.holds[hold.type]
+
+/** The wall drawn three quarters on, with its holds, small enough for a list row */
 export function WallSilhouettePreview({ faces, holds }: WallSilhouettePreviewProps) {
-  const silhouette = useMemo(() => wallSilhouette(faces, holds), [faces, holds])
+  const silhouette = useMemo(
+    () => wallSilhouette(faces, holds, holdColor, colors.wall.surface),
+    [faces, holds],
+  )
+  const stroke = silhouette.span * STROKE_SHARE
 
   return (
     <svg
       viewBox={silhouette.viewBox}
-      className="h-14 w-20 shrink-0 border-2 border-border bg-card"
+      className="h-14 w-20 shrink-0 border-2 border-border"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
       data-testid="wall-silhouette"
     >
-      <path
-        d={silhouettePath(silhouette.profile)}
-        fill="none"
-        stroke={colors.scene.outline}
-        strokeWidth={silhouette.span * STROKE_SHARE}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      {/* The wall is painted near white, so it needs the room behind it to read
+          as a wall rather than as an empty outline, the same way the scene does */}
+      <rect
+        x={silhouette.box.left}
+        y={silhouette.box.top}
+        width={silhouette.box.width}
+        height={silhouette.box.height}
+        fill={colors.scene.room.light.top}
       />
-      {silhouette.holds.map((hold, index) => (
-        <circle key={index} cx={hold.x} cy={hold.y} r={silhouette.span * DOT_SHARE} fill={colors.holds.jug} />
+
+      {silhouette.panels.map((panel) => (
+        <polygon
+          key={panel.id}
+          points={panelPoints(panel.corners)}
+          fill={panel.color}
+          stroke={colors.scene.outline}
+          strokeWidth={stroke}
+          strokeLinejoin="round"
+        />
+      ))}
+      {silhouette.holds.map((hold) => (
+        <circle
+          key={hold.id}
+          cx={hold.at.x}
+          cy={hold.at.y}
+          r={silhouette.span * DOT_SHARE}
+          fill={hold.color}
+          stroke={colors.scene.outline}
+          strokeWidth={stroke}
+        />
       ))}
     </svg>
   )

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { EDITOR_TOOLS } from './config/tools'
@@ -34,11 +35,11 @@ export function ToolRail() {
           className={cn(
             holdTypeButtonBase,
             holdTypeButtonStates.idle,
-            'ml-auto h-7 w-7 px-0 text-sm leading-none',
+            'ml-auto h-7 w-7 px-0',
           )}
           data-testid="rail-toggle"
         >
-          {collapsed ? '»' : '«'}
+          {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
         </button>
       </div>
 

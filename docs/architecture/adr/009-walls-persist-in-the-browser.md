@@ -65,12 +65,15 @@ considered: the selection card's focus trap is reusable, but scroll lock, aria w
 focus restoration are where hand-rolled dialogs go wrong.
 
 **A slot shows what tells two walls apart**: its name, when it was saved, its panel and
-hold counts, and a picture of the wall. The picture is the profile silhouette, drawn from
-the face tree when the row renders, with holds as dots along the surface. A slab, a roof
-and an arete are different shapes and read as different shapes at 100px, which a dark
-3D screenshot of the same three does not. It is generated rather than stored, so it is
-always current, always sharp, and follows the theme. Bytes were not the deciding factor:
+hold counts, and a picture of the wall. The picture is drawn from the face tree when the
+row renders, three quarters on: every panel as a quad, holds as dots in the colours they
+are painted. A slab, a roof and an arete are different shapes and read as different shapes
+at 100px, which a dark 3D screenshot of the same three does not. It is generated rather
+than stored, so it is always current and always sharp. Bytes were not the deciding factor:
 a screenshot is roughly 8KB an entry against a budget in megabytes.
+
+Drawn straight from the side was the first attempt and it was wrong: a flat wall, which is
+most walls, is a line seen that way, and the drawing read as broken rather than as flat.
 
 **A slot can be deleted**, from its own row, behind a confirm.
 

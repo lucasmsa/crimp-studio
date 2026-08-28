@@ -1,5 +1,5 @@
 import type { FaceTree } from '@crimp-studio/wall-geometry'
-import { CM_TO_M, computeFaceTransforms, faceLocalToWorld, getFace } from '@crimp-studio/wall-geometry'
+import { CM_TO_M, computeFaceTransforms, faceLocalToWorld, listFaces } from '@crimp-studio/wall-geometry'
 import type { SavedHold } from '@/lib/walls'
 
 export interface SilhouettePoint {
@@ -7,100 +7,131 @@ export interface SilhouettePoint {
   y: number
 }
 
+export interface SilhouettePanel {
+  id: string
+  /** The panel's four corners, ready for a polygon */
+  corners: SilhouettePoint[]
+  /** How far back it sits, for drawing the far ones first */
+  depth: number
+  color: string
+}
+
+export interface SilhouetteHold {
+  id: string
+  at: SilhouettePoint
+  color: string
+}
+
 export interface WallSilhouette {
-  /** The profile from the floor up, as points in the drawing's own frame */
-  profile: SilhouettePoint[]
-  /** Where the holds sit along it */
-  holds: SilhouettePoint[]
+  panels: SilhouettePanel[]
+  holds: SilhouetteHold[]
+  /** The drawing's own frame, for anything that has to fill it */
+  box: Box
   /** Ready for the svg attribute of the same name */
   viewBox: string
   /** The box's long side, so strokes and dots can be sized against the drawing */
   span: number
 }
 
+export interface Box {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 /** Air left around the drawing, in cm */
-const PADDING_CM = 20
-/** A flat wall has no depth at all, so the box needs a floor of its own, in cm */
+const PADDING_CM = 25
+/** A wall with no depth still needs a box with two dimensions, in cm */
 const MIN_SPAN_CM = 60
-/**
- * The shape of the box the drawing is fitted into. A flat wall is a line 4m
- * tall and nothing wide, and fitting that to a row-sized box leaves a sliver a
- * few pixels across, so the box is widened to something a picture can live in.
- */
+/** The shape of the box the drawing is fitted into */
 const BOX_ASPECT = 1.4
 
 /**
- * The wall seen from the side, drawn rather than photographed.
- *
- * A slab, a roof and a plain vertical sheet are different shapes, and the shape
- * is what tells two saved walls apart at the size of a list row, where a 3D
- * screenshot is mud (ADR-009). Aretes do not show: they hinge sideways, so from
- * the side they sit exactly behind the panel they hinge from.
- *
- * The drawing's y grows downward, which is what SVG wants, so the wall is
- * flipped once here rather than in every consumer.
+ * How far depth pushes a point across and down the page. A wall drawn straight
+ * from the side is a line, which is what a flat wall is: seen at three quarters
+ * it is a surface with holds spread over it, and a roof reads as a roof.
  */
-export function wallSilhouette(faces: FaceTree, holds: SavedHold[]): WallSilhouette {
+const DEPTH_X = 0.5
+const DEPTH_Y = 0.32
+
+/**
+ * The wall as a small drawing, generated rather than photographed.
+ *
+ * A slab, a roof and a plain sheet are different shapes, and the shape plus
+ * where the holds sit is what tells two saved walls apart at the size of a list
+ * row, where a 3D screenshot is mud (ADR-009).
+ */
+export function wallSilhouette(
+  faces: FaceTree,
+  holds: SavedHold[],
+  holdColor: (hold: SavedHold) => string,
+  panelFallback = '#F6F4F0',
+): WallSilhouette {
   const transforms = computeFaceTransforms(faces)
 
-  const profile = verticalChain(faces).flatMap((faceId, index) => {
-    const transform = transforms[faceId]
-    const face = getFace(faces, faceId)
-    const bottom = point(faceLocalToWorld(transform, 0, 0))
-    const top = point(faceLocalToWorld(transform, 0, face.height))
+  const panels = listFaces(faces)
+    .map((face) => {
+      const corners = [
+        [0, 0],
+        [face.width, 0],
+        [face.width, face.height],
+        [0, face.height],
+      ].map(([u, v]) => project(faceLocalToWorld(transforms[face.id], u, v)))
 
-    /* Each face shares its bottom edge with the one below, so only the first
-       contributes both ends */
-    return index === 0 ? [bottom, top] : [top]
-  })
+      return {
+        id: face.id,
+        corners,
+        depth: depthOf(faces, transforms, face.id),
+        color: face.color || panelFallback,
+      }
+    })
+    /* Far ones first, so a roof lies over the wall it hangs off rather than
+       under it */
+    .sort((a, b) => b.depth - a.depth)
 
   const dots = holds
     .filter((hold) => transforms[hold.faceId])
-    .map((hold) => point(faceLocalToWorld(transforms[hold.faceId], hold.u, hold.v)))
+    .map((hold) => ({
+      id: hold.id,
+      at: project(faceLocalToWorld(transforms[hold.faceId], hold.u, hold.v)),
+      color: holdColor(hold),
+    }))
 
-  const box = boxAround([...profile, ...dots])
+  const box = boxAround([...panels.flatMap((panel) => panel.corners), ...dots.map((d) => d.at)])
 
   return {
-    profile,
+    panels,
     holds: dots,
+    box,
     viewBox: `${round(box.left)} ${round(box.top)} ${round(box.width)} ${round(box.height)}`,
     span: Math.max(box.width, box.height),
   }
 }
 
-/** The path attribute for a profile, or empty when there is nothing to draw */
-export function silhouettePath(profile: SilhouettePoint[]): string {
-  if (profile.length === 0) return ''
-
-  const [start, ...rest] = profile
-  return `M ${round(start.x)} ${round(start.y)}` + rest.map((p) => ` L ${round(p.x)} ${round(p.y)}`).join('')
+/** The points attribute for a panel */
+export function panelPoints(corners: SilhouettePoint[]): string {
+  return corners.map((corner) => `${round(corner.x)},${round(corner.y)}`).join(' ')
 }
 
-/**
- * The faces stacked up the wall: the root and whatever hinges off the top of
- * it, one after another. A left hinge branches across the width instead, and a
- * side view has nothing to say about it.
- */
-function verticalChain(faces: FaceTree): string[] {
-  const chain = [faces.rootId]
+/** Three quarters on, with depth pushing a point across the page and down it */
+function project(world: { x: number; y: number; z: number }): SilhouettePoint {
+  const x = world.x / CM_TO_M
+  const y = world.y / CM_TO_M
+  const z = world.z / CM_TO_M
 
-  for (;;) {
-    const face = getFace(faces, chain[chain.length - 1])
-    const next = face.childIds.find((id) => getFace(faces, id).hinge === 'bottom')
-    if (!next) return chain
-    chain.push(next)
-  }
+  return { x: x + z * DEPTH_X, y: -y + z * DEPTH_Y }
 }
 
-function point(world: { y: number; z: number }): SilhouettePoint {
-  return { x: world.z / CM_TO_M, y: -world.y / CM_TO_M }
-}
+function depthOf(
+  faces: FaceTree,
+  transforms: ReturnType<typeof computeFaceTransforms>,
+  faceId: string,
+): number {
+  const face = listFaces(faces).find((candidate) => candidate.id === faceId)!
+  const middle = faceLocalToWorld(transforms[faceId], face.width / 2, face.height / 2)
 
-interface Box {
-  left: number
-  top: number
-  width: number
-  height: number
+  return middle.z / CM_TO_M
 }
 
 function boxAround(points: SilhouettePoint[]): Box {
