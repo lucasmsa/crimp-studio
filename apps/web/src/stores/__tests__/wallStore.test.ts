@@ -28,6 +28,7 @@ function resetStore() {
     variantByType: {},
     deletingHoldIds: [],
     blockingHoldIds: [],
+    heldHold: null,
   })
 }
 
@@ -189,6 +190,87 @@ describe('wallStore', () => {
       place(300, 300)
 
       expect(useWallStore.getState().wall.holds).toHaveLength(2)
+    })
+  })
+
+  describe('carrying a hold with the pointer', () => {
+    it('moves the preview without moving the wall', () => {
+      seedHolds({ u: 100, v: 250 })
+      const [hold] = holdsNow()
+
+      useWallStore.getState().holdHold(hold.id, 200, 300)
+
+      expect(useWallStore.getState().heldHold).toMatchObject({ u: 200, v: 300, clear: true })
+      expect(holdsNow()[0]).toMatchObject({ u: 100, v: 250 })
+    })
+
+    it('lands the hold where it was let go, when it fits', () => {
+      seedHolds({ u: 100, v: 250 })
+      const [hold] = holdsNow()
+      useWallStore.getState().holdHold(hold.id, 200, 300)
+
+      useWallStore.getState().dropHold()
+
+      expect(holdsNow()[0]).toMatchObject({ u: 200, v: 300 })
+      expect(useWallStore.getState().heldHold).toBeNull()
+    })
+
+    it('goes where the pointer goes, even onto a neighbour, and says whose spot it is', () => {
+      seedHolds({ u: 100, v: 250 }, { u: 200, v: 250 })
+      const [moving, sitting] = holdsNow()
+
+      useWallStore.getState().holdHold(moving.id, 200, 250)
+
+      expect(useWallStore.getState().heldHold).toMatchObject({
+        u: 200,
+        v: 250,
+        clear: false,
+        blockedHoldIds: [sitting.id],
+      })
+    })
+
+    it('springs back when it is let go with nowhere to land', () => {
+      seedHolds({ u: 100, v: 250 }, { u: 200, v: 250 })
+      const [moving] = holdsNow()
+      useWallStore.getState().holdHold(moving.id, 200, 250)
+
+      useWallStore.getState().dropHold()
+
+      expect(holdsNow()[0]).toMatchObject({ u: 100, v: 250 })
+      expect(useWallStore.getState().heldHold).toBeNull()
+      expect(wallOverlaps()).toHaveLength(0)
+    })
+
+    it('keeps the hold on the plywood, since a hold off it is bolted to nothing', () => {
+      seedHolds({ u: 100, v: 250 })
+      const [hold] = holdsNow()
+
+      useWallStore.getState().holdHold(hold.id, 5000, 5000)
+
+      const held = useWallStore.getState().heldHold!
+      expect(held.u).toBeLessThanOrEqual(WIDTH)
+      expect(held.v).toBeLessThanOrEqual(HEIGHT)
+      expect(held.clear).toBe(true)
+    })
+
+    it('hands the hold to the panel under the pointer', () => {
+      place(150, 100)
+      const hold = useWallStore.getState().wall.holds[0]
+      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      const upperId = useWallStore.getState().selectedFaceId!
+
+      useWallStore.getState().holdHold(hold.id, 150, 60, upperId)
+      useWallStore.getState().dropHold()
+
+      expect(useWallStore.getState().wall.holds[0].faceId).toBe(upperId)
+    })
+
+    it('does nothing on a drop that never started', () => {
+      seedHolds({ u: 100, v: 250 })
+
+      useWallStore.getState().dropHold()
+
+      expect(holdsNow()[0]).toMatchObject({ u: 100, v: 250 })
     })
   })
 

@@ -14,6 +14,7 @@ import {
   createRootFaceTree,
   findLegalFaceAngle,
   findWallOverlaps,
+  findHoldObstruction,
   findLegalHoldMove,
   getFace,
   holdPlacementIsClear,
@@ -54,6 +55,24 @@ export interface Hold {
   collisionBox?: CollisionBox
 }
 
+/**
+ * A hold being carried by the pointer.
+ *
+ * The wall does not move until the drag lands, so what the store holds is a
+ * wall that can be built even while one is being waved over a neighbour
+ * (ADR-007, amended). This is what the renderer draws instead of the hold.
+ */
+export interface HeldHold {
+  id: string
+  faceId: string
+  u: number
+  v: number
+  /** Nothing is in the way, so letting go here would land it */
+  clear: boolean
+  /** The holds it is sitting on, which say so along with it */
+  blockedHoldIds: string[]
+}
+
 export interface Wall {
   id: string
   name: string
@@ -88,14 +107,16 @@ interface WallState {
   deletingHoldIds: string[]
   /** Holds that stopped the last bend, so the editor can point at them */
   blockingHoldIds: string[]
+  /** A hold under the pointer, before the drag lands. Null when none is moving */
+  heldHold: HeldHold | null
 
   /** Places a hold at (u, v) on the given face */
   addHold: (faceId: string, u: number, v: number) => void
   /** Colour, rotation and measured box. Position goes through moveHold */
   updateHold: (id: string, updates: Partial<Hold>) => void
   /**
-   * Moves a hold, refusing a spot where it would not fit in world space. Passing
-   * a face hands the hold to that panel, which is what dragging across a seam does
+   * Steps a hold toward a spot, sliding it along whatever is in the way rather
+   * than passing through. Keyboard nudges only: a drag is carried and dropped
    */
   moveHold: (id: string, u: number, v: number, faceId?: string) => void
   /** Turns a hold, re-measuring its footprint and refusing if it no longer fits */
@@ -130,6 +151,10 @@ interface WallState {
   clearHolds: () => void
   /** Puts a whole wall in place of the current one, as loading a saved one does */
   replaceWall: (wall: Wall) => void
+  /** Carries a hold with the pointer. The wall itself does not move yet */
+  holdHold: (id: string, u: number, v: number, faceId?: string) => void
+  /** Lets go: the hold lands where it is if it fits, and goes home if it does not */
+  dropHold: () => void
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9)
@@ -210,6 +235,7 @@ export const useWallStore = create<WallState>((set) => ({
   variantByType: {},
   deletingHoldIds: [],
   blockingHoldIds: [],
+  heldHold: null,
 
   addHold: (faceId, u, v) =>
     set((state) => {
@@ -460,6 +486,54 @@ export const useWallStore = create<WallState>((set) => ({
     })),
 
   clearBlockingHolds: () => set({ blockingHoldIds: [] }),
+
+  /* The pointer carries the hold; the wall stays where it is until the drag
+     lands. A spot that does not fit is shown rather than refused, so the hold
+     goes where your hand goes and says what it is sitting on (ADR-007) */
+  holdHold: (id, u, v, faceId) =>
+    set((state) => {
+      const hold = state.wall.holds.find((h) => h.id === id)
+      if (!hold) return state
+
+      const face = getFace(state.wall.faces, faceId ?? state.heldHold?.faceId ?? hold.faceId)
+      /* The panel edge stays a wall: a hold off the plywood is bolted to
+         nothing, which is a different thing from one too close to a neighbour */
+      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
+      const candidate = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
+
+      const obstruction = findHoldObstruction(state.wall.faces, state.wall.holds, candidate)
+
+      return {
+        heldHold: {
+          id,
+          faceId: face.id,
+          u: clamped.u,
+          v: clamped.v,
+          clear: obstruction.clear,
+          blockedHoldIds: obstruction.holdIds,
+        },
+      }
+    }),
+
+  dropHold: () =>
+    set((state) => {
+      const held = state.heldHold
+      if (!held) return state
+      /* Nowhere to land: the hold springs back to where it was picked up */
+      if (!held.clear) return { heldHold: null }
+
+      return {
+        heldHold: null,
+        wall: {
+          ...state.wall,
+          holds: state.wall.holds.map((hold) =>
+            hold.id === held.id
+              ? { ...hold, faceId: held.faceId, u: held.u, v: held.v }
+              : hold,
+          ),
+        },
+      }
+    }),
 
   /* A loaded wall can clip itself: the rules it was built under may not be the
      rules in force now. It comes back as it was saved and the holds that clip

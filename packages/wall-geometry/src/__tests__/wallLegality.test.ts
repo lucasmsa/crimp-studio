@@ -3,6 +3,7 @@ import type { FaceTree, HingeEdge } from '../faceTree'
 import { createRootFaceTree, getFace } from '../faceTree'
 import type { HoldPlacement } from '../wallSolids'
 import {
+  findHoldObstruction,
   findLegalFaceAngle,
   findLegalHoldMove,
   findWallOverlaps,
@@ -238,6 +239,61 @@ describe('holdPlacementIsClear', () => {
     const { tree } = finWall(135)
 
     expect(holdPlacementIsClear(tree, [], hold(tree.rootId, 388, 200))).toBe(false)
+  })
+})
+
+describe('findHoldObstruction', () => {
+  const flat = () => createRootFaceTree(400, 500, PANEL)
+
+  it('finds nothing in the way on open plywood', () => {
+    const tree = flat()
+
+    expect(findHoldObstruction(tree, [], hold(tree.rootId, 200, 250))).toEqual({
+      clear: true,
+      holdIds: [],
+    })
+  })
+
+  it('names the hold a candidate is sitting on', () => {
+    const tree = flat()
+    const sitting = hold(tree.rootId, 200, 250, 'sitting')
+
+    const obstruction = findHoldObstruction(tree, [sitting], hold(tree.rootId, 210, 250, 'moving'))
+
+    expect(obstruction.clear).toBe(false)
+    expect(obstruction.holdIds).toEqual(['sitting'])
+  })
+
+  it('names every hold at once, not just the first', () => {
+    const tree = flat()
+    const left = hold(tree.rootId, 190, 250, 'left')
+    const right = hold(tree.rootId, 230, 250, 'right')
+
+    const obstruction = findHoldObstruction(
+      tree,
+      [left, right],
+      hold(tree.rootId, 210, 250, 'moving'),
+    )
+
+    expect(obstruction.holdIds.sort()).toEqual(['left', 'right'])
+  })
+
+  it('is not clear against plywood either, and has no hold to name for it', () => {
+    /* An arete wrapped back over the face: the hold buries itself in a panel
+       rather than in another hold */
+    const { tree } = finWall(135)
+
+    const obstruction = findHoldObstruction(tree, [], hold(tree.rootId, 388, 200))
+
+    expect(obstruction.clear).toBe(false)
+    expect(obstruction.holdIds).toEqual([])
+  })
+
+  it('does not count the hold being moved as being in its own way', () => {
+    const tree = flat()
+    const moving = hold(tree.rootId, 200, 250, 'moving')
+
+    expect(findHoldObstruction(tree, [moving], moving).clear).toBe(true)
   })
 })
 

@@ -94,6 +94,10 @@ export function useWallInteraction() {
       const down = pointerDownRef.current
       if (down && isTap(down, e)) resolveTap(down)
 
+      /* Letting go is what commits the move. A hold let go over a neighbour
+         has nowhere to land, and springs back to where it was picked up */
+      if (draggingHoldIdRef.current) useWallStore.getState().dropHold()
+
       pointerDownRef.current = null
       draggingHoldIdRef.current = null
       isDraggingRef.current = false
@@ -129,8 +133,10 @@ export function useWallInteraction() {
     const holdId = draggingHoldIdRef.current
     if (!holdId) return
 
-    const hold = useWallStore.getState().wall.holds.find((h) => h.id === holdId)
+    const state = useWallStore.getState()
+    const hold = state.wall.holds.find((h) => h.id === holdId)
     if (!hold) return
+    const heldFaceId = state.heldHold?.faceId ?? hold.faceId
 
     raycaster.current.setFromCamera(pointerNDC.current, camera)
 
@@ -141,18 +147,18 @@ export function useWallInteraction() {
     const target =
       over ??
       (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)
-        ? { faceId: hold.faceId, point: intersectPoint.current }
+        ? { faceId: heldFaceId, point: intersectPoint.current }
         : null)
     if (!target) return
 
     const coords = worldToFaceCoords(target.faceId, target.point)
-    /* moveHold takes the hold as far toward the pointer as it fits, sliding it
-       along whatever is in the way rather than dragging it through */
-    if (coords) useWallStore.getState().moveHold(holdId, coords.u, coords.v, target.faceId)
+    /* The hold goes where the pointer goes and says what it is sitting on,
+       rather than being stopped by it (ADR-007, amended) */
+    if (coords) useWallStore.getState().holdHold(holdId, coords.u, coords.v, target.faceId)
 
-    /* The plane follows the panel the hold is on, so leaving the wall from a
+    /* The plane follows the panel the hold is over, so leaving the wall from a
        bent panel slides along that panel rather than the one it started on */
-    if (over && over.faceId !== hold.faceId) setupDragPlane(over.faceId)
+    if (over && over.faceId !== heldFaceId) setupDragPlane(over.faceId)
   })
 
   /* Face press — remembered, then resolved on release */

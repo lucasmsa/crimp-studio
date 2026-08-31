@@ -18,7 +18,7 @@ import { publishSelectionAnchor } from '../utils/selectionAnchor'
 export function SelectionAnchorProbe() {
   const camera = useThree((state) => state.camera)
   const size = useThree((state) => state.size)
-  const { wall, selectedHoldId, selectedFaceId } = useWallStore()
+  const { wall, selectedHoldId, selectedFaceId, heldHold } = useWallStore()
 
   const projected = useRef(new THREE.Vector3())
 
@@ -26,10 +26,17 @@ export function SelectionAnchorProbe() {
     const transforms = computeFaceTransforms(wall.faces)
     const hold = selectedHoldId ? wall.holds.find((h) => h.id === selectedHoldId) : null
 
-    if (hold) return holdSelectionAnchor(transforms, hold)
+    /* The cord runs to the hold you can see, which during a drag is the one in
+       your hand rather than the one the wall still has */
+    const carried =
+      hold && heldHold?.id === hold.id
+        ? { ...hold, faceId: heldHold.faceId, u: heldHold.u, v: heldHold.v }
+        : hold
+
+    if (carried) return holdSelectionAnchor(transforms, carried)
     if (selectedFaceId) return faceSelectionAnchor(wall.faces, transforms, selectedFaceId)
     return null
-  }, [wall.faces, wall.holds, selectedHoldId, selectedFaceId])
+  }, [wall.faces, wall.holds, selectedHoldId, selectedFaceId, heldHold])
 
   const centering = useMemo(
     () => wallCenteringOffset(wall.width, wall.height),

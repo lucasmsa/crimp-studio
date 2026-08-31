@@ -129,3 +129,34 @@ The 1cm gap between two holds is unchanged, and it is now the only thing visible
 stop: the hold comes to rest a centimetre short of touching. That is the tolerance doing
 what it was written for, not the drag failing, and it is a number to judge on a real wall
 rather than a bug to fix.
+
+## Amendment, 2026-08-31: a drag shows rather than refuses
+
+Validating every frame of a drag was the wrong half of the idea. The invariant is right
+and stays; enforcing it frame by frame is what made dragging feel wrong. A hold carried
+toward a neighbour stopped against it, and a hand that kept going popped the hold out the
+far side once the slide found a way round. The wall was correct and the drag was not.
+
+A drag is now a preview. The hold follows the pointer wherever it goes and turns red while
+it is somewhere it cannot be let go, along with whatever it is sitting on, so a crowded
+wall says which neighbour is the problem. Letting go there springs it back where it was
+picked up. Nothing partial is committed and nothing illegal is stored: the wall the store
+holds is buildable at every instant, which is what the original decision was actually
+about.
+
+The maths is untouched. `findHoldObstruction` asks the same question as
+`holdPlacementIsClear` and answers with names instead of a yes or no, so the drag can say
+what it is on rather than refusing to go there.
+
+The panel edge stays a wall. A hold off the plywood is bolted to nothing, which is a
+different kind of wrong from a hold too close to its neighbour, so the drag still clamps
+to the face it is over.
+
+Everything discrete keeps refusing: placing on a taken spot, rotating into a neighbour,
+and a bend stopping at contact. A click either happens or it does not, and there is no
+continuous gesture to show a state during. Keyboard nudges keep the sliding from the
+2026-08-21 amendment for the same reason, and are now its only caller.
+
+The type and model rows stop flickering as a side effect. They answer for where the hold
+is, and during a drag the hold has not moved, so there is nothing for them to recompute
+until it lands.

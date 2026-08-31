@@ -82,12 +82,12 @@ changes, update this doc in the same PR.
   for a moment.
 - Click empty canvas or press Escape: the card and its cord go. Clicks on the card do not
   count as clicking empty canvas.
-- Drag: the hold goes to whichever panel is under the pointer, so dragging across a seam
-  hands it to the neighbour and it re-poses with that panel's angle. Past the edge of the
-  wall it keeps sliding on the plane of the panel it is on, clamped to that panel. Every
-  frame is validated: a spot the hold does not fit in takes it as far toward the pointer
-  as it goes and slides it along whatever stopped it (ADR-007). Orbit controls are
-  disabled during a drag and re-enabled on release.
+- Drag: the hold follows the pointer, onto whichever panel is under it, so dragging across
+  a seam hands it to the neighbour and it re-poses with that panel's angle. Past the edge
+  of the wall it clamps to the panel it is over. A drag is a preview and only the release
+  commits it: while the hold is somewhere it cannot be let go, it and whatever it sits on
+  both go red, and letting go there springs it back where it was picked up (ADR-007,
+  amended). Orbit controls are disabled during a drag and re-enabled on release.
 - Keyboard: R rotates by the configured step, Delete/Backspace removes, Escape deselects,
   WASD/arrows nudge 5cm (20cm with Shift), clamped to bounds. Enter is left alone because
   it activates whatever control the popover has focused.
@@ -111,9 +111,10 @@ changes, update this doc in the same PR.
   `Hold3D` from the mounted mesh. Fallback box is 15x15x10cm until measured.
 - Placement into an occupied space is rejected silently, and so is a rotation whose turned
   box no longer fits.
-- A drag or a nudge that does not fit resolves one axis at a time, bisecting each to
-  contact, and takes whichever order lands nearer the pointer. Crossing a seam stays
-  all-or-nothing, since `u` and `v` mean different plywood on each panel.
+- A keyboard nudge that does not fit resolves one axis at a time, bisecting each to
+  contact, and takes whichever order lands nearer the target. Crossing a seam stays
+  all-or-nothing, since `u` and `v` mean different plywood on each panel. Drags no longer
+  use this: they show rather than refuse.
 - Changing a hold's type or model re-measures its box and pulls it back onto its face if
   the new box would hang off an edge (`utils/holdRefit.ts`), then refuses the change
   outright if it would land on a neighbour.

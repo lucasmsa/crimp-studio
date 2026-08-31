@@ -63,6 +63,10 @@ The single queue of upcoming work (see ADR-004). Two product pillars:
   written continuously and restored on the next visit, and the card lists each wall with a
   drawing of its own profile. ADR-009. Supabase later swaps the storage adapter, not the
   document.
+- [x] Drags show rather than refuse (2026-08-31): a hold carried into a neighbour used to
+  stop dead, then pop out the far side when the cursor kept going, and the type and model
+  buttons flickered as it moved. The hold now follows the pointer, reddens along with what
+  it sits on, and springs back if let go there. Same collision maths. ADR-007 amended.
 - [ ] Paint all panels / paint all holds at once (after the per-panel colour lands)
 - [ ] Custom colour picker behind a "custom" swatch, for the colour the curated sets do not have
 - [ ] Hold resizing: drag border handles to scale, live preview

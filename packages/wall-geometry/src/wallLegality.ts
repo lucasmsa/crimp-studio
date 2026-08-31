@@ -179,6 +179,51 @@ export function holdPlacementIsClear(
   return fits(candidate)
 }
 
+/** What a hold is up against where it is being held */
+export interface HoldObstruction {
+  /** Nothing is in the way: this is a spot the hold could be let go in */
+  clear: boolean
+  /** The holds it sits on top of, so an editor can point at them as well */
+  holdIds: string[]
+}
+
+/**
+ * What stands in the way of a hold at a candidate position.
+ *
+ * The same test as `holdPlacementIsClear`, answering with the names rather than
+ * a yes or no: a drag that follows the pointer has to say what it is sitting on
+ * while it sits there, instead of refusing to go (ADR-007).
+ */
+export function findHoldObstruction(
+  faces: FaceTree,
+  holds: HoldPlacement[],
+  candidate: HoldPlacement,
+): HoldObstruction {
+  const transforms = computeFaceTransforms(faces)
+  const transform = transforms[candidate.faceId]
+  if (!transform) return { clear: false, holdIds: [] }
+
+  const solid = holdSolid(candidate, transform)
+  const others = collectWallSolids(
+    faces,
+    holds.filter((hold) => hold.id !== candidate.id),
+    transforms,
+  )
+
+  const holdIds: string[] = []
+  let clear = true
+
+  for (const other of others) {
+    if (pairIsExempt(faces, solid, other)) continue
+    if (!obbsIntersect(solid.obb, other.obb, gapFor(solid, other))) continue
+
+    clear = false
+    if (other.kind === 'hold' && other.id) holdIds.push(other.id)
+  }
+
+  return { clear, holdIds }
+}
+
 /** Where a hold is, in the frame of the panel it is bolted to */
 export interface HoldPosition {
   faceId: string

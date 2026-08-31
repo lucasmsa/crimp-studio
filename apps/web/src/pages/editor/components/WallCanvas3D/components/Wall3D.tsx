@@ -9,13 +9,22 @@ import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
 import { listFaces } from '@crimp-studio/wall-geometry'
 import { computeFaceUvTransform } from '../utils/faceUv'
 import { wallCenteringOffset } from '../utils/wallCentering'
+import { heldHoldWarnings, heldHoldsOnFace } from '../utils/heldHold'
 
 interface Wall3DProps {
   onDragStateChange: (isDragging: boolean) => void
 }
 
 export function Wall3D({ onDragStateChange }: Wall3DProps) {
-  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds, blockingHoldIds } = useWallStore()
+  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds, blockingHoldIds, heldHold } =
+    useWallStore()
+
+  /* A bend that stopped flashes; a hold being carried into a neighbour stays
+     lit for as long as it is there. Both arrive the same way here */
+  const warned = useMemo(
+    () => [...blockingHoldIds, ...heldHoldWarnings(heldHold)],
+    [blockingHoldIds, heldHold],
+  )
 
   const faces = useMemo(() => listFaces(wall.faces), [wall.faces])
 
@@ -70,9 +79,9 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           face={face}
           uvTransform={uvTransforms[face.id]}
           groupRef={registerFaceGroup(face.id)}
-          holds={wall.holds.filter((hold) => hold.faceId === face.id)}
+          holds={heldHoldsOnFace(wall.holds, heldHold, face.id)}
           selectedHoldId={selectedHoldId}
-          blockingHoldIds={blockingHoldIds}
+          blockingHoldIds={warned}
           deletingHoldIds={deletingHoldIds}
           isDraggingAny={isDragging}
           isDimmed={selectedFaceId !== null && face.id !== selectedFaceId}

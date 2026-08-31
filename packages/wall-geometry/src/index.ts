@@ -23,12 +23,13 @@ export { makeObb, obbsIntersect } from './obb'
 export type { HoldBox, HoldPlacement, WallSolid } from './wallSolids'
 export { collectWallSolids, floorSolid, holdSolid, panelSolid } from './wallSolids'
 
-export type { AngleLimit, HoldPosition, SolidPair } from './wallLegality'
+export type { AngleLimit, HoldObstruction, HoldPosition, SolidPair } from './wallLegality'
 export {
   ANGLE_PRECISION,
   BUILD_GAP,
   MOVE_PRECISION,
   faceAngleIsClear,
+  findHoldObstruction,
   findLegalFaceAngle,
   findLegalHoldMove,
   findWallOverlaps,
