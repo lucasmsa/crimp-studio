@@ -31,6 +31,10 @@ export const KEYBOARD_SHORTCUTS = {
   NUDGE_DOWN: ['ArrowDown', 's', 'S'] as readonly string[],
   NUDGE_LEFT: ['ArrowLeft', 'a', 'A'] as readonly string[],
   NUDGE_RIGHT: ['ArrowRight', 'd', 'D'] as readonly string[],
+  /* With Cmd or Ctrl held. Shift turns UNDO into redo; REDO is the Ctrl+Y that
+     Windows users reach for instead */
+  UNDO: ['z', 'Z'] as readonly string[],
+  REDO: ['y', 'Y'] as readonly string[],
 } as const
 
 /** Hold nudge distance in cm */

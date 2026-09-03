@@ -44,7 +44,9 @@
       "load": "Carregar Parede",
       "export": "Exportar JSON",
       "rotate": "Girar",
-      "delete": "Excluir"
+      "delete": "Excluir",
+      "undo": "Desfazer",
+      "redo": "Refazer"
     },
     "holdTypes": {
       "label": "Tipo de Agarra",

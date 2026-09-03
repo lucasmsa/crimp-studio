@@ -1,5 +1,7 @@
 import { create } from 'zustand'
+import { temporal } from 'zundo'
 import { colors } from '@/lib/colors'
+import { historyEquality, type LastEdit } from './utils/historyEquality'
 import {
   getModelVariant,
   getModelVariants,
@@ -109,11 +111,17 @@ interface WallState {
   blockingHoldIds: string[]
   /** A hold under the pointer, before the drag lands. Null when none is moving */
   heldHold: HeldHold | null
+  /**
+   * The edit that produced this wall. Every edit writes it; a measurement or a
+   * load leaves it alone, which is how history tells the two apart (ADR-012)
+   */
+  lastEdit: LastEdit | null
 
   /** Places a hold at (u, v) on the given face */
   addHold: (faceId: string, u: number, v: number) => void
-  /** Colour, rotation and measured box. Position goes through moveHold */
-  updateHold: (id: string, updates: Partial<Hold>) => void
+  setHoldColor: (id: string, color: string) => void
+  /** Records the box measured from the hold's geometry. Not an edit */
+  reportCollisionBox: (id: string, collisionBox: CollisionBox) => void
   /**
    * Steps a hold toward a spot, sliding it along whatever is in the way rather
    * than passing through. Keyboard nudges only: a drag is carried and dropped
@@ -124,6 +132,8 @@ interface WallState {
   /** Starts the exit animation; HoldMesh calls removeHold when it rests */
   markHoldDeleting: (id: string) => void
   removeHold: (id: string) => void
+  /** Removes every hold still popping off, at once, as one edit */
+  flushPendingDeletes: () => void
   selectHold: (id: string | null) => void
   setEditorMode: (mode: EditorMode) => void
   selectFace: (faceId: string | null) => void
@@ -199,13 +209,24 @@ function refitAs(
   return refitHold(state.wall.faces, hold, collisionBox, { type, variant })
 }
 
+/**
+ * A wall change that is history. The key names the action and its target, so a
+ * repeat of the same key within the window reads as one edit still going
+ * (ADR-012). Every recording action returns through here; a write that does
+ * not is a measurement or a load.
+ */
+function edit(wall: Wall, key: string): Pick<WallState, 'wall' | 'lastEdit'> {
+  return { wall, lastEdit: { key, at: Date.now() } }
+}
+
 /** Puts a changed hold back on the wall, or leaves the wall alone if it does not fit */
-function commitHold(state: WallState, next: Hold): Partial<WallState> {
+function commitHold(state: WallState, next: Hold, key: string): Partial<WallState> {
   if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, next)) return state
 
-  return {
-    wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === next.id ? next : h)) },
-  }
+  return edit(
+    { ...state.wall, holds: state.wall.holds.map((h) => (h.id === next.id ? next : h)) },
+    key,
+  )
 }
 
 const WALL_WIDTH = 400
@@ -223,7 +244,9 @@ export function createDefaultWall(): Wall {
   }
 }
 
-export const useWallStore = create<WallState>((set) => ({
+export const useWallStore = create<WallState>()(
+  temporal(
+    (set) => ({
   wall: createDefaultWall(),
   editorMode: 'holds',
   selectedHoldId: null,
@@ -236,6 +259,7 @@ export const useWallStore = create<WallState>((set) => ({
   deletingHoldIds: [],
   blockingHoldIds: [],
   heldHold: null,
+  lastEdit: null,
 
   addHold: (faceId, u, v) =>
     set((state) => {
@@ -253,8 +277,8 @@ export const useWallStore = create<WallState>((set) => ({
 
       if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, candidate)) return state
 
-      return {
-        wall: {
+      return edit(
+        {
           ...state.wall,
           holds: [
             ...state.wall.holds,
@@ -270,16 +294,26 @@ export const useWallStore = create<WallState>((set) => ({
             },
           ],
         },
-      }
+        `addHold:${id}`,
+      )
     }),
 
-  updateHold: (id, updates) =>
+  setHoldColor: (id, color) =>
+    set((state) =>
+      edit(
+        {
+          ...state.wall,
+          holds: state.wall.holds.map((h) => (h.id === id ? { ...h, color } : h)),
+        },
+        `setHoldColor:${id}`,
+      ),
+    ),
+
+  reportCollisionBox: (id, collisionBox) =>
     set((state) => ({
       wall: {
         ...state.wall,
-        holds: state.wall.holds.map((h) =>
-          h.id === id ? { ...h, ...updates } : h
-        ),
+        holds: state.wall.holds.map((h) => (h.id === id ? { ...h, collisionBox } : h)),
       },
     })),
 
@@ -307,9 +341,10 @@ export const useWallStore = create<WallState>((set) => ({
 
       const moved = { ...hold, ...reached }
 
-      return {
-        wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? moved : h)) },
-      }
+      return edit(
+        { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? moved : h)) },
+        `moveHold:${id}`,
+      )
     }),
 
   rotateHold: (id) =>
@@ -325,9 +360,10 @@ export const useWallStore = create<WallState>((set) => ({
 
       if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, turned)) return state
 
-      return {
-        wall: { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? turned : h)) },
-      }
+      return edit(
+        { ...state.wall, holds: state.wall.holds.map((h) => (h.id === id ? turned : h)) },
+        `rotateHold:${id}`,
+      )
     }),
 
   markHoldDeleting: (id) =>
@@ -339,14 +375,39 @@ export const useWallStore = create<WallState>((set) => ({
     })),
 
   removeHold: (id) =>
-    set((state) => ({
-      wall: {
-        ...state.wall,
-        holds: state.wall.holds.filter((h) => h.id !== id),
-      },
-      deletingHoldIds: state.deletingHoldIds.filter((d) => d !== id),
-      selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
-    })),
+    set((state) => {
+      const deletingHoldIds = state.deletingHoldIds.filter((d) => d !== id)
+      /* Already gone, which a flush can arrange before the animation rests:
+         an identical wall must not become an entry */
+      if (!state.wall.holds.some((h) => h.id === id)) return { deletingHoldIds }
+
+      return {
+        ...edit(
+          { ...state.wall, holds: state.wall.holds.filter((h) => h.id !== id) },
+          `removeHold:${id}`,
+        ),
+        deletingHoldIds,
+        selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
+      }
+    }),
+
+  /* One write for all of them, so an undo asked for mid-animation undoes the
+     delete the user is watching rather than the edit before it (ADR-012) */
+  flushPendingDeletes: () =>
+    set((state) => {
+      if (state.deletingHoldIds.length === 0) return state
+      const leaving = new Set(state.deletingHoldIds)
+
+      return {
+        ...edit(
+          { ...state.wall, holds: state.wall.holds.filter((h) => !leaving.has(h.id)) },
+          'removeHold:flush',
+        ),
+        deletingHoldIds: [],
+        selectedHoldId:
+          state.selectedHoldId && leaving.has(state.selectedHoldId) ? null : state.selectedHoldId,
+      }
+    }),
 
   /* Selecting one thing lets go of the other, so the card is never showing
      controls for something you are not looking at. Deselecting a hold leaves the
@@ -381,7 +442,7 @@ export const useWallStore = create<WallState>((set) => ({
       const cut = cutFaceTree(state.wall.faces, state.wall.holds, faceId, axis, at)
 
       return {
-        wall: { ...state.wall, faces: cut.tree, holds: cut.holds },
+        ...edit({ ...state.wall, faces: cut.tree, holds: cut.holds }, `cutFace:${cut.newFaceId}`),
         selectedFaceId: cut.newFaceId,
       }
     }),
@@ -405,12 +466,18 @@ export const useWallStore = create<WallState>((set) => ({
         to: requested,
       })
 
+      /* A preset already in force changes nothing, and nothing is not an edit */
+      if (limit.angle === face.angle) return { blockingHoldIds: limit.blockingHoldIds }
+
       const faces = {
         rootId: state.wall.faces.rootId,
         byId: { ...state.wall.faces.byId, [faceId]: { ...face, angle: limit.angle } },
       }
 
-      return { wall: { ...state.wall, faces }, blockingHoldIds: limit.blockingHoldIds }
+      return {
+        ...edit({ ...state.wall, faces }, `setFaceAngle:${faceId}`),
+        blockingHoldIds: limit.blockingHoldIds,
+      }
     }),
 
   removeFace: (faceId) =>
@@ -419,7 +486,10 @@ export const useWallStore = create<WallState>((set) => ({
       if (merged.tree === state.wall.faces) return state
 
       return {
-        wall: { ...state.wall, faces: merged.tree, holds: merged.holds },
+        ...edit(
+          { ...state.wall, faces: merged.tree, holds: merged.holds },
+          `removeFace:${faceId}`,
+        ),
         selectedFaceId: state.selectedFaceId === faceId ? null : state.selectedFaceId,
       }
     }),
@@ -437,7 +507,7 @@ export const useWallStore = create<WallState>((set) => ({
       if (!hold || hold.type === type) return state
 
       const variant = armedVariant(state.variantByType, type, hold.id)
-      return commitHold(state, refitAs(state, hold, { type, variant }))
+      return commitHold(state, refitAs(state, hold, { type, variant }), `setHoldType:${id}`)
     }),
 
   setHoldVariant: (id, variant) =>
@@ -445,7 +515,7 @@ export const useWallStore = create<WallState>((set) => ({
       const hold = state.wall.holds.find((h) => h.id === id)
       if (!hold || hold.variant === variant) return state
 
-      return commitHold(state, refitAs(state, hold, { variant }))
+      return commitHold(state, refitAs(state, hold, { variant }), `setHoldVariant:${id}`)
     }),
 
   /* Rolling arms random rather than the model it landed on: the click said
@@ -466,24 +536,31 @@ export const useWallStore = create<WallState>((set) => ({
       if (reachable.length === 0) return state
 
       return {
-        ...commitHold(state, reachable[Math.floor(Math.random() * reachable.length)]),
+        ...commitHold(
+          state,
+          reachable[Math.floor(Math.random() * reachable.length)],
+          `rollHoldVariant:${id}`,
+        ),
         variantByType: { ...state.variantByType, [hold.type]: null },
       }
     }),
 
   setFaceColor: (faceId, color) =>
-    set((state) => ({
-      wall: {
-        ...state.wall,
-        faces: {
-          rootId: state.wall.faces.rootId,
-          byId: {
-            ...state.wall.faces.byId,
-            [faceId]: { ...getFace(state.wall.faces, faceId), color },
+    set((state) =>
+      edit(
+        {
+          ...state.wall,
+          faces: {
+            rootId: state.wall.faces.rootId,
+            byId: {
+              ...state.wall.faces.byId,
+              [faceId]: { ...getFace(state.wall.faces, faceId), color },
+            },
           },
         },
-      },
-    })),
+        `setFaceColor:${faceId}`,
+      ),
+    ),
 
   clearBlockingHolds: () => set({ blockingHoldIds: [] }),
 
@@ -522,16 +599,23 @@ export const useWallStore = create<WallState>((set) => ({
       /* Nowhere to land: the hold springs back to where it was picked up */
       if (!held.clear) return { heldHold: null }
 
+      const hold = state.wall.holds.find((h) => h.id === held.id)
+      /* Put down where it was picked up: the wall did not change */
+      if (!hold || (hold.faceId === held.faceId && hold.u === held.u && hold.v === held.v)) {
+        return { heldHold: null }
+      }
+
       return {
         heldHold: null,
-        wall: {
-          ...state.wall,
-          holds: state.wall.holds.map((hold) =>
-            hold.id === held.id
-              ? { ...hold, faceId: held.faceId, u: held.u, v: held.v }
-              : hold,
-          ),
-        },
+        ...edit(
+          {
+            ...state.wall,
+            holds: state.wall.holds.map((h) =>
+              h.id === held.id ? { ...h, faceId: held.faceId, u: held.u, v: held.v } : h,
+            ),
+          },
+          `dropHold:${held.id}`,
+        ),
       }
     }),
 
@@ -549,9 +633,23 @@ export const useWallStore = create<WallState>((set) => ({
     }),
 
   clearHolds: () =>
-    set((state) => ({
-      wall: { ...state.wall, holds: [] },
-      deletingHoldIds: [],
-      selectedHoldId: null,
-    })),
-}))
+    set((state) => {
+      if (state.wall.holds.length === 0) return state
+
+      return {
+        ...edit({ ...state.wall, holds: [] }, 'clearHolds'),
+        deletingHoldIds: [],
+        selectedHoldId: null,
+      }
+    }),
+    }),
+    {
+      limit: 100,
+      /* History is the wall and the marker that says what edited it. Selection,
+         the armed tool and the red flags are where you were, not what the wall
+         is (ADR-009, ADR-012) */
+      partialize: (state) => ({ wall: state.wall, lastEdit: state.lastEdit }),
+      equality: historyEquality,
+    },
+  ),
+)

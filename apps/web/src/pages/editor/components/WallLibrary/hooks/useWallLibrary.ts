@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createDefaultWall, useWallStore, type Wall } from '@/stores/wallStore'
 import { useWallLibraryStore } from '@/stores/wallLibrary'
+import { clearHistory } from '@/stores/wallHistory'
 import type { WallDocument } from '@/lib/walls'
 import { fromDocument, signatureOf, toDocument, wallStorage } from '@/lib/walls'
 
@@ -72,10 +73,14 @@ export function useWallLibrary(onClose: () => void) {
     [saved, wall, name, put],
   )
 
+  /* Bringing in another wall, or a fresh one, starts its history from nothing:
+     the steps behind the wall that just left belonged to it (ADR-012). Saving
+     goes through put() too and keeps history, since a save changes nothing */
   const take = useCallback(
     async (action: PendingAction): Promise<boolean> => {
       if (action.kind === 'new') {
         put(createDefaultWall())
+        clearHistory()
         return true
       }
 
@@ -87,6 +92,7 @@ export function useWallLibrary(onClose: () => void) {
       }
 
       put(fromDocument(result.document))
+      clearHistory()
       return true
     },
     [put, refresh],

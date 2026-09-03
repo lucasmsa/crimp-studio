@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { Redo2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useHistory } from '@/stores/wallHistory'
 import { WallCanvas3D } from './components/WallCanvas3D'
 import { EditorLoading } from './components/EditorLoading'
 import { ToolRail } from './components/ToolRail'
@@ -19,6 +21,7 @@ import { useWallPersistence } from './hooks/useWallPersistence'
 export function EditorPage() {
   const { t } = useTranslation()
   const [library, setLibrary] = useState<LibraryMode | null>(null)
+  const { canUndo, canRedo, undo, redo } = useHistory()
 
   useWallPersistence()
 
@@ -34,6 +37,14 @@ export function EditorPage() {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} data-testid="undo">
+            <Undo2 />
+            {t('editor.actions.undo')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={redo} disabled={!canRedo} data-testid="redo">
+            <Redo2 />
+            {t('editor.actions.redo')}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setLibrary('load')} data-testid="open-load">
             {t('editor.actions.load')}
           </Button>

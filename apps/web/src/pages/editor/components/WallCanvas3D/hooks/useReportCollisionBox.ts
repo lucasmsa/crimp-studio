@@ -10,7 +10,7 @@ import { CM_TO_M } from '@crimp-studio/wall-geometry'
  * estimate made at placement time.
  */
 export function useReportCollisionBox(hold: Hold, geometry: THREE.BufferGeometry): void {
-  const updateHold = useWallStore((s) => s.updateHold)
+  const reportCollisionBox = useWallStore((s) => s.reportCollisionBox)
 
   useEffect(() => {
     const rotated = geometry.clone()
@@ -22,7 +22,7 @@ export function useReportCollisionBox(hold: Hold, geometry: THREE.BufferGeometry
     const halfH = Math.max(Math.abs(box.min.y), Math.abs(box.max.y)) / CM_TO_M
     const depth = (box.max.z - box.min.z) / CM_TO_M
 
-    updateHold(hold.id, { collisionBox: { halfW, halfH, depth } })
+    reportCollisionBox(hold.id, { halfW, halfH, depth })
     rotated.dispose()
-  }, [geometry, hold.id, hold.rotation, updateHold])
+  }, [geometry, hold.id, hold.rotation, reportCollisionBox])
 }

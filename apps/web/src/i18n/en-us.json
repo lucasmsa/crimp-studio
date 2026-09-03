@@ -44,7 +44,9 @@
       "load": "Load Wall",
       "export": "Export JSON",
       "rotate": "Rotate",
-      "delete": "Delete"
+      "delete": "Delete",
+      "undo": "Undo",
+      "redo": "Redo"
     },
     "holdTypes": {
       "label": "Hold Type",

@@ -29,7 +29,9 @@ function resetStore() {
     deletingHoldIds: [],
     blockingHoldIds: [],
     heldHold: null,
+    lastEdit: null,
   })
+  useWallStore.temporal.getState().clear()
 }
 
 const rootFaceId = () => useWallStore.getState().wall.faces.rootId
@@ -394,26 +396,31 @@ describe('wallStore', () => {
     })
   })
 
-  describe('updateHold', () => {
-    it('updates a hold with partial data', () => {
+  describe('setHoldColor', () => {
+    it('sets a custom color on a hold', () => {
       place(100, 100)
       const holdId = useWallStore.getState().wall.holds[0].id
 
-      useWallStore.getState().updateHold(holdId, { rotation: 90, u: 150 })
-
-      const hold = useWallStore.getState().wall.holds[0]
-      expect(hold.rotation).toBe(90)
-      expect(hold.u).toBe(150)
-      expect(hold.v).toBe(100)
-    })
-
-    it('can set a custom color on a hold', () => {
-      place(100, 100)
-      const holdId = useWallStore.getState().wall.holds[0].id
-
-      useWallStore.getState().updateHold(holdId, { color: '#FF0000' })
+      useWallStore.getState().setHoldColor(holdId, '#FF0000')
 
       expect(useWallStore.getState().wall.holds[0].color).toBe('#FF0000')
+    })
+  })
+
+  describe('reportCollisionBox', () => {
+    it('replaces the measured box and touches nothing else', () => {
+      place(100, 100)
+      const before = useWallStore.getState().wall.holds[0]
+      const marker = useWallStore.getState().lastEdit
+
+      useWallStore.getState().reportCollisionBox(before.id, { halfW: 7, halfH: 8, depth: 9 })
+
+      const after = useWallStore.getState().wall.holds[0]
+      expect(after.collisionBox).toEqual({ halfW: 7, halfH: 8, depth: 9 })
+      expect(after.u).toBe(before.u)
+      expect(after.v).toBe(before.v)
+      /* A measurement leaves the edit marker alone, which is what keeps it out of history */
+      expect(useWallStore.getState().lastEdit).toBe(marker)
     })
   })
 

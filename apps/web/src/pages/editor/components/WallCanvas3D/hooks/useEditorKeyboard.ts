@@ -1,13 +1,24 @@
 import { useEffect } from 'react'
 import { useWallStore } from '@/stores/wallStore'
+import { redo, undo } from '@/stores/wallHistory'
 import {
   KEYBOARD_SHORTCUTS,
   NUDGE_DISTANCE,
   NUDGE_DISTANCE_SHIFT,
 } from '../constants/editor3d'
 
+/** A text field owns its own keys, its undo included */
+function isTyping(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  )
+}
+
 /**
  * Handles all keyboard shortcuts for the wall editor:
+ * - Cmd/Ctrl+Z: undo; with Shift, or as Ctrl+Y: redo
  * - R: rotate selected hold 45°
  * - Delete/Backspace: remove selected hold
  * - Escape: deselect
@@ -27,6 +38,21 @@ export function useEditorKeyboard() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTyping(e.target)) return
+
+      if ((e.metaKey || e.ctrlKey) && KEYBOARD_SHORTCUTS.UNDO.includes(e.key)) {
+        e.preventDefault()
+        if (e.shiftKey) redo()
+        else undo()
+        return
+      }
+
+      if (e.ctrlKey && KEYBOARD_SHORTCUTS.REDO.includes(e.key)) {
+        e.preventDefault()
+        redo()
+        return
+      }
+
       /* Escape closes whatever popover is open, which is the keyboard's version
          of clicking empty canvas */
       if (KEYBOARD_SHORTCUTS.DESELECT.includes(e.key) && (selectedHoldId || selectedFaceId)) {

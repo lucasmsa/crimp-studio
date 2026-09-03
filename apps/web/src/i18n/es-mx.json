@@ -44,7 +44,9 @@
       "load": "Cargar Muro",
       "export": "Exportar JSON",
       "rotate": "Rotar",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "undo": "Deshacer",
+      "redo": "Rehacer"
     },
     "holdTypes": {
       "label": "Tipo de Presa",
