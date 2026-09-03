@@ -99,3 +99,22 @@ a seam that cuts through an edge one of the face's own children hinges on.
 There are therefore two refusals a drawn seam can meet, not three: it crosses a child's
 hinge edge, or it passes through a hold. A TRIM adds the third, an offcut that carries a
 child.
+
+## Amendment, 2026-09-03: a trim takes everything on the offcut
+
+Two decisions taken while building the gesture, both reversing the record above.
+
+The third refusal is withdrawn. An offcut that carries a panel takes that panel with it,
+and everything hinged on that panel, and every hold bolted to any of them. Holds wholly
+on the offcut go the same way. The offcut and the panels it carries are tinted red and
+the offcut hatched for the whole drag, so what is leaving is visible before the release;
+undo (ADR-012) is what brings it back. The grill had chosen to refuse an offcut with a
+child on it; with undo in place, a trim that removes plywood and refuses to remove what
+sits on it was the worse rule.
+
+A tap with BLADE or TRIM armed selects the panel, as SHAPE does, so the bend controls are
+still one tap away without changing tools.
+
+A drawn seam can therefore meet two refusals, for either tool: it passes through a hold,
+or it cuts through an edge one of the face's own children hinges on. Panels hinged on the
+offcut vanish at the commit; only the offcut itself is drawn falling.

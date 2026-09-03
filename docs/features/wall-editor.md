@@ -63,10 +63,19 @@ changes, update this doc in the same PR.
 - The canvas owns the screen. Chrome is the header, a tool rail down the left, a status
   strip along the bottom, and whichever popover the selection calls for (PRD
   `docs/prd/editor-surface.md`).
-- Tool rail: place holds or shape panels, which is what a click on the wall aims at.
-  It collapses to icons and remembers that across sessions. The armed tool's own
+- Tool rail: place holds, shape panels, blade, or trim, which is what a click on the wall
+  aims at. It collapses to icons and remembers that across sessions. The armed tool's own
   settings sit under it, so hold type and model appear with the holds tool, where they
   double as the selected hold's controls.
+- Blade and trim (ADR-011): press a panel and drag. The seam runs through the press point
+  and the cursor out to the panel's border both ways, drawn on the plywood with a degree
+  chip at the cursor end, in ink where it can be cut and red where it cannot. Release
+  commits; a tap with no drag selects the panel; Escape cancels. Two refusals: the seam
+  passes through a hold, or through an edge a child panel hinges on. Blade hinges the far
+  piece on the seam; it opens a few degrees and settles flush while its seam flashes, and
+  is selected. Trim throws the far piece away with its holds and every panel hinged on it,
+  all hatched and tinted red during the drag; the offcut falls away on release and undo
+  brings everything back.
 - Status strip: hold count, panel count, and the profile readout (height, reach, plywood).
   The readout comes from the settled tree, not the animating one.
 - The selection's controls sit in a card parked in the canvas's top right corner, with a
@@ -81,8 +90,9 @@ changes, update this doc in the same PR.
 - Click wall (holds tool): place hold of selected type at click position. Positions stored
   in cm from the panel's bottom-left corner.
 - Click wall (panels tool): select the panel and fill the card: angle presets, a degree
-  stepper, cut across, cut up, panel colour, merge down. A preset the wall cannot reach is
-  disabled, and the stepper stops where the plywood does (ADR-007). The card reads two
+  stepper, panel colour, merge down. Cutting is a drag on the wall with blade or trim
+  armed, not a button here. A preset the wall cannot reach is disabled, and the stepper
+  stops where the plywood does (ADR-007). The card reads two
   numbers: the bend about the seam, which the stepper sets, and the steepness from
   vertical, measured off the face normal. On a level seam the presets are steepnesses
   (slab, vertical, overhang, roof); on an upright one they are bends (corner in, flush,
