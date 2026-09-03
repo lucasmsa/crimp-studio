@@ -38,20 +38,48 @@ describe('faceSelectionAnchor', () => {
 })
 
 describe('holdSelectionAnchor', () => {
-  it('sits at the edge of the hold facing the card, off the panel', () => {
-    const tree = createRootFaceTree(400, 500, PANEL)
-    const hold = {
+  const tree = createRootFaceTree(400, 500, PANEL)
+  const transforms = computeFaceTransforms(tree)
+
+  /* A volume is a long thin wedge at a random angle, so the edge of its box at
+     the hold's centre height is air beside it. The only point every silhouette
+     covers is the hold's own centre */
+  it('sits over the centre of the hold, whatever its silhouette', () => {
+    const wedge = {
       id: 'h1',
       faceId: tree.rootId,
       u: 120,
       v: 250,
-      collisionBox: { halfW: 15, halfH: 15, depth: 10 },
+      collisionBox: { halfW: 42, halfH: 38, depth: 20 },
     } as Hold
 
-    const anchor = holdSelectionAnchor(computeFaceTransforms(tree), hold)
+    const anchor = holdSelectionAnchor(transforms, wedge)
 
-    expect(anchor.x).toBeCloseTo(1.35)
+    expect(anchor.x).toBeCloseTo(1.2)
     expect(anchor.y).toBeCloseTo(2.5)
+  })
+
+  it('clears the front of the hold, so the cord lands on it rather than inside it', () => {
+    const wedge = {
+      id: 'h1',
+      faceId: tree.rootId,
+      u: 120,
+      v: 250,
+      collisionBox: { halfW: 42, halfH: 38, depth: 20 },
+    } as Hold
+
+    const anchor = holdSelectionAnchor(transforms, wedge)
+
+    expect(anchor.z).toBeGreaterThan(0.2)
+    expect(anchor.z).toBeLessThan(0.3)
+  })
+
+  it('still lifts off the panel before the hold has been measured', () => {
+    const unmeasured = { id: 'h2', faceId: tree.rootId, u: 120, v: 250 } as Hold
+
+    const anchor = holdSelectionAnchor(transforms, unmeasured)
+
+    expect(anchor.x).toBeCloseTo(1.2)
     expect(anchor.z).toBeGreaterThan(0)
   })
 })
