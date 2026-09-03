@@ -26,6 +26,7 @@ function resetStore() {
     deletingHoldIds: [],
     blockingHoldIds: [],
     heldHold: null,
+    leavingHolds: [],
     lastEdit: null,
   })
   useWallStore.temporal.getState().clear()
@@ -227,5 +228,41 @@ describe('wall history', () => {
     useWallStore.getState().selectHold('hold_0')
     undo()
     expect(useWallStore.getState().selectedHoldId).toBe('hold_0')
+  })
+
+  it('lets an undone placement animate out instead of vanishing', () => {
+    useWallStore.getState().addHold(rootFaceId(), 100, 100)
+    const id = holds()[0].id
+
+    undo()
+
+    expect(holds()).toHaveLength(0)
+    expect(useWallStore.getState().leavingHolds.map((h) => h.id)).toEqual([id])
+
+    useWallStore.getState().dismissLeaving(id)
+    expect(useWallStore.getState().leavingHolds).toEqual([])
+  })
+
+  it('dismisses a leaving hold the moment a redo brings it back', () => {
+    useWallStore.getState().addHold(rootFaceId(), 100, 100)
+    undo()
+    redo()
+
+    expect(holds()).toHaveLength(1)
+    expect(useWallStore.getState().leavingHolds).toEqual([])
+  })
+
+  it('animates out every hold a step removed, on the face it was on', () => {
+    seedHolds({ u: 100, v: 100 }, { u: 200, v: 200 })
+    useWallStore.getState().clearHolds()
+
+    undo()
+    expect(holds()).toHaveLength(2)
+    expect(useWallStore.getState().leavingHolds).toEqual([])
+
+    redo()
+    expect(holds()).toHaveLength(0)
+    expect(useWallStore.getState().leavingHolds.map((h) => h.id)).toEqual(['hold_0', 'hold_1'])
+    expect(useWallStore.getState().leavingHolds[0].faceId).toBe(rootFaceId())
   })
 })

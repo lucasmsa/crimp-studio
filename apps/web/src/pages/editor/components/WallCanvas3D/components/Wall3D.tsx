@@ -16,8 +16,16 @@ interface Wall3DProps {
 }
 
 export function Wall3D({ onDragStateChange }: Wall3DProps) {
-  const { wall, selectedHoldId, selectedFaceId, deletingHoldIds, blockingHoldIds, heldHold } =
-    useWallStore()
+  const {
+    wall,
+    selectedHoldId,
+    selectedFaceId,
+    deletingHoldIds,
+    blockingHoldIds,
+    heldHold,
+    leavingHolds,
+    dismissLeaving,
+  } = useWallStore()
 
   /* A bend that stopped flashes; a hold being carried into a neighbour stays
      lit for as long as it is there. Both arrive the same way here */
@@ -80,6 +88,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           uvTransform={uvTransforms[face.id]}
           groupRef={registerFaceGroup(face.id)}
           holds={heldHoldsOnFace(wall.holds, heldHold, face.id)}
+          leavingHolds={leavingHolds.filter((hold) => hold.faceId === face.id)}
           selectedHoldId={selectedHoldId}
           blockingHoldIds={warned}
           deletingHoldIds={deletingHoldIds}
@@ -90,6 +99,7 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           onPointerEnter={handleFacePointerEnter}
           onPointerLeave={handleFacePointerLeave}
           onHoldPointerDown={handleHoldPointerDown}
+          onHoldLeft={dismissLeaving}
         />
       ))}
 

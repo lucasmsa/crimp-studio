@@ -25,6 +25,8 @@ interface WallFace3DProps {
   face: WallFace
   uvTransform: FaceUvTransform
   holds: Hold[]
+  /** Holds history took off this panel, drawn popping off until they are done */
+  leavingHolds: Hold[]
   selectedHoldId: string | null
   blockingHoldIds: string[]
   deletingHoldIds: string[]
@@ -38,7 +40,10 @@ interface WallFace3DProps {
   onPointerEnter: (e: ThreeEvent<PointerEvent>) => void
   onPointerLeave: () => void
   onHoldPointerDown: (holdId: string) => (e: ThreeEvent<PointerEvent>) => void
+  onHoldLeft: (holdId: string) => void
 }
+
+const ignorePointer = () => {}
 
 /**
  * One flat panel of the wall, with the holds bolted to it. The group carries
@@ -53,6 +58,7 @@ export function WallFace3D({
   face,
   uvTransform,
   holds,
+  leavingHolds,
   selectedHoldId,
   blockingHoldIds,
   deletingHoldIds,
@@ -64,6 +70,7 @@ export function WallFace3D({
   onPointerEnter,
   onPointerLeave,
   onHoldPointerDown,
+  onHoldLeft,
 }: WallFace3DProps) {
   const room = useSceneRoom()
   const widthM = face.width * CM_TO_M
@@ -112,6 +119,21 @@ export function WallFace3D({
           isDimmed={isDimmed}
           isDraggingAny={isDraggingAny}
           onPointerDown={onHoldPointerDown(hold.id)}
+        />
+      ))}
+
+      {/* Already off the wall; only the pop-off is left to draw. Not
+          selectable, not a pointer target */}
+      {leavingHolds.map((hold) => (
+        <Hold3D
+          key={`leaving-${hold.id}`}
+          hold={hold}
+          isSelected={false}
+          isDeleting
+          isDimmed={isDimmed}
+          isDraggingAny={isDraggingAny}
+          onPointerDown={ignorePointer}
+          onLeft={() => onHoldLeft(hold.id)}
         />
       ))}
 

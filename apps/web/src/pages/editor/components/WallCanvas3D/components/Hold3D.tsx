@@ -19,6 +19,8 @@ interface Hold3DProps {
   isDimmed?: boolean
   isBlocking?: boolean
   isDeleting?: boolean
+  /** Runs when the pop-off finishes, instead of removing the hold (see HoldMesh) */
+  onLeft?: () => void
   isDraggingAny: React.RefObject<boolean>
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void
 }

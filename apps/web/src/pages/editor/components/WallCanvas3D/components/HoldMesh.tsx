@@ -37,6 +37,12 @@ export interface HoldMeshProps {
   isDimmed?: boolean
   /** Plays the pop-off exit animation, then removes the hold from the store */
   isDeleting?: boolean
+  /**
+   * What to do once the pop-off has finished, in place of removing the hold.
+   * For a hold that history already took off the wall and is only being drawn
+   * leaving, so the pop-off must not touch the wall itself
+   */
+  onLeft?: () => void
   isDraggingAny: React.RefObject<boolean>
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void
 }
@@ -54,6 +60,7 @@ export function HoldMesh({
   isBlocking,
   isDimmed = false,
   isDeleting = false,
+  onLeft,
   isDraggingAny,
   onPointerDown,
 }: HoldMeshProps) {
@@ -115,7 +122,9 @@ export function HoldMesh({
     rz: rotationZ,
     px: posX,
     py: posY,
-    from: { scale: 0, px: posX, py: posY, rz: rotationZ },
+    /* A hold mounts by growing in. One mounted already leaving, which is a
+       hold history just took off the wall, starts full size and shrinks */
+    from: { scale: isDeleting ? visual.scale : 0, px: posX, py: posY, rz: rotationZ },
     /* Snappy spring; the delete shrink clamps so scale never overshoots
        below zero (which flips the mesh inside-out for a frame) */
     config: (key: string) =>
@@ -124,7 +133,9 @@ export function HoldMesh({
         : { tension: 300, friction: 15 },
     immediate: (key: string) => (key === 'px' || key === 'py') && isDraggingAny.current,
     onRest: () => {
-      if (isDeleting) removeHold(hold.id)
+      if (!isDeleting) return
+      if (onLeft) onLeft()
+      else removeHold(hold.id)
     },
   })
 

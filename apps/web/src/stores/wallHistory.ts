@@ -34,7 +34,16 @@ function step(move: () => void): void {
   const after = useWallStore.getState().wall
   if (after === before) return
 
-  const { selectHold, selectFace } = useWallStore.getState()
+  const { selectHold, selectFace, showLeaving } = useWallStore.getState()
+
+  /* Holds the step took away are drawn popping off, as a delete is, rather
+     than vanishing. A hold whose panel also went has nowhere to be drawn */
+  showLeaving(
+    before.holds.filter(
+      (hold) => !after.holds.some((h) => h.id === hold.id) && hold.faceId in after.faces.byId,
+    ),
+  )
+
   const selection = selectionAfterStep(before, after)
 
   if (!selection) {

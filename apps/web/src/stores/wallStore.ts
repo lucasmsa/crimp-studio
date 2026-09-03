@@ -112,6 +112,12 @@ interface WallState {
   /** A hold under the pointer, before the drag lands. Null when none is moving */
   heldHold: HeldHold | null
   /**
+   * Holds an undo or redo took off the wall, still drawn while they pop off.
+   * The wall itself changed at once; these are what the renderer shows in the
+   * meantime, so a step looks like a delete rather than a vanishing (ADR-012)
+   */
+  leavingHolds: Hold[]
+  /**
    * The edit that produced this wall. Every edit writes it; a measurement or a
    * load leaves it alone, which is how history tells the two apart (ADR-012)
    */
@@ -134,6 +140,10 @@ interface WallState {
   removeHold: (id: string) => void
   /** Removes every hold still popping off, at once, as one edit */
   flushPendingDeletes: () => void
+  /** Holds a history step removed, to be drawn leaving. Any that came back are dropped */
+  showLeaving: (holds: Hold[]) => void
+  /** A leaving hold has finished popping off */
+  dismissLeaving: (id: string) => void
   selectHold: (id: string | null) => void
   setEditorMode: (mode: EditorMode) => void
   selectFace: (faceId: string | null) => void
@@ -259,6 +269,7 @@ export const useWallStore = create<WallState>()(
   deletingHoldIds: [],
   blockingHoldIds: [],
   heldHold: null,
+  leavingHolds: [],
   lastEdit: null,
 
   addHold: (faceId, u, v) =>
@@ -310,12 +321,17 @@ export const useWallStore = create<WallState>()(
     ),
 
   reportCollisionBox: (id, collisionBox) =>
-    set((state) => ({
-      wall: {
-        ...state.wall,
-        holds: state.wall.holds.map((h) => (h.id === id ? { ...h, collisionBox } : h)),
-      },
-    })),
+    set((state) => {
+      /* A hold drawn leaving measures itself too, and has no wall to write to */
+      if (!state.wall.holds.some((h) => h.id === id)) return state
+
+      return {
+        wall: {
+          ...state.wall,
+          holds: state.wall.holds.map((h) => (h.id === id ? { ...h, collisionBox } : h)),
+        },
+      }
+    }),
 
   moveHold: (id, u, v, faceId) =>
     set((state) => {
@@ -390,6 +406,16 @@ export const useWallStore = create<WallState>()(
         selectedHoldId: state.selectedHoldId === id ? null : state.selectedHoldId,
       }
     }),
+
+  showLeaving: (holds) =>
+    set((state) => {
+      const onWall = new Set(state.wall.holds.map((h) => h.id))
+      const leavingHolds = [...state.leavingHolds, ...holds].filter((h) => !onWall.has(h.id))
+      return { leavingHolds }
+    }),
+
+  dismissLeaving: (id) =>
+    set((state) => ({ leavingHolds: state.leavingHolds.filter((h) => h.id !== id) })),
 
   /* One write for all of them, so an undo asked for mid-animation undoes the
      delete the user is watching rather than the edit before it (ADR-012) */
@@ -629,6 +655,7 @@ export const useWallStore = create<WallState>()(
       selectedFaceId: null,
       faceCutPoint: null,
       deletingHoldIds: [],
+      leavingHolds: [],
       blockingHoldIds: holdsInOverlaps(findWallOverlaps(wall.faces, wall.holds)),
     }),
 
