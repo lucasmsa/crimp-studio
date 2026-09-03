@@ -57,3 +57,11 @@ points, and states no gym could be built).
 - Angle per face gives the difficulty model and the generator (ADR-002) the input they
   need most, and it is available per hold through the hold's face.
 - Faces stay flat. Dished or bulging panels need a different model, and are out.
+
+## Amendment, 2026-09-01: the polygon arrives
+
+The decision above stands. What it did not specify was how a face stores its shape, and the
+implementation used a `width` and a `height` with the hinge named `'bottom'` or `'left'`.
+Splitting a rectangle along an axis leaves rectangles, so that held until seams could be
+drawn. ADR-010 replaces it with an outline and a `seamEdge`, which is the polygon this
+record assumed. ADR-011 records the gesture that draws one.
