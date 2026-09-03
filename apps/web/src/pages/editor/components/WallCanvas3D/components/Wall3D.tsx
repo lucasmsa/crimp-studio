@@ -7,7 +7,6 @@ import { SelectionAnchorProbe } from './SelectionAnchorProbe'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
 import { listFaces } from '@crimp-studio/wall-geometry'
-import { computeFaceUvTransform } from '../utils/faceUv'
 import { wallCenteringOffset } from '../utils/wallCentering'
 import { heldHoldWarnings, heldHoldsOnFace } from '../utils/heldHold'
 
@@ -35,14 +34,6 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
   )
 
   const faces = useMemo(() => listFaces(wall.faces), [wall.faces])
-
-  const uvTransforms = useMemo(
-    () =>
-      Object.fromEntries(
-        faces.map((face) => [face.id, computeFaceUvTransform(wall.faces, face.id)]),
-      ),
-    [faces, wall.faces],
-  )
 
   /* The springs are the only writer of face group transforms; see the hook */
   const faceGroups = useRef(new Map<string, THREE.Group>())
@@ -85,7 +76,6 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
         <WallFace3D
           key={face.id}
           face={face}
-          uvTransform={uvTransforms[face.id]}
           groupRef={registerFaceGroup(face.id)}
           holds={heldHoldsOnFace(wall.holds, heldHold, face.id)}
           leavingHolds={leavingHolds.filter((hold) => hold.faceId === face.id)}

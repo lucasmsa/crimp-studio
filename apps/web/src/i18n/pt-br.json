@@ -86,6 +86,8 @@
         "wall": "Parede Lateral"
       },
       "degrees": "{{value}} graus",
+      "bend": "Dobra {{value}} graus",
+      "steepness": "Inclinacao {{value}} graus",
       "increase": "Mais negativo",
       "decrease": "Menos negativo",
       "cutAcross": "Cortar na Horizontal",
@@ -95,7 +97,8 @@
         "too-small": "O painel ficaria pequeno demais para escalar",
         "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
         "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes",
-        "would-clip": "Isso atravessaria o painel ao lado"
+        "would-clip": "Isso atravessaria o painel ao lado",
+        "not-one-panel": "Juntar deixaria um L, nao um painel. Junte o vizinho antes"
       }
     },
     "faceCount": "{{count}} paineis",
@@ -125,6 +128,7 @@
       "seam": {
         "across": "Dobra na emenda horizontal",
         "up": "Dobra na emenda vertical",
+        "slanted": "Dobra numa emenda inclinada",
         "floor": "Dobra na linha do chao"
       }
     },

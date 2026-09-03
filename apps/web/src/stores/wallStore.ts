@@ -20,7 +20,6 @@ import {
   findLegalHoldMove,
   getFace,
   holdPlacementIsClear,
-  relativeFaceAngle,
 } from '@crimp-studio/wall-geometry'
 import type { CutAxis } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
 import {
@@ -150,9 +149,8 @@ interface WallState {
   setFaceCutPoint: (point: { faceId: string; u: number; v: number }) => void
   /** Splits a face in two along the seam; refuses if canCutFace says no */
   cutFace: (faceId: string, axis: CutAxis, at: number) => void
-  /** Takes the absolute tilt from vertical, stores it relative to the parent, and
-      stops the bend where the panel meets whatever is in the way */
-  setFaceAngle: (faceId: string, tiltDeg: number) => void
+  /** Bends a panel about its seam, stopping where it meets whatever is in the way */
+  setFaceAngle: (faceId: string, bendDeg: number) => void
   /** Merges a face back into its parent, undoing its cut */
   removeFace: (faceId: string) => void
   setSelectedHoldType: (type: HoldType) => void
@@ -283,7 +281,7 @@ export const useWallStore = create<WallState>()(
       const collisionBox = measureHoldFootprint(type, variant, size)
 
       /* Keep the full extents on the face, not just the center point */
-      const clamped = clampHoldToFace(u, v, collisionBox, face.width, face.height)
+      const clamped = clampHoldToFace(u, v, collisionBox, face.outline)
       const candidate = { id, faceId, u: clamped.u, v: clamped.v, collisionBox }
 
       if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, candidate)) return state
@@ -339,7 +337,7 @@ export const useWallStore = create<WallState>()(
       if (!hold) return state
 
       const face = getFace(state.wall.faces, faceId ?? hold.faceId)
-      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
+      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.outline)
       const to = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
 
       /* Never snapping back on release: every frame of a drag is a committed
@@ -371,7 +369,7 @@ export const useWallStore = create<WallState>()(
       const rotation = getNextRotation(hold.rotation)
       const collisionBox = measureHoldFootprint(hold.type, hold.variant, hold.size, rotation)
       const face = getFace(state.wall.faces, hold.faceId)
-      const clamped = clampHoldToFace(hold.u, hold.v, collisionBox, face.width, face.height)
+      const clamped = clampHoldToFace(hold.u, hold.v, collisionBox, face.outline)
       const turned = { ...hold, rotation, collisionBox, u: clamped.u, v: clamped.v }
 
       if (!holdPlacementIsClear(state.wall.faces, state.wall.holds, turned)) return state
@@ -473,14 +471,10 @@ export const useWallStore = create<WallState>()(
       }
     }),
 
-  setFaceAngle: (faceId, tiltDeg) =>
+  setFaceAngle: (faceId, bendDeg) =>
     set((state) => {
       const face = getFace(state.wall.faces, faceId)
-      const requested = relativeFaceAngle(
-        state.wall.faces,
-        faceId,
-        clampFaceAngle(tiltDeg, getAngleLimits(face.parentId === null)),
-      )
+      const requested = clampFaceAngle(bendDeg, getAngleLimits(face.parentId === null))
 
       /* The panel stops where it meets a panel it is not hinged to, a hold, or
          the floor, rather than passing through it (ADR-007) */
@@ -601,7 +595,7 @@ export const useWallStore = create<WallState>()(
       const face = getFace(state.wall.faces, faceId ?? state.heldHold?.faceId ?? hold.faceId)
       /* The panel edge stays a wall: a hold off the plywood is bolted to
          nothing, which is a different thing from one too close to a neighbour */
-      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.width, face.height)
+      const clamped = clampHoldToFace(u, v, hold.collisionBox, face.outline)
       const candidate = { ...hold, faceId: face.id, u: clamped.u, v: clamped.v }
 
       const obstruction = findHoldObstruction(state.wall.faces, state.wall.holds, candidate)

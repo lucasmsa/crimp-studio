@@ -1,11 +1,33 @@
-export type { FaceTree, HingeEdge, WallFace } from './faceTree'
+export type {
+  FaceTree,
+  HingeSegment,
+  OutlineBounds,
+  Point2,
+  SeamFrame,
+  SeamOrientation,
+  WallFace,
+} from './faceTree'
 export {
-  computeFaceSheetOrigin,
   computeSurfaceArea,
   createRootFaceTree,
+  edgeLength,
+  edgeOf,
+  findEdgeThrough,
   getFace,
   getRootFace,
+  hingeSegment,
+  isConvexCCW,
   listFaces,
+  minWidthAcross,
+  outlineArea,
+  outlineBounds,
+  outlineCentroid,
+  pointToChild,
+  pointToParent,
+  rectOutline,
+  seamFrame,
+  seamOrientation,
+  sheetUp,
 } from './faceTree'
 
 export type { FaceTransform, FaceTransforms } from './faceTransform'
@@ -13,12 +35,11 @@ export {
   computeFaceTransforms,
   faceLocalToWorld,
   faceNormal,
-  getFaceTilt,
-  relativeFaceAngle,
+  faceSteepness,
 } from './faceTransform'
 
-export type { Obb } from './obb'
-export { makeObb, obbsIntersect } from './obb'
+export type { Prism } from './prism'
+export { boxPrism, polygonPrism, prismsIntersect } from './prism'
 
 export type { HoldBox, HoldPlacement, WallSolid } from './wallSolids'
 export { collectWallSolids, floorSolid, holdSolid, panelSolid } from './wallSolids'

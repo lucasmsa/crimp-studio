@@ -1,7 +1,8 @@
 import type { FaceTree } from './faceTree'
-import { getFace } from './faceTree'
-import { computeFaceTransforms } from './faceTransform'
-import { obbsIntersect } from './obb'
+import { getFace, hingeSegment } from './faceTree'
+import type { FaceTransforms } from './faceTransform'
+import { computeFaceTransforms, faceLocalToWorld } from './faceTransform'
+import { prismsIntersect } from './prism'
 import type { HoldPlacement, WallSolid } from './wallSolids'
 import { collectWallSolids, holdSolid } from './wallSolids'
 
@@ -25,6 +26,9 @@ export const MOVE_PRECISION = 0.2
  */
 const TOUCH_TOLERANCE = 0.001
 
+/** A seam endpoint this close to the floor plane, in metres, is standing on it */
+const FLOOR_EPSILON = 1e-4
+
 export interface SolidPair {
   a: WallSolid
   b: WallSolid
@@ -43,20 +47,18 @@ function gapFor(a: WallSolid, b: WallSolid): number {
 }
 
 /**
- * A panel whose bottom edge rests on the floor by construction, so the floor
- * cannot be what stops it. That is the root panel and anything hinged sideways
- * off it: an arete stands on the ground exactly as the root does. A panel above
- * a horizontal seam does not, and the floor does stop that one.
+ * A panel whose seam reaches the floor rests on it by construction, so the
+ * floor cannot be what stops it. That is the root panel, whose seam is the
+ * floor line, and anything hinged on a seam that comes down to the ground: an
+ * arete stands there exactly as the root does. A panel above a horizontal seam
+ * does not, and the floor does stop that one (ADR-010).
  */
-function standsOnFloor(faces: FaceTree, faceId: string): boolean {
-  let face = getFace(faces, faceId)
+function standsOnFloor(faces: FaceTree, transforms: FaceTransforms, faceId: string): boolean {
+  const face = getFace(faces, faceId)
+  const transform = transforms[faceId]
+  const { from, to } = hingeSegment(face)
 
-  while (face.parentId) {
-    if (face.hinge === 'bottom') return false
-    face = getFace(faces, face.parentId)
-  }
-
-  return true
+  return [from, to].some((u) => faceLocalToWorld(transform, u, 0).y < FLOOR_EPSILON)
 }
 
 /**
@@ -68,13 +70,18 @@ function standsOnFloor(faces: FaceTree, faceId: string): boolean {
  * below it clips nothing, and blocking placement along the bottom of the wall
  * would read as a bug.
  */
-function pairIsExempt(faces: FaceTree, a: WallSolid, b: WallSolid): boolean {
+function pairIsExempt(
+  faces: FaceTree,
+  transforms: FaceTransforms,
+  a: WallSolid,
+  b: WallSolid,
+): boolean {
   if (a.kind === 'hold' && b.kind === 'hold') return false
 
   if (a.kind === 'floor' || b.kind === 'floor') {
     const other = a.kind === 'floor' ? b : a
     if (other.kind === 'hold') return true
-    return standsOnFloor(faces, other.id!)
+    return standsOnFloor(faces, transforms, other.id!)
   }
 
   if (a.kind === 'hold' || b.kind === 'hold') {
@@ -90,15 +97,16 @@ function pairIsExempt(faces: FaceTree, a: WallSolid, b: WallSolid): boolean {
 
 /** Every pair of solids that is closer than the build gap allows */
 export function findWallOverlaps(faces: FaceTree, holds: HoldPlacement[]): SolidPair[] {
-  const solids = collectWallSolids(faces, holds)
+  const transforms = computeFaceTransforms(faces)
+  const solids = collectWallSolids(faces, holds, transforms)
   const overlaps: SolidPair[] = []
 
   for (let i = 0; i < solids.length; i++) {
     for (let j = i + 1; j < solids.length; j++) {
       const a = solids[i]
       const b = solids[j]
-      if (pairIsExempt(faces, a, b)) continue
-      if (obbsIntersect(a.obb, b.obb, gapFor(a, b))) overlaps.push({ a, b })
+      if (pairIsExempt(faces, transforms, a, b)) continue
+      if (prismsIntersect(a.solid, b.solid, gapFor(a, b))) overlaps.push({ a, b })
     }
   }
 
@@ -214,8 +222,8 @@ export function findHoldObstruction(
   let clear = true
 
   for (const other of others) {
-    if (pairIsExempt(faces, solid, other)) continue
-    if (!obbsIntersect(solid.obb, other.obb, gapFor(solid, other))) continue
+    if (pairIsExempt(faces, transforms, solid, other)) continue
+    if (!prismsIntersect(solid.solid, other.solid, gapFor(solid, other))) continue
 
     clear = false
     if (other.kind === 'hold' && other.id) holdIds.push(other.id)
@@ -294,8 +302,8 @@ function fitTest(
 
     return obstacles.every(
       (other) =>
-        pairIsExempt(faces, solid, other) ||
-        !obbsIntersect(solid.obb, other.obb, gapFor(solid, other)),
+        pairIsExempt(faces, transforms, solid, other) ||
+        !prismsIntersect(solid.solid, other.solid, gapFor(solid, other)),
     )
   }
 }

@@ -1,30 +1,41 @@
-import type { HingeEdge } from '@crimp-studio/wall-geometry'
+import type { SeamOrientation } from '@crimp-studio/wall-geometry'
 
 /**
- * A bottom hinge tilts the panel, so it speaks the gym's vocabulary. A left
- * hinge wraps it around a vertical seam instead, where "roof" would be
- * nonsense: those presets are corners and prows.
+ * A preset in the words a gym uses. On a level seam a panel tilts, and the
+ * words are steepnesses from vertical; on an upright seam it wraps, where
+ * "roof" would be nonsense, and the words are bends about the seam. A slanted
+ * seam does both at once and has no word that is true of it, so it gets none
+ * (ADR-010).
  */
-const TILT_PRESETS = [
-  { key: 'slab', angle: -15 },
-  { key: 'vertical', angle: 0 },
-  { key: 'overhang', angle: 30 },
-  { key: 'roof', angle: 90 },
-] as const
+export interface FaceAnglePreset {
+  key: string
+  angle: number
+  kind: 'steepness' | 'bend'
+}
 
-const WRAP_PRESETS = [
-  { key: 'cornerIn', angle: -45 },
-  { key: 'flush', angle: 0 },
-  { key: 'prow', angle: 45 },
-  { key: 'wall', angle: 90 },
-] as const
+const TILT_PRESETS: readonly FaceAnglePreset[] = [
+  { key: 'slab', angle: -15, kind: 'steepness' },
+  { key: 'vertical', angle: 0, kind: 'steepness' },
+  { key: 'overhang', angle: 30, kind: 'steepness' },
+  { key: 'roof', angle: 90, kind: 'steepness' },
+]
 
-export type FaceAnglePreset =
-  | (typeof TILT_PRESETS)[number]['key']
-  | (typeof WRAP_PRESETS)[number]['key']
+const WRAP_PRESETS: readonly FaceAnglePreset[] = [
+  { key: 'cornerIn', angle: -45, kind: 'bend' },
+  { key: 'flush', angle: 0, kind: 'bend' },
+  { key: 'prow', angle: 45, kind: 'bend' },
+  { key: 'wall', angle: 90, kind: 'bend' },
+]
 
-export function getFaceAnglePresets(hinge: HingeEdge | null) {
-  return hinge === 'left' ? WRAP_PRESETS : TILT_PRESETS
+export function getFaceAnglePresets(orientation: SeamOrientation): readonly FaceAnglePreset[] {
+  if (orientation === 'floor' || orientation === 'horizontal') return TILT_PRESETS
+  if (orientation === 'vertical') return WRAP_PRESETS
+  return []
+}
+
+/** Whether a seam's angle is talked about as a steepness from vertical rather than a bend */
+export function speaksSteepness(orientation: SeamOrientation): boolean {
+  return orientation === 'floor' || orientation === 'horizontal'
 }
 
 /**

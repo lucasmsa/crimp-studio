@@ -5,14 +5,13 @@ import type { Hold } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
 import { useSceneRoom } from '../hooks/useSceneRoom'
 import { Hold3D } from './Hold3D'
-import { CM_TO_M, WALL_DEPTH } from '@crimp-studio/wall-geometry'
+import { CM_TO_M, hingeSegment, WALL_DEPTH } from '@crimp-studio/wall-geometry'
+import type { Point2, WallFace } from '@crimp-studio/wall-geometry'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
 import { getBlurredPlywoodTexture, getPlywoodTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
-import type { WallFace } from '@crimp-studio/wall-geometry'
-import type { FaceUvTransform } from '../utils/faceUv'
-import { applyFaceUvTransform } from '../utils/faceUv'
+import { applyFaceUvTransform, PLYWOOD_UV } from '../utils/faceUv'
 
 /** How far an unfocused panel fades toward the background */
 const DIM_AMOUNT = 0.45
@@ -23,7 +22,6 @@ const SEAM_LIFT = 0.002
 
 interface WallFace3DProps {
   face: WallFace
-  uvTransform: FaceUvTransform
   holds: Hold[]
   /** Holds history took off this panel, drawn popping off until they are done */
   leavingHolds: Hold[]
@@ -46,17 +44,28 @@ interface WallFace3DProps {
 const ignorePointer = () => {}
 
 /**
+ * The panel as plywood: its outline at the surface, z = 0 in the face frame,
+ * extruded backwards through the sheet's thickness. Built in the face frame
+ * itself, so a pointer hit converts to face coordinates with no offset.
+ */
+function panelGeometry(outline: Point2[]): THREE.ExtrudeGeometry {
+  const shape = new THREE.Shape(outline.map(([u, v]) => new THREE.Vector2(u * CM_TO_M, v * CM_TO_M)))
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: WALL_DEPTH, bevelEnabled: false })
+  geometry.translate(0, 0, -WALL_DEPTH)
+  return geometry
+}
+
+/**
  * One flat panel of the wall, with the holds bolted to it. The group carries
  * the face's hinge transform, so everything under it (holds, overlay, outline)
  * rides the angle without any of them knowing about it.
  *
- * The panel extrudes backwards, surface at local z=0: with a centred box, two
+ * The panel extrudes backwards, surface at local z=0: with a centred slab, two
  * panels bent apart leave a wedge at the seam, and this puts the fold line on
  * both front surfaces instead.
  */
 export function WallFace3D({
   face,
-  uvTransform,
   holds,
   leavingHolds,
   selectedHoldId,
@@ -73,31 +82,29 @@ export function WallFace3D({
   onHoldLeft,
 }: WallFace3DProps) {
   const room = useSceneRoom()
-  const widthM = face.width * CM_TO_M
-  const heightM = face.height * CM_TO_M
 
   /* Unfocused panels lose their detail rather than their colour: a soft
      surface reads as out of focus, and swapping a prebuilt texture costs
      nothing per frame the way a blur pass would */
   const texture = isDimmed ? getBlurredPlywoodTexture() : getPlywoodTexture()
 
-  /* The panel slab, with the T-nut grid phased by where this face sits on the
-     unrolled sheet so the pattern runs on across a seam */
-  const panelGeometry = useMemo(() => {
-    const box = new THREE.BoxGeometry(widthM, heightM, WALL_DEPTH)
-    applyFaceUvTransform(box, uvTransform)
-    return box
-  }, [widthM, heightM, uvTransform])
+  /* The slab carries metre-space UVs from its extrusion; the plywood tile is
+     laid over them one tile per panel width, from this panel's own corner */
+  const slab = useMemo(() => {
+    const geometry = panelGeometry(face.outline)
+    applyFaceUvTransform(geometry, PLYWOOD_UV)
+    return geometry
+  }, [face.outline])
 
-  useEffect(() => () => panelGeometry.dispose(), [panelGeometry])
+  useEffect(() => () => slab.dispose(), [slab])
 
   const outlineGeometry = useMemo(() => {
     if (SCENE_STYLE !== 'toon') return null
-    const box = new THREE.BoxGeometry(widthM, heightM, WALL_DEPTH)
-    const outline = createOutlineGeometry(box, toonConfig.wallOutline)
-    box.dispose()
+    const source = panelGeometry(face.outline)
+    const outline = createOutlineGeometry(source, toonConfig.wallOutline)
+    source.dispose()
     return outline
-  }, [widthM, heightM])
+  }, [face.outline])
 
   /* Focus reads by dimming the rest of the wall rather than by thickening this
      panel's rim: a hull stroke is geometry, so it juts out flat wherever the
@@ -106,6 +113,8 @@ export function WallFace3D({
     const color = new THREE.Color(face.color)
     return isDimmed ? color.lerp(new THREE.Color(room.bottom), DIM_AMOUNT) : color
   }, [face.color, isDimmed, room.bottom])
+
+  const seam = face.parentId ? hingeSegment(face) : null
 
   return (
     <group ref={groupRef}>
@@ -137,35 +146,27 @@ export function WallFace3D({
         />
       ))}
 
-      {/* Ink line along the hinge. Two panels folded flat leave only a hairline
-          between their rims, which reads as nothing at all from the front */}
-      {face.hinge && (
+      {/* Ink line along the hinge, which every face keeps at v = 0. Two panels
+          folded flat leave only a hairline between their rims, which reads as
+          nothing at all from the front */}
+      {seam && (
         <mesh
-          position={
-            face.hinge === 'bottom'
-              ? [widthM / 2, SEAM_WIDTH / 2, SEAM_LIFT]
-              : [SEAM_WIDTH / 2, heightM / 2, SEAM_LIFT]
-          }
+          position={[((seam.from + seam.to) / 2) * CM_TO_M, SEAM_WIDTH / 2, SEAM_LIFT]}
           raycast={() => null}
         >
-          <planeGeometry
-            args={
-              face.hinge === 'bottom' ? [widthM, SEAM_WIDTH] : [SEAM_WIDTH, heightM]
-            }
-          />
+          <planeGeometry args={[(seam.to - seam.from) * CM_TO_M, SEAM_WIDTH]} />
           <meshBasicMaterial color={colors.scene.outline} />
         </mesh>
       )}
 
       <mesh
         ref={meshRef}
-        position={[widthM / 2, heightM / 2, -WALL_DEPTH / 2]}
         onPointerDown={onPointerDown}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
         castShadow
         receiveShadow
-        geometry={panelGeometry}
+        geometry={slab}
       >
         {SCENE_STYLE === 'toon' ? (
           <>

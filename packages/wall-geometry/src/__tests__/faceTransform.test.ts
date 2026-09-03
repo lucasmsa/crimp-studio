@@ -1,38 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import type { FaceTree, HingeEdge } from '../faceTree'
 import { createRootFaceTree } from '../faceTree'
 import {
   computeFaceTransforms,
   faceLocalToWorld,
   faceNormal,
-  getFaceTilt,
+  faceSteepness,
 } from '../faceTransform'
-
-const PANEL = '#E8D5B7'
-
-/** Splits the tree's last face, giving the new one the requested angle */
-function addFace(
-  tree: FaceTree,
-  parentId: string,
-  hinge: HingeEdge,
-  size: { width: number; height: number },
-  angle: number,
-): { tree: FaceTree; id: string } {
-  const id = `face_${Object.keys(tree.byId).length}`
-  const parent = tree.byId[parentId]
-
-  return {
-    id,
-    tree: {
-      rootId: tree.rootId,
-      byId: {
-        ...tree.byId,
-        [parentId]: { ...parent, childIds: [...parent.childIds, id] },
-        [id]: { id, parentId, hinge, ...size, angle, color: PANEL, childIds: [] },
-      },
-    },
-  }
-}
+import { PANEL, RECT, attach } from './builders'
 
 describe('computeFaceTransforms', () => {
   it('maps a flat wall straight through, which is what keeps holds where they were', () => {
@@ -45,9 +19,9 @@ describe('computeFaceTransforms', () => {
     expect(world.z).toBeCloseTo(0, 5)
   })
 
-  it('hinges a bottom child at the top of its parent and leans it out', () => {
+  it('hinges a face on the top of its parent and leans it out', () => {
     const base = createRootFaceTree(400, 300, PANEL)
-    const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 30)
+    const { tree, id } = attach(base, base.rootId, RECT.top, 200, 30)
 
     const transform = computeFaceTransforms(tree)[id]
 
@@ -61,7 +35,7 @@ describe('computeFaceTransforms', () => {
 
   it('turns a 90 degree face into a roof', () => {
     const base = createRootFaceTree(400, 300, PANEL)
-    const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 90)
+    const { tree, id } = attach(base, base.rootId, RECT.top, 200, 90)
 
     const transform = computeFaceTransforms(tree)[id]
     const normal = faceNormal(transform)
@@ -72,45 +46,60 @@ describe('computeFaceTransforms', () => {
 
   it('leans a negative face back into a slab', () => {
     const base = createRootFaceTree(400, 300, PANEL)
-    const { tree, id } = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, -15)
+    const { tree, id } = attach(base, base.rootId, RECT.top, 200, -15)
 
     expect(faceLocalToWorld(computeFaceTransforms(tree)[id], 0, 200).z).toBeLessThan(0)
   })
 
-  it('hinges a left child at its parent right edge and wraps it toward the climber', () => {
+  it('hinges a face on its parent right edge and wraps it toward the climber', () => {
     const base = createRootFaceTree(300, 400, PANEL)
-    const { tree, id } = addFace(base, base.rootId, 'left', { width: 100, height: 400 }, 90)
+    const { tree, id } = attach(base, base.rootId, RECT.right, 100, 90)
 
     const transform = computeFaceTransforms(tree)[id]
 
+    /* The frame starts at the top of the seam and runs down it */
     expect(transform.position.x).toBeCloseTo(3, 5)
+    expect(transform.position.y).toBeCloseTo(4, 5)
 
-    /* At 90 the panel stands square to the wall, its far edge a metre out and
-       its surface facing across the prow rather than at the wall */
-    expect(faceLocalToWorld(transform, 100, 0).z).toBeCloseTo(1, 5)
+    /* At 90 the panel stands square to the wall: the corner 400cm down the seam
+       and 100cm out is on the floor, a metre out, and the surface faces across
+       the prow rather than at the wall */
+    const outerFoot = faceLocalToWorld(transform, 400, 100)
+    expect(outerFoot.x).toBeCloseTo(3, 5)
+    expect(outerFoot.y).toBeCloseTo(0, 5)
+    expect(outerFoot.z).toBeCloseTo(1, 5)
     expect(faceNormal(transform).x).toBeCloseTo(-1, 5)
   })
 
   it('compounds down a chain, so a third face rides the second', () => {
     const base = createRootFaceTree(400, 200, PANEL)
-    const second = addFace(base, base.rootId, 'bottom', { width: 400, height: 200 }, 30)
-    const third = addFace(second.tree, second.id, 'bottom', { width: 400, height: 200 }, 30)
+    const second = attach(base, base.rootId, RECT.top, 200, 30)
+    const third = attach(second.tree, second.id, RECT.top, 200, 30)
 
     const transforms = computeFaceTransforms(third.tree)
 
-    expect(getFaceTilt(transforms[second.id])).toBeCloseTo(30, 5)
-    expect(getFaceTilt(transforms[third.id])).toBeCloseTo(60, 5)
+    expect(faceSteepness(transforms[second.id])).toBeCloseTo(30, 5)
+    expect(faceSteepness(transforms[third.id])).toBeCloseTo(60, 5)
   })
 })
 
-describe('getFaceTilt', () => {
+describe('faceSteepness', () => {
   it('reads zero for a flat wall and ignores a pure yaw', () => {
     const base = createRootFaceTree(300, 400, PANEL)
-    const { tree, id } = addFace(base, base.rootId, 'left', { width: 100, height: 400 }, 45)
+    const { tree, id } = attach(base, base.rootId, RECT.right, 100, 45)
 
     const transforms = computeFaceTransforms(tree)
 
-    expect(getFaceTilt(transforms[tree.rootId])).toBeCloseTo(0, 5)
-    expect(getFaceTilt(transforms[id])).toBeCloseTo(0, 5)
+    expect(faceSteepness(transforms[tree.rootId])).toBeCloseTo(0, 5)
+    expect(faceSteepness(transforms[id])).toBeCloseTo(0, 5)
+  })
+
+  it('reads a slab as negative and a roof as 90', () => {
+    const base = createRootFaceTree(400, 300, PANEL)
+    const slab = attach(base, base.rootId, RECT.top, 200, -15)
+    const roof = attach(base, base.rootId, RECT.top, 200, 90)
+
+    expect(faceSteepness(computeFaceTransforms(slab.tree)[slab.id])).toBeCloseTo(-15, 5)
+    expect(faceSteepness(computeFaceTransforms(roof.tree)[roof.id])).toBeCloseTo(90, 5)
   })
 })

@@ -24,14 +24,8 @@ export function computeWallProfile(tree: FaceTree, transforms: FaceTransforms): 
 
   for (const face of listFaces(tree)) {
     const transform = transforms[face.id]
-    const corners: [number, number][] = [
-      [0, 0],
-      [face.width, 0],
-      [0, face.height],
-      [face.width, face.height],
-    ]
 
-    for (const [u, v] of corners) {
+    for (const [u, v] of face.outline) {
       const world = faceLocalToWorld(transform, u, v)
       maxY = Math.max(maxY, world.y)
       maxZ = Math.max(maxZ, world.z)

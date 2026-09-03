@@ -1,5 +1,11 @@
 import type { FaceTree } from '@crimp-studio/wall-geometry'
-import { CM_TO_M, computeFaceTransforms, faceLocalToWorld, listFaces } from '@crimp-studio/wall-geometry'
+import {
+  CM_TO_M,
+  computeFaceTransforms,
+  faceLocalToWorld,
+  listFaces,
+  outlineCentroid,
+} from '@crimp-studio/wall-geometry'
 import type { SavedHold } from '@/lib/walls'
 
 export interface SilhouettePoint {
@@ -9,7 +15,7 @@ export interface SilhouettePoint {
 
 export interface SilhouettePanel {
   id: string
-  /** The panel's four corners, ready for a polygon */
+  /** The panel's corners, ready for a polygon */
   corners: SilhouettePoint[]
   /** How far back it sits, for drawing the far ones first */
   depth: number
@@ -72,12 +78,9 @@ export function wallSilhouette(
 
   const panels = listFaces(faces)
     .map((face) => {
-      const corners = [
-        [0, 0],
-        [face.width, 0],
-        [face.width, face.height],
-        [0, face.height],
-      ].map(([u, v]) => project(faceLocalToWorld(transforms[face.id], u, v)))
+      const corners = face.outline.map(([u, v]) =>
+        project(faceLocalToWorld(transforms[face.id], u, v)),
+      )
 
       return {
         id: face.id,
@@ -129,7 +132,8 @@ function depthOf(
   faceId: string,
 ): number {
   const face = listFaces(faces).find((candidate) => candidate.id === faceId)!
-  const middle = faceLocalToWorld(transforms[faceId], face.width / 2, face.height / 2)
+  const [u, v] = outlineCentroid(face.outline)
+  const middle = faceLocalToWorld(transforms[faceId], u, v)
 
   return middle.z / CM_TO_M
 }

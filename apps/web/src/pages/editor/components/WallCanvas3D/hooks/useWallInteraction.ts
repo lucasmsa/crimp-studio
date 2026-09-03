@@ -4,7 +4,6 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { CM_TO_M } from '@crimp-studio/wall-geometry'
-import { getFace } from '@crimp-studio/wall-geometry'
 import { resolveWallTap } from '../utils/wallGesture'
 
 /** A press that moves further or lasts longer than this is a drag, not a tap */
@@ -51,19 +50,15 @@ export function useWallInteraction() {
     [],
   )
 
-  /* The mesh is centered inside its face group, so its local frame is the
-     face's rectangle measured from the middle */
+  /* The mesh is built in its face's own frame, so its local coordinates are
+     the face's, in metres */
   const worldToFaceCoords = useCallback((faceId: string, worldPoint: THREE.Vector3) => {
     const mesh = faceMeshes.current.get(faceId)
     if (!mesh) return null
 
-    const face = getFace(useWallStore.getState().wall.faces, faceId)
     const localPoint = mesh.worldToLocal(worldPoint.clone())
 
-    return {
-      u: localPoint.x / CM_TO_M + face.width / 2,
-      v: localPoint.y / CM_TO_M + face.height / 2,
-    }
+    return { u: localPoint.x / CM_TO_M, v: localPoint.y / CM_TO_M }
   }, [])
 
   const setupDragPlane = useCallback((faceId: string) => {

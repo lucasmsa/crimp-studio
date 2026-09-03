@@ -3,8 +3,8 @@ import type { FaceTree, WallFace } from './faceTree'
 import { listFaces } from './faceTree'
 import type { FaceTransform, FaceTransforms } from './faceTransform'
 import { computeFaceTransforms } from './faceTransform'
-import type { Obb } from './obb'
-import { makeObb } from './obb'
+import type { Prism } from './prism'
+import { boxPrism, polygonPrism } from './prism'
 import { CM_TO_M, WALL_DEPTH } from './units'
 
 /** A hold's footprint on its panel, in cm, plus how far it stands off it */
@@ -26,7 +26,7 @@ export interface HoldPlacement {
 
 /** A solid and what it belongs to, so a refusal can point at the thing in the way */
 export interface WallSolid {
-  obb: Obb
+  solid: Prism
   kind: 'panel' | 'hold' | 'floor'
   /** Face id for a panel, hold id for a hold, undefined for the floor */
   id?: string
@@ -48,24 +48,12 @@ const FLOOR_HALF_SPAN = 50
 const FLOOR_HALF_THICKNESS = 0.5
 
 /**
- * A panel as a solid. The face frame has its origin at the bottom-left corner of
- * the climbing surface with +Z out of it, and the plywood extrudes backwards, so
- * the slab's centre sits half a thickness behind the surface.
+ * A panel as a solid: its outline at the surface, extruded backwards through
+ * the plywood's thickness.
  */
 export function panelSolid(face: WallFace, transform: FaceTransform): WallSolid {
-  const widthM = face.width * CM_TO_M
-  const heightM = face.height * CM_TO_M
-
-  const center = new THREE.Vector3(widthM / 2, heightM / 2, -WALL_DEPTH / 2)
-    .applyQuaternion(transform.quaternion)
-    .add(transform.position)
-
   return {
-    obb: makeObb(
-      center,
-      transform.quaternion,
-      new THREE.Vector3(widthM / 2, heightM / 2, WALL_DEPTH / 2),
-    ),
+    solid: polygonPrism(face.outline, WALL_DEPTH, transform),
     kind: 'panel',
     id: face.id,
   }
@@ -93,7 +81,7 @@ export function holdSolid(hold: HoldPlacement, transform: FaceTransform): WallSo
     .add(transform.position)
 
   return {
-    obb: makeObb(
+    solid: boxPrism(
       center,
       transform.quaternion,
       new THREE.Vector3(box.halfW * CM_TO_M, box.halfH * CM_TO_M, depthM / 2),
@@ -106,7 +94,7 @@ export function holdSolid(hold: HoldPlacement, transform: FaceTransform): WallSo
 
 export function floorSolid(): WallSolid {
   return {
-    obb: makeObb(
+    solid: boxPrism(
       new THREE.Vector3(0, -FLOOR_HALF_THICKNESS, 0),
       new THREE.Quaternion(),
       new THREE.Vector3(FLOOR_HALF_SPAN, FLOOR_HALF_THICKNESS, FLOOR_HALF_SPAN),

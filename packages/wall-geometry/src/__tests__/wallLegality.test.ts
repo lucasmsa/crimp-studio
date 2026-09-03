@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import type { FaceTree, HingeEdge } from '../faceTree'
-import { createRootFaceTree, getFace } from '../faceTree'
+import type { FaceTree } from '../faceTree'
+import { createRootFaceTree, getFace, getRootFace } from '../faceTree'
 import type { HoldPlacement } from '../wallSolids'
 import {
   findHoldObstruction,
@@ -10,32 +10,7 @@ import {
   holdPlacementIsClear,
   wallIsClear,
 } from '../wallLegality'
-
-const PANEL = '#E8D5B7'
-
-/** Hinges a face onto a parent, the way a cut does, and returns its id */
-function hinge(
-  tree: FaceTree,
-  parentId: string,
-  hingeEdge: HingeEdge,
-  size: { width: number; height: number },
-  angle = 0,
-): { tree: FaceTree; id: string } {
-  const parent = getFace(tree, parentId)
-  const id = `face_${Object.keys(tree.byId).length}`
-
-  return {
-    id,
-    tree: {
-      rootId: tree.rootId,
-      byId: {
-        ...tree.byId,
-        [parentId]: { ...parent, childIds: [...parent.childIds, id] },
-        [id]: { id, parentId, hinge: hingeEdge, ...size, angle, color: PANEL, childIds: [] },
-      },
-    },
-  }
-}
+import { PANEL, RECT, attach } from './builders'
 
 const hold = (faceId: string, u: number, v: number, id = `hold_${u}_${v}`): HoldPlacement => ({
   id,
@@ -45,18 +20,18 @@ const hold = (faceId: string, u: number, v: number, id = `hold_${u}_${v}`): Hold
   collisionBox: { halfW: 12, halfH: 12, depth: 10 },
 })
 
-/** A wall with an arete: the right slice wraps around the vertical seam */
+/** A wall with an arete: a slice hinged on the root's right edge wraps around the vertical seam */
 function finWall(finAngle = 0) {
   const base = createRootFaceTree(400, 400, PANEL)
-  const fin = hinge(base, base.rootId, 'left', { width: 100, height: 400 }, finAngle)
+  const fin = attach(base, base.rootId, RECT.right, 100, finAngle)
   return { tree: fin.tree, rootId: base.rootId, finId: fin.id }
 }
 
 /** Root, a middle section, and a top section, each 400 wide */
 function threeStack(middleAngle = 0, topAngle = 0, topHeight = 200) {
   const base = createRootFaceTree(400, 200, PANEL)
-  const middle = hinge(base, base.rootId, 'bottom', { width: 400, height: 200 }, middleAngle)
-  const top = hinge(middle.tree, middle.id, 'bottom', { width: 400, height: topHeight }, topAngle)
+  const middle = attach(base, base.rootId, RECT.top, 200, middleAngle)
+  const top = attach(middle.tree, middle.id, RECT.top, topHeight, topAngle)
   return { tree: top.tree, rootId: base.rootId, middleId: middle.id, topId: top.id }
 }
 
@@ -76,8 +51,8 @@ describe('wallIsClear', () => {
        folding back down off the shelf at 45 degrees. That last one crosses the
        base's surface a metre up, and the base is not what it hinges on */
     const base = createRootFaceTree(400, 200, PANEL)
-    const shelf = hinge(base, base.rootId, 'bottom', { width: 400, height: 100 }, 90)
-    const folded = hinge(shelf.tree, shelf.id, 'bottom', { width: 400, height: 200 }, 135)
+    const shelf = attach(base, base.rootId, RECT.top, 100, 90)
+    const folded = attach(shelf.tree, shelf.id, RECT.top, 200, 135)
 
     const overlaps = findWallOverlaps(folded.tree, [])
 
@@ -100,13 +75,37 @@ describe('wallIsClear', () => {
 
   it('catches a panel swung through the floor', () => {
     const base = createRootFaceTree(400, 100, PANEL)
-    const arm = hinge(base, base.rootId, 'bottom', { width: 400, height: 300 }, -120)
+    const arm = attach(base, base.rootId, RECT.top, 300, -120)
 
     expect(wallIsClear(arm.tree, [])).toBe(false)
   })
 
   it('leaves the root panel and the floor alone, since the root stands on it', () => {
     expect(wallIsClear(createRootFaceTree(400, 500, PANEL), [])).toBe(true)
+  })
+
+  it('leaves a panel whose seam comes down to the floor alone, whatever its angle', () => {
+    /* The root's right edge slants, and a panel hinged on it stands with one
+       foot on the ground exactly as the root does. Bent, its plywood would dip
+       below the floor at that foot if the floor were allowed to stop it */
+    const base = createRootFaceTree(400, 400, PANEL)
+    const slanted: FaceTree = {
+      ...base,
+      byId: {
+        [base.rootId]: {
+          ...getRootFace(base),
+          outline: [
+            [0, 0],
+            [400, 0],
+            [300, 400],
+            [0, 400],
+          ],
+        },
+      },
+    }
+    const wing = attach(slanted, base.rootId, 1, 100, 45)
+
+    expect(wallIsClear(wing.tree, [])).toBe(true)
   })
 
   it('catches a hold poking into the panel wrapped around the seam beside it', () => {
@@ -199,7 +198,7 @@ describe('findLegalFaceAngle', () => {
 
   it('stops a panel at the floor', () => {
     const base = createRootFaceTree(400, 200, PANEL)
-    const arm = hinge(base, base.rootId, 'bottom', { width: 400, height: 300 })
+    const arm = attach(base, base.rootId, RECT.top, 300)
 
     const limit = findLegalFaceAngle({
       faces: arm.tree,
@@ -375,7 +374,7 @@ describe('findLegalHoldMove', () => {
 
   it('leaves a hold where it is when the panel it is asked for cannot take it', () => {
     const base = createRootFaceTree(400, 300, PANEL)
-    const upper = hinge(base, base.rootId, 'bottom', { width: 400, height: 200 })
+    const upper = attach(base, base.rootId, RECT.top, 200)
     const moving = hold(base.rootId, 100, 250, 'moving')
     const sitting = hold(upper.id, 100, 100, 'sitting')
 

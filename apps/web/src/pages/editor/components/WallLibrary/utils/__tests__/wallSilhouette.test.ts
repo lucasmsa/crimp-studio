@@ -1,21 +1,23 @@
 import { describe, it, expect } from 'vitest'
-import type { FaceTree, HingeEdge } from '@crimp-studio/wall-geometry'
-import { createRootFaceTree, getFace } from '@crimp-studio/wall-geometry'
+import type { FaceTree } from '@crimp-studio/wall-geometry'
+import { createRootFaceTree, edgeLength, getFace, rectOutline } from '@crimp-studio/wall-geometry'
 import type { SavedHold } from '@/lib/walls'
 import { panelPoints, wallSilhouette } from '../wallSilhouette'
 
 const PANEL = '#E8D5B7'
 const holdColor = (hold: SavedHold) => hold.color ?? '#25E712'
 
+/** Hinges a rectangular face along the whole of one edge of its parent, `out` cm deep */
 function hinge(
   tree: FaceTree,
   parentId: string,
-  hingeEdge: HingeEdge,
-  size: { width: number; height: number },
+  seamEdge: number,
+  out: number,
   angle: number,
 ): { tree: FaceTree; id: string } {
   const parent = getFace(tree, parentId)
   const id = `face_${Object.keys(tree.byId).length}`
+  const outline = rectOutline(edgeLength(parent.outline, seamEdge), out)
 
   return {
     id,
@@ -24,11 +26,14 @@ function hinge(
       byId: {
         ...tree.byId,
         [parentId]: { ...parent, childIds: [...parent.childIds, id] },
-        [id]: { id, parentId, hinge: hingeEdge, ...size, angle, color: PANEL, childIds: [] },
+        [id]: { id, parentId, seamEdge, outline, angle, color: PANEL, childIds: [] },
       },
     },
   }
 }
+
+const TOP = 2
+const RIGHT = 1
 
 const hold = (faceId: string, u: number, v: number, color?: string): SavedHold => ({
   id: `hold_${u}_${v}`,
@@ -59,7 +64,7 @@ describe('wallSilhouette', () => {
 
   it('gives every panel its own quad', () => {
     const base = createRootFaceTree(300, 200, PANEL)
-    const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
+    const roof = hinge(base, base.rootId, TOP, 200, 90)
 
     const { panels } = draw(roof.tree)
 
@@ -68,7 +73,7 @@ describe('wallSilhouette', () => {
 
   it('pushes a roof back and across, so it reads as a roof', () => {
     const base = createRootFaceTree(300, 200, PANEL)
-    const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
+    const roof = hinge(base, base.rootId, TOP, 200, 90)
 
     const { panels } = draw(roof.tree)
     const upper = panels.find((panel) => panel.id === roof.id)!
@@ -82,7 +87,7 @@ describe('wallSilhouette', () => {
 
   it('draws the far panels first, so nearer ones sit over them', () => {
     const base = createRootFaceTree(300, 200, PANEL)
-    const roof = hinge(base, base.rootId, 'bottom', { width: 300, height: 200 }, 90)
+    const roof = hinge(base, base.rootId, TOP, 200, 90)
 
     const { panels } = draw(roof.tree)
 
@@ -91,7 +96,7 @@ describe('wallSilhouette', () => {
 
   it('shows an arete, which a flat side view could not', () => {
     const base = createRootFaceTree(300, 400, PANEL)
-    const arete = hinge(base, base.rootId, 'left', { width: 100, height: 400 }, 90)
+    const arete = hinge(base, base.rootId, RIGHT, 100, 90)
 
     expect(draw(arete.tree).panels).toHaveLength(2)
   })

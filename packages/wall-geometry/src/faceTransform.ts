@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { CM_TO_M } from './units'
 import type { FaceTree, WallFace } from './faceTree'
-import { getFace, listFaces } from './faceTree'
+import { getFace, listFaces, seamFrame } from './faceTree'
 
 export interface FaceTransform {
   position: THREE.Vector3
@@ -10,10 +10,13 @@ export interface FaceTransform {
 
 export type FaceTransforms = Record<string, FaceTransform>
 
+const X_AXIS = new THREE.Vector3(1, 0, 0)
+const Z_AXIS = new THREE.Vector3(0, 0, 1)
+
 /**
- * Each face's frame has its origin at the face's bottom-left corner, +X across
- * the face (u), +Y up the face (v), +Z out of the surface. Wall space puts the
- * root face's bottom-left corner at the origin, so the floor edge is pinned.
+ * Each face's frame has its origin where its seam starts, +X along the seam
+ * (u), +Y into the face (v), +Z out of the surface. Wall space puts the root
+ * face's bottom-left corner at the origin, so the floor edge is pinned.
  *
  * Transforms are computed from the tree rather than read back out of the scene
  * graph: collision and the camera need a face frame without waiting on a matrix
@@ -25,45 +28,46 @@ export function computeFaceTransforms(tree: FaceTree): FaceTransforms {
   for (const face of listFaces(tree)) {
     transforms[face.id] = face.parentId
       ? childTransform(face, transforms[face.parentId], getFace(tree, face.parentId))
-      : {
-          position: new THREE.Vector3(0, 0, 0),
-          quaternion: hingeRotation('bottom', face.angle),
-        }
+      : { position: new THREE.Vector3(0, 0, 0), quaternion: bendRotation(face.angle) }
   }
 
   return transforms
 }
 
+/**
+ * The seam is an edge reference, so the child's origin and heading are derived
+ * from the parent's current outline every time. Storing them would drift the
+ * moment a later cut reshaped the parent.
+ */
 function childTransform(
   face: WallFace,
   parent: FaceTransform,
   parentFace: WallFace,
 ): FaceTransform {
-  const hinge = face.hinge ?? 'bottom'
+  if (face.seamEdge === null) throw new Error(`Face ${face.id} has a parent but no seam`)
 
-  /* The hinge is an edge reference, so the child's origin is derived from the
-     parent's current size every time. Storing an offset would drift the moment
-     a later cut resized the parent. */
-  const edgeOffset =
-    hinge === 'bottom'
-      ? new THREE.Vector3(0, parentFace.height * CM_TO_M, 0)
-      : new THREE.Vector3(parentFace.width * CM_TO_M, 0, 0)
+  const frame = seamFrame(parentFace, face.seamEdge)
+  const origin = new THREE.Vector3(frame.origin[0] * CM_TO_M, frame.origin[1] * CM_TO_M, 0)
+    .applyQuaternion(parent.quaternion)
+  const heading = new THREE.Quaternion().setFromAxisAngle(
+    Z_AXIS,
+    Math.atan2(frame.u[1], frame.u[0]),
+  )
 
   return {
-    position: parent.position.clone().add(edgeOffset.applyQuaternion(parent.quaternion)),
-    quaternion: parent.quaternion.clone().multiply(hingeRotation(hinge, face.angle)),
+    position: parent.position.clone().add(origin),
+    quaternion: parent.quaternion.clone().multiply(heading).multiply(bendRotation(face.angle)),
   }
 }
 
 /**
- * Positive angle leans the surface toward the climber: about +X for a bottom
- * hinge (overhang at 30, roof at 90), about -Y for a left hinge so a positive
- * arete wraps the same way.
+ * Every face bends about its own seam, which is its u axis. Positive leans the
+ * surface toward the climber: an overhang at 30, a roof at 90. On a vertical
+ * seam the same rotation is a yaw, and a positive one wraps toward the climber
+ * as well.
  */
-function hingeRotation(hinge: 'bottom' | 'left', angleDeg: number): THREE.Quaternion {
-  const angle = THREE.MathUtils.degToRad(angleDeg)
-  const axis = hinge === 'bottom' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, -1, 0)
-  return new THREE.Quaternion().setFromAxisAngle(axis, angle)
+function bendRotation(angleDeg: number): THREE.Quaternion {
+  return new THREE.Quaternion().setFromAxisAngle(X_AXIS, THREE.MathUtils.degToRad(angleDeg))
 }
 
 /** Face-local cm to world metres, optionally pushed out along the face normal. */
@@ -83,26 +87,12 @@ export function faceNormal(transform: FaceTransform): THREE.Vector3 {
 }
 
 /**
- * Degrees from vertical, read off the face's world up-vector: negative leans
- * back (slab), positive leans out (overhang), 90 is a roof. Measured rather
- * than summed down the chain, so a yawed ancestor cannot skew it.
+ * Degrees from vertical, read off the face's world normal: negative leans back
+ * (slab), positive leans out (overhang), 90 is a roof. A face that has only
+ * yawed reads 0, since its normal is still level. Measured rather than summed
+ * down the chain, so a yawed ancestor cannot skew it.
  */
-export function getFaceTilt(transform: FaceTransform): number {
-  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(transform.quaternion)
-  return THREE.MathUtils.radToDeg(Math.atan2(up.z, up.y))
-}
-
-/**
- * The angle to store for a face so that it reads as `tiltDeg` from vertical.
- *
- * Angles are stored relative to the parent, so bending a lower panel swings
- * everything above it as one assembly. A left hinge yaws rather than tilts, so
- * its angle has no absolute reading to convert and passes straight through.
- */
-export function relativeFaceAngle(tree: FaceTree, faceId: string, tiltDeg: number): number {
-  const face = getFace(tree, faceId)
-  if (face.hinge === 'left' || !face.parentId) return tiltDeg
-
-  const parentTilt = getFaceTilt(computeFaceTransforms(tree)[face.parentId])
-  return tiltDeg - parentTilt
+export function faceSteepness(transform: FaceTransform): number {
+  const normal = faceNormal(transform)
+  return THREE.MathUtils.radToDeg(Math.atan2(-normal.y, Math.hypot(normal.x, normal.z)))
 }

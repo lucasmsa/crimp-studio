@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useWallStore } from '../wallStore'
-import { createRootFaceTree, findWallOverlaps } from '@crimp-studio/wall-geometry'
+import { createRootFaceTree, findWallOverlaps, rectOutline } from '@crimp-studio/wall-geometry'
 import {
   measureHoldFootprint,
   measureWorstCaseFootprint,
@@ -595,7 +595,7 @@ describe('wallStore', () => {
       const { wall, selectedFaceId } = useWallStore.getState()
       expect(Object.keys(wall.faces.byId)).toHaveLength(2)
       expect(selectedFaceId).not.toBeNull()
-      expect(wall.faces.byId[rootFaceId()].height).toBe(250)
+      expect(wall.faces.byId[rootFaceId()].outline).toEqual(rectOutline(WIDTH, 250))
     })
 
     it('refuses a cut through a hold and leaves the wall alone', () => {
@@ -641,14 +641,14 @@ describe('wallStore', () => {
       expect(useWallStore.getState().wall.faces.byId[childId].angle).toBe(135)
     })
 
-    it('stores a child angle relative to its parent, so the absolute tilt is what was asked for', () => {
+    it('stores a child bend as given, about its own seam; steepness is read, not stored', () => {
       useWallStore.getState().setFaceAngle(rootFaceId(), 20)
       useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
       const childId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().setFaceAngle(childId, 30)
 
-      expect(useWallStore.getState().wall.faces.byId[childId].angle).toBeCloseTo(10, 5)
+      expect(useWallStore.getState().wall.faces.byId[childId].angle).toBe(30)
     })
   })
 
@@ -661,7 +661,7 @@ describe('wallStore', () => {
 
       const { wall, selectedFaceId } = useWallStore.getState()
       expect(Object.keys(wall.faces.byId)).toHaveLength(1)
-      expect(wall.faces.byId[rootFaceId()].height).toBe(HEIGHT)
+      expect(wall.faces.byId[rootFaceId()].outline).toEqual(rectOutline(WIDTH, HEIGHT))
       expect(selectedFaceId).toBeNull()
     })
 

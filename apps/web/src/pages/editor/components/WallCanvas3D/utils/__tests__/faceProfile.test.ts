@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { FaceTree } from '@crimp-studio/wall-geometry'
-import { computeFaceTransforms, createRootFaceTree } from '@crimp-studio/wall-geometry'
+import { computeFaceTransforms, createRootFaceTree, rectOutline } from '@crimp-studio/wall-geometry'
 import { computeWallProfile } from '../faceProfile'
 
 const PANEL = '#E8D5B7'
@@ -17,9 +17,8 @@ function bendTopSection(sheetHeight: number, topHeight: number, angle: number): 
       [topId]: {
         id: topId,
         parentId: base.rootId,
-        hinge: 'bottom',
-        width: 400,
-        height: topHeight,
+        seamEdge: 2,
+        outline: rectOutline(400, topHeight),
         angle,
         color: PANEL,
         childIds: [],

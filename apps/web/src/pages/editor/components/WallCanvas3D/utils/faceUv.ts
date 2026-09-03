@@ -1,9 +1,5 @@
 import * as THREE from 'three'
-import type { FaceTree } from '@crimp-studio/wall-geometry'
-import { computeFaceSheetOrigin, getFace } from '@crimp-studio/wall-geometry'
 import { PANEL_WIDTH_M } from './wallTexture'
-
-const PANEL_WIDTH_CM = PANEL_WIDTH_M * 100
 
 export interface FaceUvTransform {
   repeat: [number, number]
@@ -11,13 +7,20 @@ export interface FaceUvTransform {
 }
 
 /**
- * Maps a face onto the plywood tile by where it sits on the unrolled sheet, so
- * the T-nut grid and seams carry across a bend. Phase comes from the sheet
- * position, which no angle can change.
+ * The plywood tile, one per panel width, with no phase. A panel's geometry
+ * carries metre-space UVs, so this turns metres into tiles. Each facet takes
+ * its grain from its own frame, which is how a facet wall is skinned: across a
+ * seam the grain changes direction, and a shared phase would have nothing to
+ * mean (ADR-010).
  */
+export const PLYWOOD_UV: FaceUvTransform = {
+  repeat: [1 / PANEL_WIDTH_M, 1 / PANEL_WIDTH_M],
+  offset: [0, 0],
+}
+
 /**
- * Bakes a face's phase into its own UVs, so every panel can share one texture
- * object rather than owning a clone of it.
+ * Bakes a tiling into a geometry's own UVs, so every panel can share one
+ * texture object rather than owning a clone of it.
  */
 export function applyFaceUvTransform(
   geometry: THREE.BufferGeometry,
@@ -30,14 +33,4 @@ export function applyFaceUvTransform(
   }
 
   uv.needsUpdate = true
-}
-
-export function computeFaceUvTransform(tree: FaceTree, faceId: string): FaceUvTransform {
-  const face = getFace(tree, faceId)
-  const { u0, v0 } = computeFaceSheetOrigin(tree, faceId)
-
-  return {
-    repeat: [face.width / PANEL_WIDTH_CM, face.height / PANEL_WIDTH_CM],
-    offset: [u0 / PANEL_WIDTH_CM, v0 / PANEL_WIDTH_CM],
-  }
 }

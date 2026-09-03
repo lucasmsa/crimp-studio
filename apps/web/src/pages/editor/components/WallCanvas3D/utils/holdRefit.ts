@@ -18,7 +18,7 @@ export function refitHold(
   changes: Partial<Hold> = {},
 ): Hold {
   const face = getFace(faces, hold.faceId)
-  const { u, v } = clampHoldToFace(hold.u, hold.v, collisionBox, face.width, face.height)
+  const { u, v } = clampHoldToFace(hold.u, hold.v, collisionBox, face.outline)
 
   return { ...hold, ...changes, collisionBox, u, v }
 }

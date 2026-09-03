@@ -86,6 +86,8 @@
         "wall": "Pared Lateral"
       },
       "degrees": "{{value}} grados",
+      "bend": "Doblez {{value}} grados",
+      "steepness": "Inclinacion {{value}} grados",
       "increase": "Mas desplome",
       "decrease": "Menos desplome",
       "cutAcross": "Cortar Horizontal",
@@ -95,7 +97,8 @@
         "too-small": "El panel quedaria muy chico para escalar",
         "child-in-the-way": "Ya hay una union en ese sentido; corta el otro panel",
         "holds-in-the-way": "Hay presas sobre la union. Muevelas primero",
-        "would-clip": "Eso atravesaria el panel de al lado"
+        "would-clip": "Eso atravesaria el panel de al lado",
+        "not-one-panel": "Unir dejaria una L, no un panel. Une primero el vecino"
       }
     },
     "faceCount": "{{count}} paneles",
@@ -125,6 +128,7 @@
       "seam": {
         "across": "Dobla en la union horizontal",
         "up": "Dobla en la union vertical",
+        "slanted": "Dobla en una union inclinada",
         "floor": "Dobla en la linea del piso"
       }
     },

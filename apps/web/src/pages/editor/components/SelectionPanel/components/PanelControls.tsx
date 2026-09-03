@@ -24,11 +24,13 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
   const { t } = useTranslation()
   const {
     face,
-    tilt,
+    bend,
+    steepness,
     presets,
     seamLabelKey,
     cuts,
     canRemove,
+    canMerge,
     setAngle,
     stepAngle,
     setColor,
@@ -56,7 +58,7 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
             title={preset.reachable ? undefined : t('editor.face.refusal.would-clip')}
             className={cn(
               holdTypeButtonBase,
-              controlState({ selected: tilt === preset.angle, unavailable: !preset.reachable }),
+              controlState({ selected: preset.selected, unavailable: !preset.reachable }),
             )}
             data-testid={`face-angle-${preset.key}`}
           >
@@ -79,7 +81,7 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
           className="flex-1 border-2 border-border py-1 text-center font-mono text-sm tabular-nums text-foreground"
           data-testid="face-angle-value"
         >
-          {t('editor.face.degrees', { value: tilt })}
+          {t('editor.face.bend', { value: bend })}
         </span>
         <Button
           variant="outline"
@@ -91,6 +93,9 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
           +
         </Button>
       </div>
+      <p className={readoutLine} data-testid="face-steepness">
+        {t('editor.face.steepness', { value: steepness })}
+      </p>
 
       <div className="grid grid-cols-2 gap-1.5">
         <button
@@ -130,6 +135,8 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
           size="sm"
           className="w-full"
           onClick={remove}
+          disabled={!canMerge}
+          title={canMerge ? undefined : t('editor.face.refusal.not-one-panel')}
           data-testid="face-remove"
         >
           {t('editor.face.remove')}

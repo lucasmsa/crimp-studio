@@ -86,6 +86,8 @@
         "wall": "Side Wall"
       },
       "degrees": "{{value}} deg",
+      "bend": "Bend {{value}} deg",
+      "steepness": "Steepness {{value}} deg",
       "increase": "Steeper",
       "decrease": "Shallower",
       "cutAcross": "Cut Across",
@@ -95,7 +97,8 @@
         "too-small": "The panel would be too small to climb",
         "child-in-the-way": "A seam already crosses this way; cut the other panel instead",
         "holds-in-the-way": "Holds sit on the seam. Move them first",
-        "would-clip": "That would pass through the panel next to it"
+        "would-clip": "That would pass through the panel next to it",
+        "not-one-panel": "Merging would leave an L, not a panel. Merge its neighbour first"
       }
     },
     "faceCount": "{{count}} panels",
@@ -125,6 +128,7 @@
       "seam": {
         "across": "Bends on the seam across the wall",
         "up": "Bends on the seam up the wall",
+        "slanted": "Bends on a slanted seam",
         "floor": "Bends on the floor line"
       }
     },
