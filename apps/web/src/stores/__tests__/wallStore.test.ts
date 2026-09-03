@@ -29,6 +29,10 @@ function resetStore() {
     deletingHoldIds: [],
     blockingHoldIds: [],
     heldHold: null,
+    leavingHolds: [],
+    drawnSeam: null,
+    justCut: null,
+    leavingPanels: [],
     lastEdit: null,
   })
   useWallStore.temporal.getState().clear()
@@ -39,6 +43,24 @@ const rootFaceId = () => useWallStore.getState().wall.faces.rootId
 /** Places a hold on the root face, which is the whole wall until it is cut */
 function place(u: number, v: number) {
   useWallStore.getState().addHold(rootFaceId(), u, v)
+}
+
+/** Draws a seam through the store, as a drag would: press, aim, let go */
+function drawSeam(tool: 'blade' | 'trim', faceId: string, anchor: [number, number], toward: [number, number]) {
+  const { beginSeam, aimSeam, releaseSeam } = useWallStore.getState()
+  beginSeam(tool, faceId, anchor)
+  aimSeam(toward)
+  releaseSeam()
+}
+
+/** Cuts the root level, `at` cm up, selecting the new upper face */
+function cutLevel(at: number) {
+  drawSeam('blade', rootFaceId(), [WIDTH / 2, at], [WIDTH / 2 + 50, at])
+}
+
+/** Cuts the root upright, `at` cm across, selecting the new right-hand face */
+function cutUpright(at: number) {
+  drawSeam('blade', rootFaceId(), [at, HEIGHT / 2], [at, HEIGHT / 2 + 50])
 }
 
 /**
@@ -258,7 +280,7 @@ describe('wallStore', () => {
     it('hands the hold to the panel under the pointer', () => {
       place(150, 100)
       const hold = useWallStore.getState().wall.holds[0]
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const upperId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().holdHold(hold.id, 150, 60, upperId)
@@ -467,7 +489,7 @@ describe('wallStore', () => {
 
   describe('the wall never clips', () => {
     it('stops a bend where the panel would pass through the one below it', () => {
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const upperId = useWallStore.getState().selectedFaceId!
       useWallStore.getState().setFaceAngle(upperId, 90)
 
@@ -482,7 +504,7 @@ describe('wallStore', () => {
     it('points at the hold that stopped a bend', () => {
       /* An arete swung past a right angle sweeps back over the face it hinges
          on, and a hold near that seam is what it runs into */
-      useWallStore.getState().cutFace(rootFaceId(), 'up', 200)
+      cutUpright(200)
       const finId = useWallStore.getState().selectedFaceId!
       place(190, 200)
       const holdId = useWallStore.getState().wall.holds[0].id
@@ -534,7 +556,7 @@ describe('wallStore', () => {
     it('hands a hold to the panel it is dragged onto', () => {
       place(150, 100)
       const hold = useWallStore.getState().wall.holds[0]
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const upperId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().moveHold(hold.id, 150, 60, upperId)
@@ -549,7 +571,7 @@ describe('wallStore', () => {
     it('refuses to hand a hold over onto another hold', () => {
       place(150, 100)
       const moving = useWallStore.getState().wall.holds[0]
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const upperId = useWallStore.getState().selectedFaceId!
       useWallStore.getState().addHold(upperId, 150, 60)
 
@@ -579,7 +601,7 @@ describe('wallStore', () => {
     })
 
     it('leaves the neighbouring panel alone', () => {
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const upperId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().setFaceColor(upperId, '#FF5722')
@@ -588,32 +610,93 @@ describe('wallStore', () => {
     })
   })
 
-  describe('cutFace', () => {
-    it('splits the root and selects the new face', () => {
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+  describe('drawing a seam', () => {
+    it('cuts where the seam was drawn and selects the new face', () => {
+      cutLevel(250)
 
-      const { wall, selectedFaceId } = useWallStore.getState()
+      const { wall, selectedFaceId, drawnSeam, justCut } = useWallStore.getState()
       expect(Object.keys(wall.faces.byId)).toHaveLength(2)
       expect(selectedFaceId).not.toBeNull()
+      expect(justCut?.faceId).toBe(selectedFaceId)
+      expect(drawnSeam).toBeNull()
       expect(wall.faces.byId[rootFaceId()].outline).toEqual(rectOutline(WIDTH, 250))
     })
 
-    it('refuses a cut through a hold and leaves the wall alone', () => {
+    it('shows a seam through a hold as refused, and lets go of it without cutting', () => {
       place(150, 250)
-      const before = useWallStore.getState().wall.faces
+      const before = useWallStore.getState().wall
+      const holdId = before.holds[0].id
 
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      useWallStore.getState().beginSeam('blade', rootFaceId(), [50, 250])
+      useWallStore.getState().aimSeam([100, 250])
 
-      expect(useWallStore.getState().wall.faces).toBe(before)
+      const drawn = useWallStore.getState().drawnSeam!
+      expect(drawn.clear).toBe(false)
+      expect(drawn.reason).toBe('holds-in-the-way')
+      expect(drawn.blockedHoldIds).toEqual([holdId])
+
+      useWallStore.getState().releaseSeam()
+      expect(useWallStore.getState().wall).toBe(before)
+      expect(useWallStore.getState().drawnSeam).toBeNull()
     })
 
     it('moves holds above the seam onto the new face', () => {
       place(150, 350)
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
 
       const hold = useWallStore.getState().wall.holds[0]
       expect(hold.faceId).toBe(useWallStore.getState().selectedFaceId)
       expect(hold.v).toBe(100)
+    })
+
+    it('reads the seam angle in the plywood terms, and cancels cleanly', () => {
+      useWallStore.getState().beginSeam('blade', rootFaceId(), [150, 200])
+      useWallStore.getState().aimSeam([150, 300])
+      expect(useWallStore.getState().drawnSeam?.angleDeg).toBe(90)
+
+      useWallStore.getState().cancelSeam()
+      expect(useWallStore.getState().drawnSeam).toBeNull()
+    })
+
+    it('does nothing on a release that never drew a line', () => {
+      const before = useWallStore.getState().wall
+      useWallStore.getState().beginSeam('blade', rootFaceId(), [150, 200])
+
+      useWallStore.getState().releaseSeam()
+
+      expect(useWallStore.getState().wall).toBe(before)
+      expect(useWallStore.getState().drawnSeam).toBeNull()
+    })
+
+    it('trims the far piece away with its holds and the panels hinged on it, and draws the offcut falling', () => {
+      cutLevel(250)
+      const upperId = useWallStore.getState().selectedFaceId!
+      place(150, 100)
+      useWallStore.getState().addHold(rootFaceId(), 150, 200)
+      useWallStore.getState().addHold(upperId, 150, 50)
+
+      useWallStore.getState().beginSeam('trim', rootFaceId(), [150, 150])
+      useWallStore.getState().aimSeam([250, 150])
+      const drawn = useWallStore.getState().drawnSeam!
+      expect(drawn.clear).toBe(true)
+      expect(drawn.leavingFaceIds).toEqual([upperId])
+      expect(drawn.leavingHoldIds).toHaveLength(2)
+      expect(drawn.offcut).not.toBeNull()
+
+      useWallStore.getState().releaseSeam()
+
+      const { wall, leavingPanels, lastEdit, selectedFaceId } = useWallStore.getState()
+      expect(Object.keys(wall.faces.byId)).toEqual([rootFaceId()])
+      expect(wall.faces.byId[rootFaceId()].outline).toEqual(rectOutline(WIDTH, 150))
+      expect(wall.holds.map((hold) => hold.v)).toEqual([100])
+      expect(lastEdit?.key).toBe(`trimFace:${rootFaceId()}`)
+      expect(selectedFaceId).toBeNull()
+      expect(leavingPanels).toHaveLength(1)
+      expect(leavingPanels[0].faceId).toBe(rootFaceId())
+      expect(leavingPanels[0].holds.map((hold) => hold.v)).toEqual([200])
+
+      useWallStore.getState().dismissLeavingPanel(leavingPanels[0].id)
+      expect(useWallStore.getState().leavingPanels).toEqual([])
     })
   })
 
@@ -633,7 +716,7 @@ describe('wallStore', () => {
     })
 
     it('lets a panel above the base go all the way to a roof', () => {
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const childId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().setFaceAngle(childId, 200)
@@ -643,7 +726,7 @@ describe('wallStore', () => {
 
     it('stores a child bend as given, about its own seam; steepness is read, not stored', () => {
       useWallStore.getState().setFaceAngle(rootFaceId(), 20)
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const childId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().setFaceAngle(childId, 30)
@@ -654,7 +737,7 @@ describe('wallStore', () => {
 
   describe('removeFace', () => {
     it('merges a face back into its parent', () => {
-      useWallStore.getState().cutFace(rootFaceId(), 'across', 250)
+      cutLevel(250)
       const childId = useWallStore.getState().selectedFaceId!
 
       useWallStore.getState().removeFace(childId)

@@ -27,9 +27,20 @@ function resetStore() {
     blockingHoldIds: [],
     heldHold: null,
     leavingHolds: [],
+    drawnSeam: null,
+    justCut: null,
+    leavingPanels: [],
     lastEdit: null,
   })
   useWallStore.temporal.getState().clear()
+}
+
+/** Draws a seam through the store, as a drag would: press, aim, let go */
+function drawSeam(tool: 'blade' | 'trim', faceId: string, anchor: [number, number], toward: [number, number]) {
+  const { beginSeam, aimSeam, releaseSeam } = useWallStore.getState()
+  beginSeam(tool, faceId, anchor)
+  aimSeam(toward)
+  releaseSeam()
 }
 
 const rootFaceId = () => useWallStore.getState().wall.faces.rootId
@@ -264,5 +275,23 @@ describe('wall history', () => {
     expect(holds()).toHaveLength(0)
     expect(useWallStore.getState().leavingHolds.map((h) => h.id)).toEqual(['hold_0', 'hold_1'])
     expect(useWallStore.getState().leavingHolds[0].faceId).toBe(rootFaceId())
+  })
+
+  it('brings plywood, panels and holds back after a trim', () => {
+    drawSeam('blade', rootFaceId(), [150, 250], [200, 250])
+    const upperId = useWallStore.getState().selectedFaceId!
+    useWallStore.getState().addHold(upperId, 100, 50)
+
+    drawSeam('trim', rootFaceId(), [150, 150], [200, 150])
+    expect(Object.keys(useWallStore.getState().wall.faces.byId)).toEqual([rootFaceId()])
+    expect(holds()).toHaveLength(0)
+
+    undo()
+
+    expect(Object.keys(useWallStore.getState().wall.faces.byId).sort()).toEqual(
+      [rootFaceId(), upperId].sort(),
+    )
+    expect(holds()).toHaveLength(1)
+    expect(holds()[0].faceId).toBe(upperId)
   })
 })

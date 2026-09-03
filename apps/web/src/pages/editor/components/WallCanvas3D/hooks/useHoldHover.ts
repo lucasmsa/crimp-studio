@@ -10,7 +10,7 @@ export function useHoldHover(isDraggingAny: React.RefObject<boolean>) {
   const [isHovered, setIsHovered] = useState(false)
 
   const onPointerEnter = (e: ThreeEvent<PointerEvent>) => {
-    if (useWallStore.getState().editorMode === 'shape') return
+    if (useWallStore.getState().editorMode !== 'holds') return
 
     e.stopPropagation()
     setIsHovered(true)

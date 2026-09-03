@@ -1,36 +1,50 @@
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
-import type { Hold } from '@/stores/wallStore'
+import { animated, useSpring } from '@react-spring/three'
+import type { DrawnSeam, Hold, LeavingPanel } from '@/stores/wallStore'
 import { colors } from '@/lib/colors'
 import { useSceneRoom } from '../hooks/useSceneRoom'
 import { Hold3D } from './Hold3D'
-import { CM_TO_M, hingeSegment, WALL_DEPTH } from '@crimp-studio/wall-geometry'
-import type { Point2, WallFace } from '@crimp-studio/wall-geometry'
+import { LeavingPanel3D } from './LeavingPanel3D'
+import { SeamOverlay } from './SeamOverlay'
+import { CM_TO_M, hingeSegment } from '@crimp-studio/wall-geometry'
+import type { WallFace } from '@crimp-studio/wall-geometry'
 import { SCENE_STYLE, toonConfig } from '../config/sceneStyleConfig'
+import { SEAM_FLASH_MS, SEAM_LIFT, SEAM_WIDTH } from '../config/seamStyle'
 import { getBlurredPlywoodTexture, getPlywoodTexture } from '../utils/wallTexture'
 import { getToonGradientMap } from '@/lib/three/toon'
 import { createOutlineGeometry } from '@/lib/three/outline'
 import { applyFaceUvTransform, PLYWOOD_UV } from '../utils/faceUv'
+import { panelGeometry } from '../utils/panelGeometry'
 
 /** How far an unfocused panel fades toward the background */
 const DIM_AMOUNT = 0.45
+/** How far a panel about to be trimmed off fades toward red */
+const DOOM_AMOUNT = 0.5
 
-/** Seam line thickness in metres, and how far it floats off the surface */
-const SEAM_WIDTH = 0.018
-const SEAM_LIFT = 0.002
+const INK = new THREE.Color(colors.scene.outline)
+const BRIGHT = new THREE.Color(colors.wall.surface)
 
 interface WallFace3DProps {
   face: WallFace
   holds: Hold[]
   /** Holds history took off this panel, drawn popping off until they are done */
   leavingHolds: Hold[]
+  /** Offcuts a trim took off this panel, drawn falling until they are done */
+  leavingPanels: LeavingPanel[]
+  /** A seam being drawn on this panel */
+  drawnSeam: DrawnSeam | null
+  /** When this panel was made by a blade, so its seam flashes and it opens and settles */
+  cutAt: number | null
   selectedHoldId: string | null
   blockingHoldIds: string[]
   deletingHoldIds: string[]
   isDraggingAny: React.RefObject<boolean>
   /** Another panel has the focus, so this one steps back */
   isDimmed: boolean
+  /** A trim being drawn would take this panel with the offcut */
+  isDoomed: boolean
   /** The angle springs drive this group directly, so it takes no transform props */
   groupRef: React.Ref<THREE.Group>
   meshRef?: React.Ref<THREE.Mesh>
@@ -39,21 +53,10 @@ interface WallFace3DProps {
   onPointerLeave: () => void
   onHoldPointerDown: (holdId: string) => (e: ThreeEvent<PointerEvent>) => void
   onHoldLeft: (holdId: string) => void
+  onPanelLeft: (panelId: string) => void
 }
 
 const ignorePointer = () => {}
-
-/**
- * The panel as plywood: its outline at the surface, z = 0 in the face frame,
- * extruded backwards through the sheet's thickness. Built in the face frame
- * itself, so a pointer hit converts to face coordinates with no offset.
- */
-function panelGeometry(outline: Point2[]): THREE.ExtrudeGeometry {
-  const shape = new THREE.Shape(outline.map(([u, v]) => new THREE.Vector2(u * CM_TO_M, v * CM_TO_M)))
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth: WALL_DEPTH, bevelEnabled: false })
-  geometry.translate(0, 0, -WALL_DEPTH)
-  return geometry
-}
 
 /**
  * One flat panel of the wall, with the holds bolted to it. The group carries
@@ -68,11 +71,15 @@ export function WallFace3D({
   face,
   holds,
   leavingHolds,
+  leavingPanels,
+  drawnSeam,
+  cutAt,
   selectedHoldId,
   blockingHoldIds,
   deletingHoldIds,
   isDraggingAny,
   isDimmed,
+  isDoomed,
   groupRef,
   meshRef,
   onPointerDown,
@@ -80,6 +87,7 @@ export function WallFace3D({
   onPointerLeave,
   onHoldPointerDown,
   onHoldLeft,
+  onPanelLeft,
 }: WallFace3DProps) {
   const room = useSceneRoom()
 
@@ -108,13 +116,24 @@ export function WallFace3D({
 
   /* Focus reads by dimming the rest of the wall rather than by thickening this
      panel's rim: a hull stroke is geometry, so it juts out flat wherever the
-     panel is seen edge-on, which is exactly where focus matters most */
+     panel is seen edge-on, which is exactly where focus matters most. A panel a
+     trim would take turns red the same way */
   const surfaceColor = useMemo(() => {
     const color = new THREE.Color(face.color)
+    if (isDoomed) return color.lerp(new THREE.Color(colors.error), DOOM_AMOUNT)
     return isDimmed ? color.lerp(new THREE.Color(room.bottom), DIM_AMOUNT) : color
-  }, [face.color, isDimmed, room.bottom])
+  }, [face.color, isDimmed, isDoomed, room.bottom])
 
   const seam = face.parentId ? hingeSegment(face) : null
+
+  /* A seam a blade just made flashes bright, then is ink like the others */
+  const { glow } = useSpring({
+    from: { glow: cutAt ? 1 : 0 },
+    to: { glow: 0 },
+    reset: true,
+    config: { duration: SEAM_FLASH_MS },
+  })
+  const seamColor = glow.to((k) => `#${INK.clone().lerp(BRIGHT, k).getHexString()}`)
 
   return (
     <group ref={groupRef}>
@@ -146,6 +165,17 @@ export function WallFace3D({
         />
       ))}
 
+      {leavingPanels.map((panel) => (
+        <LeavingPanel3D
+          key={panel.id}
+          panel={panel}
+          isDraggingAny={isDraggingAny}
+          onLeft={() => onPanelLeft(panel.id)}
+        />
+      ))}
+
+      {drawnSeam && <SeamOverlay drawn={drawnSeam} />}
+
       {/* Ink line along the hinge, which every face keeps at v = 0. Two panels
           folded flat leave only a hairline between their rims, which reads as
           nothing at all from the front */}
@@ -155,7 +185,7 @@ export function WallFace3D({
           raycast={() => null}
         >
           <planeGeometry args={[(seam.to - seam.from) * CM_TO_M, SEAM_WIDTH]} />
-          <meshBasicMaterial color={colors.scene.outline} />
+          <animated.meshBasicMaterial color={seamColor} />
         </mesh>
       )}
 

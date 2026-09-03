@@ -23,14 +23,6 @@ export interface Seam {
   b: Point2
 }
 
-/**
- * The two seams the buttons can make, in the plywood's own terms: 'across'
- * runs level and splits a lower from an upper piece, 'up' runs vertical and
- * splits a left from a right one. Adapters over `cutFaceAlong` until seams are
- * drawn instead (ADR-011).
- */
-export type CutAxis = 'across' | 'up'
-
 /** A panel narrower than this anywhere is not a climbing surface, it is a strip of trim */
 export const MIN_FACE_SIZE = 40
 
@@ -49,7 +41,36 @@ export interface CutResult {
   newFaceId: string
 }
 
+/** The two pieces a seam makes of a face, in the face's frame. The near one keeps the face */
+export interface Split {
+  near: Point2[]
+  far: Point2[]
+  nearIsLeft: boolean
+}
+
+/** What a trim would take off a face, so a drag can show it going before the release */
+export interface TrimPreview {
+  /** The far piece, in the face's frame */
+  offcut: Point2[]
+  /** Panels hinged on the offcut, and everything hinged on those */
+  leavingFaceIds: string[]
+  /** Holds on the offcut, or on a leaving panel */
+  leavingHoldIds: string[]
+}
+
+export interface TrimResult {
+  tree: FaceTree
+  holds: Hold[]
+  /** The plywood that left, in the kept face's frame, for the drawing of it falling */
+  offcut: Point2[]
+  /** The holds that were bolted to the offcut itself, where they sat before the cut */
+  offcutHolds: Hold[]
+}
+
 const EPSILON = 1e-6
+
+/** Closer than this to the anchor, in cm, the cursor gives the seam no direction */
+const MIN_DRAW_CM = 1
 
 const createFaceId = () => `face_${Math.random().toString(36).substring(2, 9)}`
 
@@ -181,7 +202,7 @@ function rebase(
  * Which side of the seam keeps the face. The piece holding the hinge end that
  * is lowest in the world, ties broken toward the seam's start: the floor pin
  * never moves, an arete cut level keeps its foot, and a root cut upright keeps
- * its left half, all as before.
+ * its left half.
  */
 function nearSideIsLeft(tree: FaceTree, face: WallFace, seam: Seam): boolean {
   const transform = computeFaceTransforms(tree)[face.id]
@@ -226,41 +247,58 @@ function chordThrough(outline: Point2[], point: Point2, direction: Point2): Seam
   return samePoint(first, last) ? null : { a: first, b: last }
 }
 
-/** The plywood's axes in a face's frame: up the sheet, and across it to the right */
-function sheetAxes(tree: FaceTree, faceId: string): { up: Point2; right: Point2 } {
+/**
+ * The seam a drag draws: the line through where the panel was pressed and where
+ * the cursor is now, run out to the panel's border both ways. Neither end has to
+ * land on an edge, and until the cursor has left the anchor there is no line.
+ */
+export function seamThrough(outline: Point2[], anchor: Point2, toward: Point2): Seam | null {
+  const direction = subtract(toward, anchor)
+  if (Math.hypot(direction[0], direction[1]) < MIN_DRAW_CM) return null
+  return chordThrough(outline, anchor, direction)
+}
+
+/** How a seam runs on the plywood, in degrees: 0 is level, 90 upright, folded to [0, 180) */
+export function seamAngleDeg(tree: FaceTree, faceId: string, seam: Seam): number {
   const up = sheetUp(tree, faceId)
-  return { up, right: [up[1], 0 - up[0]] }
+  const right: Point2 = [up[1], 0 - up[0]]
+  const direction = subtract(seam.b, seam.a)
+  const degrees = (Math.atan2(dot(direction, up), dot(direction, right)) * 180) / Math.PI
+  return ((degrees % 180) + 180) % 180
 }
 
-function axisAlong(tree: FaceTree, faceId: string, axis: CutAxis): Point2 {
-  const { up, right } = sheetAxes(tree, faceId)
-  return axis === 'across' ? up : right
+export function splitFace(tree: FaceTree, face: WallFace, seam: Seam): Split {
+  const left = clipToSide(face.outline, seam, true)
+  const right = clipToSide(face.outline, seam, false)
+  const nearIsLeft = nearSideIsLeft(tree, face, seam)
+  return nearIsLeft ? { near: left, far: right, nearIsLeft } : { near: right, far: left, nearIsLeft }
 }
 
-/** How much of a face there is to cut along an axis, in cm */
-export function sheetExtent(tree: FaceTree, faceId: string, axis: CutAxis): number {
-  const along = axisAlong(tree, faceId, axis)
-  const levels = getFace(tree, faceId).outline.map((p) => dot(p, along))
-  return Math.max(...levels) - Math.min(...levels)
+function pieceExists(piece: Point2[]): boolean {
+  return piece.length >= 3 && outlineArea(piece) > EPSILON
 }
 
-/** Where a point on the face sits along an axis, from the face's low side, in cm */
-export function sheetOffset(tree: FaceTree, faceId: string, point: Point2, axis: CutAxis): number {
-  const along = axisAlong(tree, faceId, axis)
-  const min = Math.min(...getFace(tree, faceId).outline.map((p) => dot(p, along)))
-  return dot(point, along) - min
+function pieceIsUsable(piece: Point2[]): boolean {
+  return pieceExists(piece) && minWidthAcross(piece) >= MIN_FACE_SIZE
 }
 
-/** The seam a button makes: level for 'across', upright for 'up', `at` cm from the face's low side */
-export function seamForAxis(tree: FaceTree, faceId: string, axis: CutAxis, at: number): Seam | null {
-  const { up, right } = sheetAxes(tree, faceId)
-  const along = axis === 'across' ? up : right
-  const direction = axis === 'across' ? right : up
-  const outline = getFace(tree, faceId).outline
-  const level = Math.min(...outline.map((p) => dot(p, along))) + at
-
-  return chordThrough(outline, [along[0] * level, along[1] * level], direction)
+/** Whether the seam would cut through an edge one of the face's children hinges on */
+function childInTheWay(tree: FaceTree, face: WallFace, seam: Seam): boolean {
+  return face.childIds.some((childId) => {
+    const child = getFace(tree, childId)
+    return child.seamEdge !== null && seamCrossesEdge(seam, edgeOf(face.outline, child.seamEdge))
+  })
 }
+
+function holdsInTheWay(holds: Hold[], faceId: string, seam: Seam): string[] {
+  return holds.filter((hold) => hold.faceId === faceId && seamHitsHold(seam, hold)).map((hold) => hold.id)
+}
+
+const REFUSED = (reason: CutRefusal, blockingHoldIds: string[] = []): CutCheck => ({
+  ok: false,
+  reason,
+  blockingHoldIds,
+})
 
 /**
  * A cut is legal when both pieces stay usable, no child hinges on an edge the
@@ -273,63 +311,68 @@ export function canCutAlong(
   faceId: string,
   seam: Seam | null,
 ): CutCheck {
-  if (!seam) return { ok: false, reason: 'too-small', blockingHoldIds: [] }
+  if (!seam) return REFUSED('too-small')
 
   const face = getFace(tree, faceId)
-  const pieces = [clipToSide(face.outline, seam, true), clipToSide(face.outline, seam, false)]
-  const usable = pieces.every(
-    (piece) => piece.length >= 3 && outlineArea(piece) > EPSILON && minWidthAcross(piece) >= MIN_FACE_SIZE,
-  )
-  if (!usable) return { ok: false, reason: 'too-small', blockingHoldIds: [] }
+  const { near, far } = splitFace(tree, face, seam)
+  if (!pieceIsUsable(near) || !pieceIsUsable(far)) return REFUSED('too-small')
+  if (childInTheWay(tree, face, seam)) return REFUSED('child-in-the-way')
 
-  const childInTheWay = face.childIds.some((childId) => {
-    const child = getFace(tree, childId)
-    return child.seamEdge !== null && seamCrossesEdge(seam, edgeOf(face.outline, child.seamEdge))
-  })
-  if (childInTheWay) return { ok: false, reason: 'child-in-the-way', blockingHoldIds: [] }
-
-  const blockingHoldIds = holds
-    .filter((hold) => hold.faceId === faceId && seamHitsHold(seam, hold))
-    .map((hold) => hold.id)
-  if (blockingHoldIds.length > 0) return { ok: false, reason: 'holds-in-the-way', blockingHoldIds }
+  const blockingHoldIds = holdsInTheWay(holds, faceId, seam)
+  if (blockingHoldIds.length > 0) return REFUSED('holds-in-the-way', blockingHoldIds)
 
   return { ok: true, blockingHoldIds: [] }
 }
 
-export function canCutFace(
+/**
+ * A trim is legal when the piece that stays is usable, no child hinges on an
+ * edge the seam would cut through, and the seam does not pass through a hold.
+ * The offcut may be any size, and may carry panels and holds: they leave with
+ * it (ADR-011, amended).
+ */
+export function canTrimAlong(
   tree: FaceTree,
   holds: Hold[],
   faceId: string,
-  axis: CutAxis,
-  at: number,
+  seam: Seam | null,
 ): CutCheck {
-  return canCutAlong(tree, holds, faceId, seamForAxis(tree, faceId, axis, at))
+  if (!seam) return REFUSED('too-small')
+
+  const face = getFace(tree, faceId)
+  const { near, far } = splitFace(tree, face, seam)
+  if (!pieceIsUsable(near) || !pieceExists(far)) return REFUSED('too-small')
+  if (childInTheWay(tree, face, seam)) return REFUSED('child-in-the-way')
+
+  const blockingHoldIds = holdsInTheWay(holds, faceId, seam)
+  if (blockingHoldIds.length > 0) return REFUSED('holds-in-the-way', blockingHoldIds)
+
+  return { ok: true, blockingHoldIds: [] }
 }
 
-/**
- * The seam nearest to where the user aimed that is actually legal. Aiming and
- * placing are the same click, so the aimed spot is often exactly where a hold
- * just landed; this walks outward from there to the first clear line rather
- * than leaving the cut button dead with no way forward.
- */
-export function findCutPosition(
-  tree: FaceTree,
-  holds: Hold[],
-  faceId: string,
-  axis: CutAxis,
-  preferred: number,
-): number | null {
-  const extent = sheetExtent(tree, faceId, axis)
-  const legal = (at: number) => canCutFace(tree, holds, faceId, axis, at).ok
+function descendants(tree: FaceTree, faceId: string): string[] {
+  return [faceId, ...getFace(tree, faceId).childIds.flatMap((childId) => descendants(tree, childId))]
+}
 
-  if (legal(preferred)) return preferred
+/** Everything a trim along this seam would take off the wall */
+export function trimPreview(tree: FaceTree, holds: Hold[], faceId: string, seam: Seam): TrimPreview {
+  const face = getFace(tree, faceId)
+  const { far, nearIsLeft } = splitFace(tree, face, seam)
+  const onOffcut = (point: Point2) => (sideOf(seam, point) > EPSILON) !== nearIsLeft
 
-  for (let offset = 5; offset <= extent; offset += 5) {
-    if (legal(preferred + offset)) return preferred + offset
-    if (legal(preferred - offset)) return preferred - offset
-  }
+  /* A child's hinge edge is never cut through (that is refused), so its middle
+     says which side the whole edge, and the whole child, is on */
+  const leavingFaceIds = face.childIds.flatMap((childId) => {
+    const child = getFace(tree, childId)
+    const [p, q] = edgeOf(face.outline, child.seamEdge!)
+    return onOffcut([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]) ? descendants(tree, childId) : []
+  })
+  const leaving = new Set(leavingFaceIds)
 
-  return null
+  const leavingHoldIds = holds
+    .filter((hold) => leaving.has(hold.faceId) || (hold.faceId === faceId && onOffcut([hold.u, hold.v])))
+    .map((hold) => hold.id)
+
+  return { offcut: far, leavingFaceIds, leavingHoldIds }
 }
 
 /**
@@ -340,11 +383,7 @@ export function findCutPosition(
  */
 export function cutFaceAlong(tree: FaceTree, holds: Hold[], faceId: string, seam: Seam): CutResult {
   const face = getFace(tree, faceId)
-  const left = clipToSide(face.outline, seam, true)
-  const right = clipToSide(face.outline, seam, false)
-  const nearIsLeft = nearSideIsLeft(tree, face, seam)
-  const nearOutline = nearIsLeft ? left : right
-  const farInFace = nearIsLeft ? right : left
+  const { near: nearOutline, far: farInFace, nearIsLeft } = splitFace(tree, face, seam)
 
   const newFaceId = createFaceId()
   const farSeam = edgeMatching(nearOutline, seam.a, seam.b)
@@ -410,6 +449,34 @@ export function cutFaceAlong(tree: FaceTree, holds: Hold[], faceId: string, seam
   return { tree: { rootId: tree.rootId, byId }, holds: nextHolds, newFaceId }
 }
 
+/**
+ * Cuts a face along a seam and throws the far piece away, with every panel
+ * hinged on it and every hold bolted to any of them. The piece with the hinge
+ * stays; undo is what brings the rest back (ADR-011, ADR-012).
+ */
+export function trimFaceAlong(tree: FaceTree, holds: Hold[], faceId: string, seam: Seam): TrimResult {
+  const face = getFace(tree, faceId)
+  const { far } = splitFace(tree, face, seam)
+  const cut = cutFaceAlong(tree, holds, faceId, seam)
+  const leaving = new Set(descendants(cut.tree, cut.newFaceId))
+
+  const byId: Record<string, WallFace> = { ...cut.tree.byId }
+  for (const id of leaving) delete byId[id]
+  const kept = byId[faceId]
+  byId[faceId] = { ...kept, childIds: kept.childIds.filter((id) => id !== cut.newFaceId) }
+
+  const movedToOffcut = new Set(
+    cut.holds.filter((hold) => hold.faceId === cut.newFaceId).map((hold) => hold.id),
+  )
+
+  return {
+    tree: { rootId: tree.rootId, byId },
+    holds: cut.holds.filter((hold) => !leaving.has(hold.faceId)),
+    offcut: far,
+    offcutHolds: holds.filter((hold) => movedToOffcut.has(hold.id)),
+  }
+}
+
 /** Rotates an outline so it starts where its hinge does, which is easier to read and to test */
 function startAtHinge(outline: Point2[]): Point2[] {
   let start = 0
@@ -419,18 +486,6 @@ function startAtHinge(outline: Point2[]): Point2[] {
     if (v < sv - EPSILON || (Math.abs(v - sv) < EPSILON && u < su)) start = i
   }
   return [...outline.slice(start), ...outline.slice(0, start)]
-}
-
-export function cutFaceTree(
-  tree: FaceTree,
-  holds: Hold[],
-  faceId: string,
-  axis: CutAxis,
-  at: number,
-): CutResult {
-  const seam = seamForAxis(tree, faceId, axis, at)
-  if (!seam) throw new Error(`No ${axis} seam at ${at} on face ${faceId}`)
-  return cutFaceAlong(tree, holds, faceId, seam)
 }
 
 /** Whether a face can be merged back into its parent: its seam spans the parent's whole edge and the union stays convex */

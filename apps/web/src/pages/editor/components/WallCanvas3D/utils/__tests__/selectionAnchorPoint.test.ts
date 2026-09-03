@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { Hold } from '@/stores/wallStore'
 import { computeFaceTransforms, createRootFaceTree } from '@crimp-studio/wall-geometry'
-import { cutFaceTree } from '../faceCut'
+import { cutFaceAlong } from '../faceCut'
 import { faceSelectionAnchor, holdSelectionAnchor } from '../selectionAnchorPoint'
 
 const PANEL = '#E8D5B7'
@@ -22,7 +22,7 @@ describe('faceSelectionAnchor', () => {
 
   it('rides the bend, so the line keeps pointing at the panel it belongs to', () => {
     const flat = createRootFaceTree(400, 500, PANEL)
-    const { tree, newFaceId } = cutFaceTree(flat, [], flat.rootId, 'across', 300)
+    const { tree, newFaceId } = cutFaceAlong(flat, [], flat.rootId, { a: [0, 300], b: [400, 300] })
     const bent = {
       rootId: tree.rootId,
       byId: { ...tree.byId, [newFaceId]: { ...tree.byId[newFaceId], angle: 90 } },

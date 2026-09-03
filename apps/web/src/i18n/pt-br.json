@@ -90,12 +90,10 @@
       "steepness": "Inclinacao {{value}} graus",
       "increase": "Mais negativo",
       "decrease": "Menos negativo",
-      "cutAcross": "Cortar na Horizontal",
-      "cutUp": "Cortar na Vertical",
       "remove": "Juntar Abaixo",
       "refusal": {
         "too-small": "O painel ficaria pequeno demais para escalar",
-        "child-in-the-way": "Ja existe uma emenda nesse sentido; corte o outro painel",
+        "child-in-the-way": "A emenda cortaria um painel articulado aqui. Corte esse outro",
         "holds-in-the-way": "Ha presas em cima da emenda. Mova elas antes",
         "would-clip": "Isso atravessaria o painel ao lado",
         "not-one-panel": "Juntar deixaria um L, nao um painel. Junte o vizinho antes"
@@ -142,7 +140,9 @@
       "expand": "Expandir ferramentas",
       "tools": {
         "holds": "Colocar Presas",
-        "shape": "Moldar Paineis"
+        "shape": "Moldar Paineis",
+        "blade": "Lamina",
+        "trim": "Aparar"
       }
     },
     "readout": {

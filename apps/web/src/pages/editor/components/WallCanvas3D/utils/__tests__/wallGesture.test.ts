@@ -12,6 +12,15 @@ describe('resolveWallTap', () => {
     ).toBe('selectFace')
   })
 
+  it('picks the panel from a tap with a blade or trim armed, since a tap draws no seam', () => {
+    expect(
+      resolveWallTap({ mode: 'blade', selectedHoldId: 'hold_1', hitFaceId: 'face_1' }),
+    ).toBe('selectFace')
+    expect(
+      resolveWallTap({ mode: 'trim', selectedHoldId: null, hitFaceId: 'face_1' }),
+    ).toBe('selectFace')
+  })
+
   it('places a hold when that is what clicks are aimed at', () => {
     expect(
       resolveWallTap({ mode: 'holds', selectedHoldId: null, hitFaceId: 'face_1' }),

@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { WallScene } from './components/WallScene'
+import { SeamAngleLabel } from './components/SeamAngleLabel'
 import { CAMERA } from './constants/editor3d'
 import { useCanvasDeselect } from './hooks/useCanvasDeselect'
 import { useSceneRoom } from './hooks/useSceneRoom'
@@ -33,6 +34,7 @@ export function WallCanvas3D() {
           <WallScene />
         </Suspense>
       </Canvas>
+      <SeamAngleLabel />
     </div>
   )
 }

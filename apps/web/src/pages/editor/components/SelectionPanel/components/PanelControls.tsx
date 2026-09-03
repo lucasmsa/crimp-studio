@@ -28,13 +28,11 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
     steepness,
     presets,
     seamLabelKey,
-    cuts,
     canRemove,
     canMerge,
     setAngle,
     stepAngle,
     setColor,
-    cut,
     remove,
   } = usePanelControls()
 
@@ -96,27 +94,6 @@ export function PanelControls({ cardRef }: PanelControlsProps) {
       <p className={readoutLine} data-testid="face-steepness">
         {t('editor.face.steepness', { value: steepness })}
       </p>
-
-      <div className="grid grid-cols-2 gap-1.5">
-        <button
-          onClick={() => cut('across')}
-          disabled={!cuts.across.ok}
-          title={cuts.across.ok ? undefined : t(`editor.face.refusal.${cuts.across.reason}`)}
-          className={cn(holdTypeButtonBase, controlState({ unavailable: !cuts.across.ok }))}
-          data-testid="face-cut-across"
-        >
-          {t('editor.face.cutAcross')}
-        </button>
-        <button
-          onClick={() => cut('up')}
-          disabled={!cuts.up.ok}
-          title={cuts.up.ok ? undefined : t(`editor.face.refusal.${cuts.up.reason}`)}
-          className={cn(holdTypeButtonBase, controlState({ unavailable: !cuts.up.ok }))}
-          data-testid="face-cut-up"
-        >
-          {t('editor.face.cutUp')}
-        </button>
-      </div>
 
       <div className="space-y-2">
         <h3 className={sectionLabel}>{t('editor.colors.panelColor')}</h3>

@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { useWallStore } from '@/stores/wallStore'
 import { WallFace3D } from './WallFace3D'
 import { SelectionAnchorProbe } from './SelectionAnchorProbe'
+import { SeamAngleProbe } from './SeamAngleProbe'
 import { useWallInteraction } from '../hooks/useWallInteraction'
 import { useFaceAngleSprings } from '../hooks/useFaceAngleSprings'
 import { listFaces } from '@crimp-studio/wall-geometry'
@@ -24,20 +25,30 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
     heldHold,
     leavingHolds,
     dismissLeaving,
+    drawnSeam,
+    justCut,
+    leavingPanels,
+    dismissLeavingPanel,
   } = useWallStore()
 
   /* A bend that stopped flashes; a hold being carried into a neighbour stays
-     lit for as long as it is there. Both arrive the same way here */
+     lit for as long as it is there; so does a hold a seam passes through or a
+     trim would take. All arrive the same way here */
   const warned = useMemo(
-    () => [...blockingHoldIds, ...heldHoldWarnings(heldHold)],
-    [blockingHoldIds, heldHold],
+    () => [
+      ...blockingHoldIds,
+      ...heldHoldWarnings(heldHold),
+      ...(drawnSeam?.blockedHoldIds ?? []),
+      ...(drawnSeam?.leavingHoldIds ?? []),
+    ],
+    [blockingHoldIds, heldHold, drawnSeam],
   )
 
   const faces = useMemo(() => listFaces(wall.faces), [wall.faces])
 
   /* The springs are the only writer of face group transforms; see the hook */
   const faceGroups = useRef(new Map<string, THREE.Group>())
-  useFaceAngleSprings(wall.faces, faceGroups)
+  useFaceAngleSprings(wall.faces, faceGroups, justCut?.faceId ?? null)
 
   const registerFaceGroup = useCallback(
     (faceId: string) => (group: THREE.Group | null) => {
@@ -79,21 +90,27 @@ export function Wall3D({ onDragStateChange }: Wall3DProps) {
           groupRef={registerFaceGroup(face.id)}
           holds={heldHoldsOnFace(wall.holds, heldHold, face.id)}
           leavingHolds={leavingHolds.filter((hold) => hold.faceId === face.id)}
+          leavingPanels={leavingPanels.filter((panel) => panel.faceId === face.id)}
+          drawnSeam={drawnSeam?.faceId === face.id ? drawnSeam : null}
+          cutAt={justCut?.faceId === face.id ? justCut.at : null}
           selectedHoldId={selectedHoldId}
           blockingHoldIds={warned}
           deletingHoldIds={deletingHoldIds}
           isDraggingAny={isDragging}
           isDimmed={selectedFaceId !== null && face.id !== selectedFaceId}
+          isDoomed={drawnSeam?.leavingFaceIds.includes(face.id) ?? false}
           meshRef={registerFaceMesh(face.id)}
           onPointerDown={handleFacePointerDown(face.id)}
           onPointerEnter={handleFacePointerEnter}
           onPointerLeave={handleFacePointerLeave}
           onHoldPointerDown={handleHoldPointerDown}
           onHoldLeft={dismissLeaving}
+          onPanelLeft={dismissLeavingPanel}
         />
       ))}
 
       <SelectionAnchorProbe />
+      <SeamAngleProbe />
     </group>
   )
 }

@@ -53,6 +53,13 @@ export function useEditorKeyboard() {
         return
       }
 
+      /* Escape drops a seam being drawn before it closes anything else */
+      if (KEYBOARD_SHORTCUTS.DESELECT.includes(e.key) && useWallStore.getState().drawnSeam) {
+        e.preventDefault()
+        useWallStore.getState().cancelSeam()
+        return
+      }
+
       /* Escape closes whatever popover is open, which is the keyboard's version
          of clicking empty canvas */
       if (KEYBOARD_SHORTCUTS.DESELECT.includes(e.key) && (selectedHoldId || selectedFaceId)) {

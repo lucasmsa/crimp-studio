@@ -11,7 +11,7 @@ import { measureHoldFootprint } from '@/pages/editor/components/WallCanvas3D/uti
 import { refitHold } from '@/pages/editor/components/WallCanvas3D/utils/holdRefit'
 import { getNextRotation } from '@/pages/editor/components/WallCanvas3D/utils/holdActions'
 import { clampHoldToFace } from '@/pages/editor/components/WallCanvas3D/utils/holdBounds'
-import type { FaceTree } from '@crimp-studio/wall-geometry'
+import type { FaceTree, Point2 } from '@crimp-studio/wall-geometry'
 import {
   createRootFaceTree,
   findLegalFaceAngle,
@@ -21,11 +21,16 @@ import {
   getFace,
   holdPlacementIsClear,
 } from '@crimp-studio/wall-geometry'
-import type { CutAxis } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
+import type { CutRefusal, Seam } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
 import {
-  canCutFace,
-  cutFaceTree,
+  canCutAlong,
+  canTrimAlong,
+  cutFaceAlong,
   mergeFaceIntoParent,
+  seamAngleDeg,
+  seamThrough,
+  trimFaceAlong,
+  trimPreview,
 } from '@/pages/editor/components/WallCanvas3D/utils/faceCut'
 import {
   clampFaceAngle,
@@ -86,8 +91,47 @@ export interface Wall {
   holds: Hold[]
 }
 
-/** What a click on the canvas is aiming at */
-export type EditorMode = 'holds' | 'shape'
+/** What a click on the canvas is aiming at: placing holds, or shaping, cutting, trimming panels */
+export type EditorMode = 'holds' | 'shape' | 'blade' | 'trim'
+
+export type SeamTool = 'blade' | 'trim'
+
+/**
+ * A seam being drawn on a panel. The wall does not change until the release,
+ * so this is what the renderer draws in the meantime: the line, whether it can
+ * be cut there, and everything a trim would take away (ADR-011).
+ */
+export interface DrawnSeam {
+  tool: SeamTool
+  faceId: string
+  /** Where the panel was pressed, in its frame */
+  anchor: Point2
+  /** Border to border through the anchor and the cursor; null until the cursor has moved */
+  seam: Seam | null
+  /** How the seam runs on the plywood: 0 level, 90 upright */
+  angleDeg: number
+  clear: boolean
+  reason?: CutRefusal
+  /** Holds the seam passes through */
+  blockedHoldIds: string[]
+  /** Trim only: the piece that would go, in the face's frame */
+  offcut: Point2[] | null
+  /** Trim only: holds that would go with the offcut */
+  leavingHoldIds: string[]
+  /** Trim only: panels hinged on the offcut, and everything hinged on those */
+  leavingFaceIds: string[]
+}
+
+/** Plywood a trim took off, still drawn while it falls away */
+export interface LeavingPanel {
+  id: string
+  /** The panel it was cut from; the outline and seam are in that panel's frame */
+  faceId: string
+  outline: Point2[]
+  seam: Seam
+  holds: Hold[]
+  color: string
+}
 
 interface WallState {
   wall: Wall
@@ -95,8 +139,12 @@ interface WallState {
   selectedHoldId: string | null
   /** The face being shaped; clicks inside it place holds */
   selectedFaceId: string | null
-  /** Where the pointer last landed on a face, so a cut splits there */
-  faceCutPoint: { faceId: string; u: number; v: number } | null
+  /** A seam under the pointer, before the drag lands. Null when none is being drawn */
+  drawnSeam: DrawnSeam | null
+  /** The face a blade just made, so it can open and settle and its seam can flash */
+  justCut: { faceId: string; at: number } | null
+  /** Offcuts a trim took away, still drawn while they fall */
+  leavingPanels: LeavingPanel[]
   selectedHoldType: HoldType
   /**
    * The model armed for each type, so switching type and back restores the pick
@@ -146,9 +194,15 @@ interface WallState {
   selectHold: (id: string | null) => void
   setEditorMode: (mode: EditorMode) => void
   selectFace: (faceId: string | null) => void
-  setFaceCutPoint: (point: { faceId: string; u: number; v: number }) => void
-  /** Splits a face in two along the seam; refuses if canCutFace says no */
-  cutFace: (faceId: string, axis: CutAxis, at: number) => void
+  /** Starts drawing a seam where a panel was pressed. The wall does not change yet */
+  beginSeam: (tool: SeamTool, faceId: string, anchor: Point2) => void
+  /** Aims the seam through the anchor and the cursor, saying whether it can be cut there */
+  aimSeam: (point: Point2) => void
+  /** Lets go: a clear seam is cut or trimmed, anything else springs back */
+  releaseSeam: () => void
+  cancelSeam: () => void
+  /** An offcut has finished falling */
+  dismissLeavingPanel: (id: string) => void
   /** Bends a panel about its seam, stopping where it meets whatever is in the way */
   setFaceAngle: (faceId: string, bendDeg: number) => void
   /** Merges a face back into its parent, undoing its cut */
@@ -261,7 +315,9 @@ export const useWallStore = create<WallState>()(
   /* The wall opens with nothing selected: controls come to a selection, so an
      editor that opens with a popover already up has nothing to show it about */
   selectedFaceId: null,
-  faceCutPoint: null,
+  drawnSeam: null,
+  justCut: null,
+  leavingPanels: [],
   selectedHoldType: 'jug',
   variantByType: {},
   deletingHoldIds: [],
@@ -456,20 +512,117 @@ export const useWallStore = create<WallState>()(
 
   selectFace: (faceId) => set({ selectedFaceId: faceId, selectedHoldId: null }),
 
-  setFaceCutPoint: (point) => set({ faceCutPoint: point }),
+  beginSeam: (tool, faceId, anchor) =>
+    set({
+      drawnSeam: {
+        tool,
+        faceId,
+        anchor,
+        seam: null,
+        angleDeg: 0,
+        clear: false,
+        blockedHoldIds: [],
+        offcut: null,
+        leavingHoldIds: [],
+        leavingFaceIds: [],
+      },
+    }),
 
-  cutFace: (faceId, axis, at) =>
+  /* The seam goes where the cursor goes and says what is in its way, rather
+     than being stopped by it (ADR-007 amended, ADR-011) */
+  aimSeam: (point) =>
     set((state) => {
-      const check = canCutFace(state.wall.faces, state.wall.holds, faceId, axis, at)
-      if (!check.ok) return state
+      const drawn = state.drawnSeam
+      if (!drawn) return state
 
-      const cut = cutFaceTree(state.wall.faces, state.wall.holds, faceId, axis, at)
+      const { faces, holds } = state.wall
+      const face = getFace(faces, drawn.faceId)
+      const seam = seamThrough(face.outline, drawn.anchor, point)
+      if (!seam) {
+        return {
+          drawnSeam: {
+            ...drawn,
+            seam: null,
+            clear: false,
+            reason: undefined,
+            blockedHoldIds: [],
+            offcut: null,
+            leavingHoldIds: [],
+            leavingFaceIds: [],
+          },
+        }
+      }
+
+      const check =
+        drawn.tool === 'blade'
+          ? canCutAlong(faces, holds, drawn.faceId, seam)
+          : canTrimAlong(faces, holds, drawn.faceId, seam)
+      const preview = drawn.tool === 'trim' ? trimPreview(faces, holds, drawn.faceId, seam) : null
 
       return {
-        ...edit({ ...state.wall, faces: cut.tree, holds: cut.holds }, `cutFace:${cut.newFaceId}`),
-        selectedFaceId: cut.newFaceId,
+        drawnSeam: {
+          ...drawn,
+          seam,
+          angleDeg: seamAngleDeg(faces, drawn.faceId, seam),
+          clear: check.ok,
+          reason: check.reason,
+          blockedHoldIds: check.blockingHoldIds,
+          offcut: preview?.offcut ?? null,
+          leavingHoldIds: preview?.leavingHoldIds ?? [],
+          leavingFaceIds: preview?.leavingFaceIds ?? [],
+        },
       }
     }),
+
+  releaseSeam: () =>
+    set((state) => {
+      const drawn = state.drawnSeam
+      if (!drawn) return state
+      /* Nowhere to cut: the seam springs back and the wall is as it was */
+      if (!drawn.seam || !drawn.clear) return { drawnSeam: null }
+
+      const { faces, holds } = state.wall
+
+      if (drawn.tool === 'blade') {
+        const cut = cutFaceAlong(faces, holds, drawn.faceId, drawn.seam)
+        return {
+          drawnSeam: null,
+          ...edit({ ...state.wall, faces: cut.tree, holds: cut.holds }, `cutFace:${cut.newFaceId}`),
+          selectedFaceId: cut.newFaceId,
+          selectedHoldId: null,
+          justCut: { faceId: cut.newFaceId, at: Date.now() },
+        }
+      }
+
+      const trimmed = trimFaceAlong(faces, holds, drawn.faceId, drawn.seam)
+      const survivingHold = (id: string | null) =>
+        id && trimmed.holds.some((hold) => hold.id === id) ? id : null
+
+      return {
+        drawnSeam: null,
+        ...edit({ ...state.wall, faces: trimmed.tree, holds: trimmed.holds }, `trimFace:${drawn.faceId}`),
+        selectedFaceId:
+          state.selectedFaceId && state.selectedFaceId in trimmed.tree.byId ? state.selectedFaceId : null,
+        selectedHoldId: survivingHold(state.selectedHoldId),
+        blockingHoldIds: state.blockingHoldIds.filter((id) => survivingHold(id)),
+        leavingPanels: [
+          ...state.leavingPanels,
+          {
+            id: createId(),
+            faceId: drawn.faceId,
+            outline: trimmed.offcut,
+            seam: drawn.seam,
+            holds: trimmed.offcutHolds,
+            color: getFace(faces, drawn.faceId).color,
+          },
+        ],
+      }
+    }),
+
+  cancelSeam: () => set({ drawnSeam: null }),
+
+  dismissLeavingPanel: (id) =>
+    set((state) => ({ leavingPanels: state.leavingPanels.filter((panel) => panel.id !== id) })),
 
   setFaceAngle: (faceId, bendDeg) =>
     set((state) => {
@@ -647,7 +800,9 @@ export const useWallStore = create<WallState>()(
       wall,
       selectedHoldId: null,
       selectedFaceId: null,
-      faceCutPoint: null,
+      drawnSeam: null,
+      justCut: null,
+      leavingPanels: [],
       deletingHoldIds: [],
       leavingHolds: [],
       blockingHoldIds: holdsInOverlaps(findWallOverlaps(wall.faces, wall.holds)),

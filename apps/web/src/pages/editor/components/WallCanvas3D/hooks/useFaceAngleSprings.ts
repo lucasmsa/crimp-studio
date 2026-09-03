@@ -9,6 +9,8 @@ const STIFFNESS = 90
 const DAMPING = 18
 /** Below this the spring has arrived and the per-frame rebuild can stop */
 const REST_EPSILON = 0.01
+/** How far a freshly cut piece opens before it settles flush, in degrees */
+const OPEN_DEG = 8
 
 interface AngleSpring {
   value: number
@@ -27,10 +29,15 @@ interface AngleSpring {
  * The groups are driven imperatively for the same reason the transforms are
  * not React state: a re-render between frames would snap the wall to its
  * settled shape.
+ *
+ * A face that a blade just made starts its spring a few degrees open, so the
+ * cut is seen to open and settle: it says which piece is new and that it is the
+ * one that now bends (ADR-011).
  */
 export function useFaceAngleSprings(
   faces: FaceTree,
   faceGroups: React.RefObject<Map<string, THREE.Group>>,
+  justCutFaceId: string | null,
 ) {
   const springs = useRef(new Map<string, AngleSpring>())
   const writtenFaces = useRef<FaceTree | null>(null)
@@ -46,7 +53,9 @@ export function useFaceAngleSprings(
     let moving = false
 
     for (const [faceId, target] of targets) {
-      const spring = springs.current.get(faceId) ?? { value: target, velocity: 0 }
+      const spring =
+        springs.current.get(faceId) ??
+        { value: target + (faceId === justCutFaceId ? OPEN_DEG : 0), velocity: 0 }
       const offset = target - spring.value
 
       if (Math.abs(offset) < REST_EPSILON && Math.abs(spring.velocity) < REST_EPSILON) {

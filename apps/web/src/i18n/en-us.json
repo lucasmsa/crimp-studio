@@ -90,12 +90,10 @@
       "steepness": "Steepness {{value}} deg",
       "increase": "Steeper",
       "decrease": "Shallower",
-      "cutAcross": "Cut Across",
-      "cutUp": "Cut Up",
       "remove": "Merge Down",
       "refusal": {
         "too-small": "The panel would be too small to climb",
-        "child-in-the-way": "A seam already crosses this way; cut the other panel instead",
+        "child-in-the-way": "The seam would cut through a panel hinged here. Cut that one instead",
         "holds-in-the-way": "Holds sit on the seam. Move them first",
         "would-clip": "That would pass through the panel next to it",
         "not-one-panel": "Merging would leave an L, not a panel. Merge its neighbour first"
@@ -142,7 +140,9 @@
       "expand": "Expand tools",
       "tools": {
         "holds": "Place Holds",
-        "shape": "Shape Panels"
+        "shape": "Shape Panels",
+        "blade": "Blade",
+        "trim": "Trim"
       }
     },
     "readout": {

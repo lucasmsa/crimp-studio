@@ -36,6 +36,8 @@ export function useWallInteraction() {
   const faceMeshes = useRef(new Map<string, THREE.Mesh>())
   const dragPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0))
   const draggingHoldIdRef = useRef<string | null>(null)
+  /** The face a seam is being drawn on, while a blade or trim drag is in progress */
+  const drawingOnFaceRef = useRef<string | null>(null)
   const pointerNDC = useRef(new THREE.Vector2(9999, 9999))
   const isDraggingRef = useRef(false)
   const pointerDownRef = useRef<PointerDown | null>(null)
@@ -86,6 +88,18 @@ export function useWallInteraction() {
     }
 
     const onPointerUp = (e: PointerEvent) => {
+      /* Letting go is what commits a seam. A press that never drew one is a
+         tap, and falls through to selecting the panel */
+      if (drawingOnFaceRef.current) {
+        const store = useWallStore.getState()
+        if (store.drawnSeam?.seam) {
+          store.releaseSeam()
+          pointerDownRef.current = null
+        } else {
+          store.cancelSeam()
+        }
+      }
+
       const down = pointerDownRef.current
       if (down && isTap(down, e)) resolveTap(down)
 
@@ -95,6 +109,7 @@ export function useWallInteraction() {
 
       pointerDownRef.current = null
       draggingHoldIdRef.current = null
+      drawingOnFaceRef.current = null
       isDraggingRef.current = false
       document.body.style.cursor = 'default'
     }
@@ -124,7 +139,35 @@ export function useWallInteraction() {
     return entry ? { faceId: entry[0], point: hits[0].point } : null
   }, [])
 
+  /* Every frame while drawing a seam: the line runs through where the panel
+     was pressed and where the pointer is now, on that panel. Past the panel's
+     edge the pointer keeps aiming on the panel's own plane */
+  const aimSeamAtPointer = useCallback(
+    (faceId: string) => {
+      const mesh = faceMeshes.current.get(faceId)
+      if (!mesh) return
+
+      raycaster.current.setFromCamera(pointerNDC.current, camera)
+      const hit = raycaster.current.intersectObject(mesh, false)[0]
+      const point =
+        hit?.point ??
+        (raycaster.current.ray.intersectPlane(dragPlaneRef.current, intersectPoint.current)
+          ? intersectPoint.current
+          : null)
+      if (!point) return
+
+      const coords = worldToFaceCoords(faceId, point)
+      if (coords) useWallStore.getState().aimSeam([coords.u, coords.v])
+    },
+    [camera, worldToFaceCoords],
+  )
+
   useFrame(() => {
+    if (drawingOnFaceRef.current) {
+      aimSeamAtPointer(drawingOnFaceRef.current)
+      return
+    }
+
     const holdId = draggingHoldIdRef.current
     if (!holdId) return
 
@@ -156,7 +199,8 @@ export function useWallInteraction() {
     if (over && over.faceId !== heldFaceId) setupDragPlane(over.faceId)
   })
 
-  /* Face press — remembered, then resolved on release */
+  /* Face press: remembered, then resolved on release. With a blade or trim
+     armed it also starts a seam, which the release commits or cancels */
   const handleFacePointerDown = useCallback(
     (faceId: string) => (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation()
@@ -171,8 +215,17 @@ export function useWallInteraction() {
         faceId,
         ...coords,
       }
+
+      const mode = useWallStore.getState().editorMode
+      if (mode === 'blade' || mode === 'trim') {
+        useWallStore.getState().beginSeam(mode, faceId, [coords.u, coords.v])
+        setupDragPlane(faceId)
+        drawingOnFaceRef.current = faceId
+        isDraggingRef.current = true
+        document.body.style.cursor = 'crosshair'
+      }
     },
-    [worldToFaceCoords],
+    [worldToFaceCoords, setupDragPlane],
   )
 
   /* A face is clickable, so it says so; holds set their own cursor and stop
@@ -188,10 +241,10 @@ export function useWallInteraction() {
 
   /* Hold pointer down — select + start drag, save pre-drag position */
   const handleHoldPointerDown = useCallback((holdId: string) => (e: ThreeEvent<PointerEvent>) => {
-    /* While shaping panels a hold is scenery: let the press fall through to
-       the panel underneath rather than grabbing something the mode picker
-       says is not what clicks are for */
-    if (useWallStore.getState().editorMode === 'shape') return
+    /* While shaping or cutting panels a hold is scenery: let the press fall
+       through to the panel underneath rather than grabbing something the mode
+       picker says is not what clicks are for */
+    if (useWallStore.getState().editorMode !== 'holds') return
 
     e.stopPropagation()
     useWallStore.getState().selectHold(holdId)
@@ -221,12 +274,7 @@ function isTap(down: PointerDown, up: PointerEvent): boolean {
 }
 
 function resolveTap(down: PointerDown) {
-  const { editorMode, selectedHoldId, selectHold, selectFace, addHold, setFaceCutPoint } =
-    useWallStore.getState()
-
-  /* Every tap on a panel also marks where a cut would land, so the cut buttons
-     split where you were looking rather than always down the middle */
-  setFaceCutPoint({ faceId: down.faceId, u: down.u, v: down.v })
+  const { editorMode, selectedHoldId, selectHold, selectFace, addHold } = useWallStore.getState()
 
   const action = resolveWallTap({ mode: editorMode, selectedHoldId, hitFaceId: down.faceId })
 
