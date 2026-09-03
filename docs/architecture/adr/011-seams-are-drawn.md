@@ -86,3 +86,16 @@ exactly.
   minimum width test and prism collision both rely on. Gym walls are built from flat facets.
 - Plywood sheet buildability warnings and facet resizing are out of this feature and stay on
   the backlog.
+
+## Amendment, 2026-09-03: a seam may cross the face's own hinge
+
+The first refusal above was argued on a false premise. Cutting the panel above a level
+seam with UP does exactly that today, and it is sound: the near piece keeps its hinge on
+the parent along a shorter segment, and the far piece hinges on the drawn seam as the
+near piece's child. It only touches the grandparent; nothing attaches twice, and the tree
+holds. The refusal is withdrawn. What stays refused, and is the real limit of the tree, is
+a seam that cuts through an edge one of the face's own children hinges on.
+
+There are therefore two refusals a drawn seam can meet, not three: it crosses a child's
+hinge edge, or it passes through a hold. A TRIM adds the third, an offcut that carries a
+child.

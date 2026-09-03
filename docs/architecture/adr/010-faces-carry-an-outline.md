@@ -109,3 +109,22 @@ measured from the GLB on load.
   be expressed. That is the known limit of the tree and it is why a seam crossing a face's own
   `v = 0` edge is refused rather than split into siblings.
 - Faces stay flat, as in ADR-006. Dished and bulging panels are still out.
+
+## Amendment, 2026-09-03: a seam is a segment of the parent's edge
+
+Building it showed the invariant above was too strong. A face hinged on a vertical seam
+and then cut level keeps a hinge shorter than the parent's edge, which the editor has
+always allowed, and every saved wall may contain one. `seamEdge` still names the parent
+edge, and the child's outline touches `v = 0` along a segment of that edge rather than
+all of it. Nothing else changes: the frame is still derived from the parent's edge, the
+child's origin is the edge's end, and `hingeSegment` reads the part the face meets.
+
+Two smaller corrections. `computeFaceSheetOrigin` is deleted rather than kept for
+axis-aligned ancestry: the panel geometry carries metre-space UVs and every face takes
+the tile from its own corner, so it has no caller. And the merge is refused, rather than
+approximated, when the pair would not make one convex panel: the old code folded an L
+into a wrong rectangle.
+
+This increment landed the geometry with ACROSS and UP still making the seams, as level
+and upright chords through `cutFaceAlong`. The popover reads bend and steepness as
+decided. Saved walls migrate from document version 1 on load.

@@ -9,6 +9,12 @@ changes, update this doc in the same PR.
 - The wall is a tree of hinged flat panels (ADR-006), 400cm x 500cm of plywood to start.
   One root face means a flat wall; cutting adds faces hinged on the seam. Bending
   preserves plywood, not height, and the root face's bottom edge is pinned to the floor.
+- Each face is a convex outline in its own frame, with its seam along the u axis, and a
+  child names the parent edge it hinges on (ADR-010). Every face bends about its own seam
+  with one rotation; a level seam tilts, an upright one yaws. Panels are extruded from
+  the outline, collision runs on convex prisms, and a hold is clamped into the outline
+  shrunk by its own footprint, so a hold beside a slanted edge stays on plywood. Saved
+  walls from before this (document version 1) migrate on load.
 - Each face carries its own `color`, so neighbouring panels can be painted differently.
   A cut gives both halves the paint the panel had. Defaults come from `colors.ts`.
 - Store model: one `Wall` with `id`, `name`, `width`, `height`, `faces`, `holds[]`.
@@ -76,7 +82,12 @@ changes, update this doc in the same PR.
   in cm from the panel's bottom-left corner.
 - Click wall (panels tool): select the panel and fill the card: angle presets, a degree
   stepper, cut across, cut up, panel colour, merge down. A preset the wall cannot reach is
-  disabled, and the stepper stops where the plywood does (ADR-007).
+  disabled, and the stepper stops where the plywood does (ADR-007). The card reads two
+  numbers: the bend about the seam, which the stepper sets, and the steepness from
+  vertical, measured off the face normal. On a level seam the presets are steepnesses
+  (slab, vertical, overhang, roof); on an upright one they are bends (corner in, flush,
+  prow, side wall); a slanted seam offers none. Merge down is disabled, with the reason,
+  when the piece no longer spans the whole edge it hinges on: the union would be an L.
 - Click hold: select (single selection). Selected hold gets emissive glow, slight scale-up,
   and the card shows its colour, rotate and delete. A hold that stopped a bend flashes red
   for a moment.
@@ -134,7 +145,7 @@ changes, update this doc in the same PR.
   list every wall with its name, when it was saved, its panel and hold counts, a delete
   behind a confirm, and a drawing of the wall.
 - The drawing is the wall itself, three quarters on, generated from the face tree when the
-  row renders (`WallLibrary/utils/wallSilhouette.ts`): every panel as a quad, far ones
+  row renders (`WallLibrary/utils/wallSilhouette.ts`): every panel as its outline, far ones
   first, with holds as dots in the colours they are painted, over the same room grey the
   scene uses. Nothing is captured or stored. Straight from the side was tried first and
   cut: a flat wall, which is most of them, came out as a line.
